@@ -1,2 +1,2 @@
 # FrIENDS
- My "Munchkin" insired, first, multiplayer game.
+ My "Munchkin" inspired, first, multiplayer game.
