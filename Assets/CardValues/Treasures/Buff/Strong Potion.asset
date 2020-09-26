@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06c418229460b8b4f883ce0b23c68120, type: 3}
+  m_Name: Strong Potion
+  m_EditorClassIdentifier: 
+  sprite: {fileID: 21300000, guid: 285f39de967cb9845a0d343261066a31, type: 3}
+  SpriteRewers: {fileID: 0}
+  deck: 1
+  name: Strong Potion
+  description: Not to mistake with potion of strenght.
+  level: 2

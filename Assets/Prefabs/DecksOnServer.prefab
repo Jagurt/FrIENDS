@@ -1,0 +1,128 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2133027474758886722
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2133027474758886725}
+  - component: {fileID: 2133027474758886724}
+  - component: {fileID: 5394087250291003360}
+  m_Layer: 0
+  m_Name: DecksOnServer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2133027474758886725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133027474758886722}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2133027474758886724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133027474758886722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de6a81a6f68169c4cb64532aebeb869c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  doors:
+  - {fileID: 8114310120151877799, guid: f3f7cded7757fbe47b160b0d061707f7, type: 3}
+  - {fileID: 8114310120151877799, guid: 8676f7968681aa147920872737b98cd7, type: 3}
+  - {fileID: 8114310120151877799, guid: f3f7cded7757fbe47b160b0d061707f7, type: 3}
+  - {fileID: 8114310120151877799, guid: 8676f7968681aa147920872737b98cd7, type: 3}
+  - {fileID: 8114310120151877799, guid: f3f7cded7757fbe47b160b0d061707f7, type: 3}
+  - {fileID: 8114310120151877799, guid: 8676f7968681aa147920872737b98cd7, type: 3}
+  - {fileID: 8114310120151877799, guid: f3f7cded7757fbe47b160b0d061707f7, type: 3}
+  - {fileID: 8114310120151877799, guid: 8676f7968681aa147920872737b98cd7, type: 3}
+  - {fileID: 8114310120151877799, guid: f3f7cded7757fbe47b160b0d061707f7, type: 3}
+  - {fileID: 8114310120151877799, guid: 8676f7968681aa147920872737b98cd7, type: 3}
+  - {fileID: 8114310120151877799, guid: 13a64c3f3370a1b4eaedfdbdeba61413, type: 3}
+  - {fileID: 8114310120151877799, guid: 13a64c3f3370a1b4eaedfdbdeba61413, type: 3}
+  - {fileID: 8114310120151877799, guid: 13a64c3f3370a1b4eaedfdbdeba61413, type: 3}
+  - {fileID: 8114310120151877799, guid: 13a64c3f3370a1b4eaedfdbdeba61413, type: 3}
+  - {fileID: 8114310120151877799, guid: 13a64c3f3370a1b4eaedfdbdeba61413, type: 3}
+  - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  treasures:
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 5b04559bd27fd724d9c75d6917801da2, type: 3}
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  - {fileID: 8114310120151877799, guid: 5b04559bd27fd724d9c75d6917801da2, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  - {fileID: 8114310120151877799, guid: 5b04559bd27fd724d9c75d6917801da2, type: 3}
+  - {fileID: 8114310120151877799, guid: 223c063eb879041489857eb54ea5e014, type: 3}
+  helpHands: []
+  spells: []
+  serverCanvas: {fileID: 0}
+  table: {fileID: 0}
+  doorsDeck: {fileID: 0}
+  treasuresDeck: {fileID: 0}
+  helpHandsDeck: {fileID: 0}
+  spellsDeck: {fileID: 0}
+  discardedDoorsDeck: {fileID: 0}
+  discardedtreasuresDeck: {fileID: 0}
+  discardedHelpHandsDeck: {fileID: 0}
+  discardedSpellsDeck: {fileID: 0}
+--- !u!114 &5394087250291003360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133027474758886722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 0
+    i1: 0
+    i2: 0
+    i3: 0
+    i4: 0
+    i5: 0
+    i6: 0
+    i7: 0
+    i8: 0
+    i9: 0
+    i10: 0
+    i11: 0
+    i12: 0
+    i13: 0
+    i14: 0
+    i15: 0
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0

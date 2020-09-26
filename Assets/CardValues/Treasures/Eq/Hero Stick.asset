@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e8289de40e6bf43b75f9aa3ed7c1c0, type: 3}
+  m_Name: Hero Stick
+  m_EditorClassIdentifier: 
+  sprite: {fileID: 21300000, guid: 558088373222f3d46ab416e4dee65097, type: 3}
+  SpriteRewers: {fileID: 0}
+  deck: 1
+  name: Hero's Stick
+  description: '"In hands of a hero anything can be a weapon" - engraved on simple
+    tombstone in middle of nowhere.'
+  level: 1
+  eqPart: 6

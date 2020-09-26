@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 9e52a6ecc0d92bc4a95855285a7bd2fc
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - obrazek: {instanceID: 0}
+  - gameManager: {instanceID: 0}
+  - playerPrefab: {instanceID: 0}
+  - gameCanvas: {fileID: 444659823611501616, guid: 2b0e26e724fe58b4085d7cc36f8f6b53,
+      type: 3}
+  - equipment: {instanceID: 0}
+  - cardHand: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

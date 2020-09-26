@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 479568110ccb870439c7e541de962fff
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - cardValues: {fileID: 11400000, guid: d0687f6e6fb594140830d9f5761a1ce3, type: 2}
+  - monsterValue: {fileID: 11400000, guid: fa27da93fd9c63d45a8f625309bebe5f, type: 2}
+  - winEffect: {instanceID: 0}
+  - defeatEffect: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
