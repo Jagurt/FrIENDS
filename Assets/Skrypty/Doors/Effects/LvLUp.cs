@@ -13,7 +13,7 @@ public class LvLUp : Effect
 
     internal override void UseCard()
     {
-        PlayerInGame.localPlayerInGame.UseCard(this.netId);
+        PlayerInGame.localPlayerInGame.UseCardOnLocalPlayer(this.netId);
     }
 
     [Server]
@@ -33,6 +33,12 @@ public class LvLUp : Effect
             Debug.LogError("Player who played card is not found!");
 
         //StartCoroutine( PlayerInGame.localPlayerInGame.ServerDiscardCard(this.netId));
+
+        yield return new WaitForEndOfFrame();
+
         player.RpcDiscardCard(this.netId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 }

@@ -12,7 +12,7 @@ public class EquipmentCard : TreasureCard
 
     internal override void UseCard()
     {
-        PlayerInGame.localPlayerInGame.UseCard(this.netId);
+        PlayerInGame.localPlayerInGame.UseCardOnLocalPlayer(this.netId);
     }
 
     [Server]
@@ -42,6 +42,9 @@ public class EquipmentCard : TreasureCard
 
             RpcEquip(targetNetId);
         }
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]

@@ -47,6 +47,7 @@ public class PlayerManager : NetworkBehaviour
             StartCoroutine(WaitForReady());
     }
 
+    [Server]
     private IEnumerator WaitForReady()
     {
         while (!connectionToClient.isReady || CustomNetworkManager.isServerBusy)
@@ -57,6 +58,9 @@ public class PlayerManager : NetworkBehaviour
 
         playerInGame = Instantiate(playerInGame);
         NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [Command]
@@ -83,10 +87,13 @@ public class PlayerManager : NetworkBehaviour
     {
         foreach (var player in FindObjectsOfType<PlayerManager>())
         {
-            CustomNetworkManager CNM = CustomNetworkManager.customNetworkManager;
-            yield return new WaitUntil(() => !CNM.isServerBusy);
-            CNM.isServerBusy = true;
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+            CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
             player.RpcInitializePlayerLobbyPanel(player.playerInLobby.GetComponent<PlayerInLobby>().netId);
+
+            yield return new WaitForEndOfFrame();
+            CustomNetworkManager.customNetworkManager.isServerBusy = false;
         }
     }
 

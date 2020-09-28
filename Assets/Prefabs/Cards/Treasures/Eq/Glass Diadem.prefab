@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88f99e950b058b04f8e6d42c79fac60e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardValues: {fileID: 11400000, guid: 1f970ca023f607a449523188035817a4, type: 2}
+  cardValues: {fileID: 11400000, guid: 0e77d335fe3400f42aefd6b9ccbbcb0d, type: 2}
   deck: 0
   treasureType: 0
 --- !u!114 &2094723983731449940

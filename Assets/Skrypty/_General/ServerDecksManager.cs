@@ -95,7 +95,7 @@ public class ServerDecksManager : NetworkBehaviour
             int random1 = Random.Range(0, indexes.Count);
             int random2 = Random.Range(0, indexes.Count);
 
-            //Debug.Log("Iteraion = " + i);
+            //Debug.Log("Iteration = " + i);
             //Debug.Log("Numbers [" + random1 + "] = " + numbers[random1]);
             //Debug.Log("Numbers [" + random2 + "] = " + numbers[random2]);
 

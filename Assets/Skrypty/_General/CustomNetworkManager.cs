@@ -8,17 +8,12 @@ public class CustomNetworkManager : NetworkManager
 {
     private NetworkClient myClient;
 
-    internal bool isServerBusy;
+    [SerializeField] internal bool isServerBusy = false;
     internal static CustomNetworkManager customNetworkManager;
 
     private void Start()
     {
         customNetworkManager = this;
-    }
-
-    private void Update()
-    {
-        isServerBusy = false;
     }
 
     public void StartHosting()

@@ -24,7 +24,7 @@ public class MonsterCard : Door
             return;
         }
 
-        localPlayer.UseCard(this.netId);
+        localPlayer.UseCardOnLocalPlayer(this.netId);
     }
 
     [Server]
@@ -33,6 +33,10 @@ public class MonsterCard : Door
         PlayerInGame fightingPlayer = serverGameManager.playersObjects[serverGameManager.activePlayerIndex].GetComponent<PlayerInGame>();
         //Debug.Log("Monster in fight: " + this.gameObject);
 
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
         serverGameManager.fightInProggres = true;
         serverGameManager.fightingPlayerNetId = fightingPlayer.netId;
         serverGameManager.UpdateFightingPlayersLevel();
@@ -40,11 +44,12 @@ public class MonsterCard : Door
         serverGameManager.canPlayersTrade = false;
         serverGameManager.readyPlayers = 0;
 
-        if (CustomNetworkManager.customNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
-        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+        yield return new WaitForEndOfFrame();
 
         RpcInitiateFight();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]

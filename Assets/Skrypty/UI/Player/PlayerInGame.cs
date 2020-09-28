@@ -159,7 +159,13 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardNetId); // Finding card locally via its "NetworkInstanceId"
 
         Level += card.GetComponent<EquipmentCard>().cardValues.level;  // Modifying players level according to cards level variable
+
+        yield return new WaitForEndOfFrame();
+
         RpcEquip(cardNetId); // Calling equiping card on all clients
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     internal void LocalEquip( GameObject card )
@@ -212,7 +218,12 @@ public class PlayerInGame : NetworkBehaviour
 
         Level -= card.GetComponent<EquipmentCard>().cardValues.level;
 
+        yield return new WaitForEndOfFrame();
+
         RpcUnequip(cardNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -268,7 +279,11 @@ public class PlayerInGame : NetworkBehaviour
             if (CustomNetworkManager.isServerBusy)
                 yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
             CustomNetworkManager.isServerBusy = true;
+
             CmdRequestCardDraw(deck, worksOnDrawingPlayer, choice);
+
+            yield return new WaitForEndOfFrame();
+            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -281,14 +296,17 @@ public class PlayerInGame : NetworkBehaviour
     [Server]
     internal IEnumerator ServerSendCardsCoroutine( Deck deck, int quantity, bool worksOnDrawingPlayer = false, bool choice = false )
     {
-        //Debug.Log("ServerSendCardsCoroutine");
+        Debug.Log("ServerSendCardsCoroutine");
         for (int i = 0; i < quantity; i++)
         {
             if (CustomNetworkManager.isServerBusy)
                 yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-
             CustomNetworkManager.isServerBusy = true;
+
             ServerSendCard(deck, worksOnDrawingPlayer, choice);
+
+            yield return new WaitForEndOfFrame();
+            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -355,7 +373,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReceiveCard(cardsNetId, newCardParentsId, worksOnDrawingPlayer, choice);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -370,7 +392,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReceiveCard(cardsNetId, newCardParentsId, worksOnDrawingPlayer, choice);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     private void ReceiveCard( GameObject card, bool worksOnDrawingPlayer = false, bool choice = false )
@@ -446,7 +472,7 @@ public class PlayerInGame : NetworkBehaviour
         localPlayerInGame.ProgressButton.ActivateButton();
     }
 
-    internal void UseCard( NetworkInstanceId cardNetId )
+    internal void UseCardOnLocalPlayer( NetworkInstanceId cardNetId )
     {
         CmdUseCard(cardNetId, this.netId);
     }
@@ -468,14 +494,19 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    IEnumerator ServerPutCardOnTable( NetworkInstanceId cardNetId )
+    internal IEnumerator ServerPutCardOnTable( NetworkInstanceId cardNetId )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcPutCardOnTable(cardNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
+    [ClientRpc]
     void RpcPutCardOnTable( NetworkInstanceId cardNetId )
     {
         ClientScene.FindLocalObject(cardNetId).transform.SetParent(table);
@@ -499,7 +530,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         Card card = ClientScene.FindLocalObject(cardNetId).GetComponent<Card>();
         // Debug.Log("Cmd found Card to use: " + card.GetComponent<Card>().cardValues.name);
-        StartCoroutine(card.EffectOnUse(targetNetId)); // Using Cards Effect on chosen target
+        card.StartAwaitUseConfirmation(cardNetId, targetNetId); // Using Cards Effect on chosen target
     }
 
     public void EnableTable()
@@ -546,6 +577,9 @@ public class PlayerInGame : NetworkBehaviour
             CustomNetworkManager.isServerBusy = true;
             //Debug.Log("RpcDiscardCardsCoroutine!" + card);
             RpcDiscardCard(card.GetComponent<Card>().netId);
+
+            yield return new WaitForEndOfFrame();
+            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -557,6 +591,9 @@ public class PlayerInGame : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
         //Debug.Log("RpcDiscardCardCoroutine!" + cardToDiscardNetId);
         RpcDiscardCard(cardToDiscardNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -642,7 +679,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcEndFight();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -665,6 +706,9 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
 
         RpcUpdateLevelUI();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -697,6 +741,9 @@ public class PlayerInGame : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
 
         RpcUpdateOwnedCards();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -746,7 +793,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcOfferHelp();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -782,7 +833,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcCancelHelp();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -820,6 +875,9 @@ public class PlayerInGame : NetworkBehaviour
         serverGameManager.fightingPlayersLevel += ClientScene.FindLocalObject(helpingPlayerNetId).GetComponent<PlayerInGame>().level;
 
         RpcChoosePlayerToHelp(helpingPlayerNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -857,7 +915,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReveiveTradeRequest(this.netId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -893,7 +955,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReceiveTradeAcceptance(requestingTradePIGNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -926,7 +992,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReceiveTradeRequestDeclination(requestedTradePIGNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -961,7 +1031,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcReceiveTradingCard(tradingCardNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -996,7 +1070,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcRemoveTradingCard(tradingCardNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -1030,7 +1108,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcAcceptTrade();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -1059,7 +1141,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcCancelTrade(playerWeTradeWithNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -1117,7 +1203,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcFinalizeTrade(playerWeTradeWithNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -1165,7 +1255,11 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcPersonalAlert(text);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]

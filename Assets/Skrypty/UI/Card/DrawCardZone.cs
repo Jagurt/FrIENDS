@@ -26,11 +26,6 @@ public class DrawCardZone : MonoBehaviour, IPointerClickHandler, IPointerExitHan
         }
     }
 
-    //private void Update()
-    //{
-    //    ActivateLastChild();
-    //}
-
     public void OnPointerExit( PointerEventData eventData )
     {
         if (eventData.pointerDrag == null)

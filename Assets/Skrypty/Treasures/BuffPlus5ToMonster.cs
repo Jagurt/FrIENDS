@@ -25,6 +25,9 @@ public class BuffPlus5ToMonster : BuffCard
         // TODO: Inform Players about Effect
 
         RpcApplyBuff(targetNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]

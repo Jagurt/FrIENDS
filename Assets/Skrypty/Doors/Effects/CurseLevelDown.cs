@@ -19,7 +19,6 @@ public class CurseLevelDown : Effect
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-
         PlayerInGame player = null;
 
         if (targetNetId != NetworkInstanceId.Invalid) // If player to curse is not chosen
@@ -36,7 +35,15 @@ public class CurseLevelDown : Effect
 
         player.Level -= 1;
 
+        yield return new WaitForEndOfFrame();
+
         PlayerInGame.localPlayerInGame.RpcDiscardCard(this.netId);
+
+        yield return new WaitForEndOfFrame();
+
         serverGameManager.TurnOwnerReadiness();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 }

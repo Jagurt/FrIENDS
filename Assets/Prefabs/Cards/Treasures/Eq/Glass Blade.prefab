@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 7348575358978721089}
   - component: {fileID: 2094723983731449940}
   m_Layer: 5
-  m_Name: Glass Sword
+  m_Name: Glass Blade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -144,7 +144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88f99e950b058b04f8e6d42c79fac60e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardValues: {fileID: 11400000, guid: 2657b78c270550f499bddaea9a2b4d87, type: 2}
+  cardValues: {fileID: 11400000, guid: d72f263ab46d5904c8c31d3b68dd9c13, type: 2}
   deck: 0
   treasureType: 0
 --- !u!114 &2094723983731449940

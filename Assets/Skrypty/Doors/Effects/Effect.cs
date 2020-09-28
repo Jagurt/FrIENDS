@@ -41,6 +41,6 @@ public class Effect : Door
             }
         }
         else
-            localPlayer.UseCard(this.netId);
+            localPlayer.UseCardOnLocalPlayer(this.netId);
     }
 }

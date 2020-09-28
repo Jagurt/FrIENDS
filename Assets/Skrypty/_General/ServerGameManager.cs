@@ -27,11 +27,12 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] GamePhase GamePhase = GamePhase.PreStart;
 
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
-    [SyncVar] [SerializeField] internal int activePlayerIndex = -1;
+    [SerializeField][SyncVar]  internal int activePlayerIndex = -1;
 
-    [SyncVar] internal int connectedPlayers = 0;
+    [SerializeField][SyncVar] internal int connectedPlayers = 0;
     [SyncVar] internal int readyPlayers = 0;
 
+    [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
 
     //      Fighting        //
     [SyncVar] internal NetworkInstanceId activePlayerNetId = NetworkInstanceId.Invalid;
@@ -80,7 +81,12 @@ public class ServerGameManager : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
 
         this.connectedPlayers++;
+        yield return new WaitForEndOfFrame();
+
         RpcReportPresence(connectedPlayersNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
@@ -186,8 +192,14 @@ public class ServerGameManager : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         readyPlayers = playersObjects.Count - 1;
+        yield return new WaitForEndOfFrame();
+
         playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().RpcTurnOwnerReadiness();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [Server]
@@ -202,8 +214,14 @@ public class ServerGameManager : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         readyPlayers = 0;
+        yield return new WaitForEndOfFrame();
+
         playersObjects[0].GetComponent<PlayerInGame>().RpcAllPlayersReadiness();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [Server]
@@ -264,18 +282,14 @@ public class ServerGameManager : NetworkBehaviour
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
         StartCoroutine(ServerAlert(fightingPlayer.NickName + " lost the battle!"));
 
-        StartCoroutine(ApplyMonstersDefeatEffects());
+        ApplyMonstersDefeatEffects();
     }
 
     [Server]
-    IEnumerator ApplyMonstersDefeatEffects()
+    void ApplyMonstersDefeatEffects()
     {
         foreach (var monster in fightingMonsters)
         {
-            if (CustomNetworkManager.isServerBusy)
-                yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-            CustomNetworkManager.isServerBusy = true;
-
             StartCoroutine(ApplyMonsterDefeatEffect(monster));
         }
     }
@@ -290,6 +304,9 @@ public class ServerGameManager : NetworkBehaviour
             CustomNetworkManager.isServerBusy = true;
 
             StartCoroutine(ApplyMonsterTriumphEffect(monster));
+
+            yield return new WaitForEndOfFrame();
+            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -304,6 +321,9 @@ public class ServerGameManager : NetworkBehaviour
 
         if (helpingPlayerNetId != NetworkInstanceId.Invalid)
             monster.GetComponent<MonsterCard>().DefeatEffect(helpingPlayerNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [Server]
@@ -314,6 +334,9 @@ public class ServerGameManager : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
 
         monster.GetComponent<MonsterCard>().TriumphEffect(fightingPlayerNetId);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     internal void EndTurn()
@@ -328,7 +351,11 @@ public class ServerGameManager : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         RpcAlert(alertText);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]

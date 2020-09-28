@@ -14,7 +14,7 @@ public class ItemDragHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IPo
     private Vector2 originalRectTransformSize;
     private Vector2 changedRectTransformSize;
 
-    private bool wybrane;
+    private bool isChosen;
 
     public float sizeIncreaseScale;
 
@@ -22,21 +22,21 @@ public class ItemDragHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IPo
     {
         transform.position = new Vector3(Input.mousePosition.x - changedRectTransformSize.x / 1.5f, Input.mousePosition.y - changedRectTransformSize.y / 1.5f);
         
-        wybrane = true;
+        isChosen = true;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         transform.localPosition = startingPosition;
-        wybrane = false;
+        isChosen = false;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         //      WybierzKarte        //
-        if (!wybrane)
+        if (!isChosen)
         {
-            wybrane = true;
+            isChosen = true;
             
         }
         else
@@ -48,7 +48,7 @@ public class ItemDragHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IPo
     public void OnPointerEnter(PointerEventData eventData)
     {
         //      Powieksz Karte     //
-        if (!wybrane)
+        if (!isChosen)
         {
             rectTransform.sizeDelta = changedRectTransformSize;
         }
@@ -56,7 +56,7 @@ public class ItemDragHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IPo
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!wybrane)
+        if (!isChosen)
         {
             rectTransform.sizeDelta = originalRectTransformSize;
         }
@@ -72,7 +72,7 @@ public class ItemDragHandler : MonoBehaviour, IDragHandler, IEndDragHandler, IPo
         originalRectTransformSize = rectTransform.sizeDelta;
         changedRectTransformSize = originalRectTransformSize * sizeIncreaseScale;
 
-        wybrane = false;
+        isChosen = false;
     }
 
     // Update is called once per frame
