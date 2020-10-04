@@ -13,7 +13,6 @@ public enum Entity { Player, Monster, Both };
 public enum TreasureType { Equipment, Buff };
 public enum EqPart { Head, Chest, Hands, Legs, Feet, Ring, Weapon1, Weapon2 };
 
-
 public class ServerGameManager : NetworkBehaviour
 {
     //      Stored References       //
@@ -27,9 +26,9 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] GamePhase GamePhase = GamePhase.PreStart;
 
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
-    [SerializeField][SyncVar]  internal int activePlayerIndex = -1;
+    [SerializeField] [SyncVar] internal int activePlayerIndex = -1;
 
-    [SerializeField][SyncVar] internal int connectedPlayers = 0;
+    [SerializeField] [SyncVar] internal int connectedPlayers = 0;
     [SyncVar] internal int readyPlayers = 0;
 
     [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
@@ -47,12 +46,9 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] [SyncVar] internal short fightingPlayerLevel;
     [SerializeField] [SyncVar] internal short helpingPlayerLevel;
     [SerializeField] [SyncVar] internal short fightingPlayersLevel;
-    //[SerializeField] [SyncVar] int availableTreasures = 0;
 
     [SerializeField] [SyncVar] internal bool fightInProggres;
     [SyncVar] internal bool foughtInThisRound;
-    [SyncVar] internal bool canPlayersTrade = true;
-    //[SyncVar] internal bool canPlayersEquip = true;
 
     private void Start()
     {
@@ -169,7 +165,7 @@ public class ServerGameManager : NetworkBehaviour
     {
         if (fightInProggres)
         {
-            EndFight();
+            EndFight(true);
             return;
         }
 
@@ -187,6 +183,12 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
+    internal void TurnOwnerReadiness()
+    {
+        StartCoroutine(ServerTurnOwnerReadiness());
+    }
+
+    [Server]
     IEnumerator ServerTurnOwnerReadiness()
     {
         if (CustomNetworkManager.isServerBusy)
@@ -201,13 +203,7 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
-    [Server]
-    internal void TurnOwnerReadiness()
-    {
-        StartCoroutine(ServerTurnOwnerReadiness());
-    }
-
+    
     [Server]
     internal IEnumerator ServerAllPlayersReadiness()
     {
@@ -243,14 +239,21 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
-    void EndFight() // PowerCheck, Win or Lose -Effect, change bools to non-fight state
+    internal void EndFight( bool isFightSettled ) // PowerCheck, Win or Lose -Effect, change bools to non-fight state
     {
-        if (fightingPlayersLevel > fightingMonstersLevel) FightWon();
-        else FightLost();
+        if (isFightSettled) // Fight has a winner, so its settled and correct effect should occur
+        {
+            if (fightingPlayersLevel > fightingMonstersLevel) FightWon();
+            else FightLost();
+            foughtInThisRound = true;
+        }
+        else
+        {
+            foughtInThisRound = false; // If fight is canceled nobody wins and player can fight again
+        }
+
         readyPlayers = 0;
         fightInProggres = false;
-        foughtInThisRound = true;
-        canPlayersTrade = true;
         fightingPlayerNetId = NetworkInstanceId.Invalid;
         helpingPlayerNetId = NetworkInstanceId.Invalid;
         PlayerInGame.localPlayerInGame.EndFight();

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class MonsterCard : Door
+public class MonsterCard : Card
 {
     [SerializeField] internal List<GameObject> appliedBuffs = new List<GameObject>();
 
@@ -41,7 +41,6 @@ public class MonsterCard : Door
         serverGameManager.fightingPlayerNetId = fightingPlayer.netId;
         serverGameManager.UpdateFightingPlayersLevel();
         serverGameManager.SetMonsterLevelTo(((MonsterValue)cardValues).level);
-        serverGameManager.canPlayersTrade = false;
         serverGameManager.readyPlayers = 0;
 
         yield return new WaitForEndOfFrame();

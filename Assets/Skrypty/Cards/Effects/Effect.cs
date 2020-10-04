@@ -4,7 +4,7 @@ using UnityEngine;
 
 enum Target { Player, Monster, All };
 
-public class Effect : Door
+public class Effect : Card
 {
     [SerializeField]internal Target target;
     internal bool choosable = false;

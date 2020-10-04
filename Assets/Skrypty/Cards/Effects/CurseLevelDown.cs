@@ -15,6 +15,8 @@ public class CurseLevelDown : Effect
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
+        Debug.Log("CurseLevelDown: EffectOnUse");
+
         if (CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;

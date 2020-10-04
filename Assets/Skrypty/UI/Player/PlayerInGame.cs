@@ -507,7 +507,12 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcPutCardOnTable( NetworkInstanceId cardNetId )
+    internal void RpcPutCardOnTable( NetworkInstanceId cardNetId )
+    {
+        ClientPutCardOnTable(cardNetId);
+    }
+
+    internal void ClientPutCardOnTable( NetworkInstanceId cardNetId )
     {
         ClientScene.FindLocalObject(cardNetId).transform.SetParent(table);
     }
@@ -529,8 +534,10 @@ public class PlayerInGame : NetworkBehaviour
     void CmdUseCard( NetworkInstanceId cardNetId, NetworkInstanceId targetNetId )
     {
         Card card = ClientScene.FindLocalObject(cardNetId).GetComponent<Card>();
-        // Debug.Log("Cmd found Card to use: " + card.GetComponent<Card>().cardValues.name);
-        card.StartAwaitUseConfirmation(cardNetId, targetNetId); // Using Cards Effect on chosen target
+
+        Debug.Log("CmdUseCard: Card to use: " + card.GetComponent<Card>().cardValues.name);
+
+        StartCoroutine(card.InitializeAwaitUseConfirmation(targetNetId, this.netId)); // Using Cards effect on chosen target
     }
 
     public void EnableTable()
@@ -556,8 +563,14 @@ public class PlayerInGame : NetworkBehaviour
         {
             if (CustomNetworkManager.isServerBusy)
                 yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
+            Debug.Log("isServerBusy = true");
             CustomNetworkManager.isServerBusy = true;
+
             CmdDiscardCard(card.GetComponent<Card>().netId);
+
+            yield return new WaitForEndOfFrame();
+            Debug.Log("isServerBusy = false");
+            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -575,6 +588,7 @@ public class PlayerInGame : NetworkBehaviour
             if (CustomNetworkManager.isServerBusy)
                 yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
             CustomNetworkManager.isServerBusy = true;
+
             //Debug.Log("RpcDiscardCardsCoroutine!" + card);
             RpcDiscardCard(card.GetComponent<Card>().netId);
 
@@ -721,7 +735,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         opponentInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
 
-        Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
+        // Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
 
         if (serverGameManager.fightInProggres)
             localPlayerInGame.levelCounter.UpdateLevels();

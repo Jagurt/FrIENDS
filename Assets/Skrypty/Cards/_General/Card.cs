@@ -13,14 +13,14 @@ public class Card : NetworkBehaviour
 
     NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
     NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
-    short playersConfirmers = 0;
-    short playersDecliners = 0;
-    bool interrupted = false;
-    IEnumerator awaitUseConfirmation;
+    [SerializeField] short playersConfirmers = 0;
+    [SerializeField] short playersDecliners = 0;
+    [SerializeField] bool interrupted = false;
+    [SerializeField] IEnumerator awaitUseConfirmation;
 
     void Start()
     {
-        //Initialize();
+        Initialize();
 
         //deck = cardValues.deck;
         //transform.Find("CardDescription").GetComponent<TMPro.TextMeshProUGUI>().text = cardValues.description;
@@ -44,24 +44,44 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal virtual void StartAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
+    internal virtual IEnumerator InitializeAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
     {
-        serverGameManager.StoredCardUsesToConfirm.Add(this.gameObject);
+        Debug.Log("InitializeAwaitUseConfirmation() in - " + this.gameObject);
+
         this.targetNetId = targetNetId;
         this.ownerNetId = ownerNetId;
 
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+        RpcInitializeAwaitUseConfirmation();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
+
         StartCoroutine(awaitUseConfirmation);
+    }
+
+    [ClientRpc]
+    internal virtual void RpcInitializeAwaitUseConfirmation()
+    {
+        Debug.Log("RpcInitializeAwaitUseConfirmation() in - " + this.gameObject);
+
+        serverGameManager.StoredCardUsesToConfirm.Add(this.gameObject);
+        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
     }
 
     [Server]
     internal virtual IEnumerator AwaitUseConfirmation()
     {
+        Debug.Log("AwaitUseConfirmation() in - " + this.gameObject);
+
         while (serverGameManager.StoredCardUsesToConfirm[0] != this.gameObject)
             yield return new WaitForSecondsRealtime(0.10f);
-
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-        StartCoroutine(PlayerInGame.localPlayerInGame.ServerPutCardOnTable(this.netId));
+        PlayerInGame.localPlayerInGame.RpcPutCardOnTable(this.netId);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
@@ -81,7 +101,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void ConfirmUse( bool confirm )
+    internal void ConfirmUse( bool confirm ) // TODO: Make a button 
     {
         if (confirm) playersConfirmers++;
         else playersDecliners++;
@@ -90,7 +110,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void ConfirmationCheck(bool endOfTime)
+    internal void ConfirmationCheck( bool endOfTime )
     {
         if (playersDecliners >= Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
         {
@@ -113,9 +133,6 @@ public class Card : NetworkBehaviour
     [Server]
     virtual internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
-        yield return new WaitForEndOfFrame();
-
-        playersConfirmers = 0;
-        playersDecliners = 0;
+        throw new NotImplementedException();
     }
 }
