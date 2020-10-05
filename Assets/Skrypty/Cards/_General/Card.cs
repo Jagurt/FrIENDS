@@ -8,11 +8,16 @@ using UnityEngine.UI;
 public class Card : NetworkBehaviour
 {
     [SerializeField] internal CardValues cardValues;
-    [SerializeField] internal Deck deck;
+    internal Deck deck;
     protected ServerGameManager serverGameManager;
 
     NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
     NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
+
+    [SerializeField] private GameObject ConfirmUseButton;
+    [SerializeField] private GameObject InterruptUseButton;
+    [SerializeField] private GameObject DeclineUseButton;
+
     [SerializeField] short playersConfirmers = 0;
     [SerializeField] short playersDecliners = 0;
     [SerializeField] bool interrupted = false;
@@ -88,6 +93,8 @@ public class Card : NetworkBehaviour
 
         for (int i = 0; i < 30; i++)
         {
+            Debug.Log("Time for \"" + gameObject + "\" to be auto-used: " + Math.Abs(i - 30) / 10f);
+
             if (interrupted)
             {
                 interrupted = false;
@@ -101,12 +108,18 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void ConfirmUse( bool confirm ) // TODO: Make a button 
+    internal void ConfirmUseCard( bool confirm ) // TODO: Make a button 
     {
         if (confirm) playersConfirmers++;
         else playersDecliners++;
 
         ConfirmationCheck(false);
+    }
+
+    [Server]
+    internal void InterruptUseCard()  
+    {
+        interrupted = true;
     }
 
     [Server]
@@ -119,7 +132,6 @@ public class Card : NetworkBehaviour
         }
         else if (playersDecliners + playersConfirmers == serverGameManager.connectedPlayers)
         {
-            // TODO: In case of draw - random outcome!
             StartCoroutine(EffectOnUse(targetNetId));
             StopCoroutine(awaitUseConfirmation);
         }

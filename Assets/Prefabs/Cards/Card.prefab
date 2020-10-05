@@ -332,6 +332,7 @@ GameObject:
   - component: {fileID: 7879382354739925064}
   - component: {fileID: 4010741786815952893}
   - component: {fileID: 7242644013108893139}
+  - component: {fileID: 8691247249379017514}
   m_Layer: 5
   m_Name: AcceptUseButton
   m_TagString: Untagged
@@ -438,6 +439,18 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &8691247249379017514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4066180211659952005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743ab429f62ccc14d8cbc0497e27447a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6006036617368596565
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,7 +875,7 @@ GameObject:
   - component: {fileID: 4064537777940230735}
   - component: {fileID: 3106540064118958096}
   m_Layer: 5
-  m_Name: InterruptButton
+  m_Name: InterruptUseButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

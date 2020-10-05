@@ -17,7 +17,7 @@ public class PlayerInGame : NetworkBehaviour
 
     //      Statystyki      //
     [SyncVar] [SerializeField] private short level = 1; // Level of a player
-    
+
     public short Level
     {
         get => level;
@@ -538,6 +538,26 @@ public class PlayerInGame : NetworkBehaviour
         Debug.Log("CmdUseCard: Card to use: " + card.GetComponent<Card>().cardValues.name);
 
         StartCoroutine(card.InitializeAwaitUseConfirmation(targetNetId, this.netId)); // Using Cards effect on chosen target
+    }
+
+    internal void ConfirmUseCard( bool confirm )
+    {
+        CmdConfirmUseCard(confirm);
+    }
+
+    void CmdConfirmUseCard( bool confirm )
+    {
+        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().ConfirmUseCard(confirm);
+    }
+
+    internal void InterruptUseCard()
+    {
+        CmdInterruptUseCard();
+    }
+
+    void CmdInterruptUseCard()
+    {
+        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().InterruptUseCard();
     }
 
     public void EnableTable()
