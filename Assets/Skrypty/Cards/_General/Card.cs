@@ -14,9 +14,9 @@ public class Card : NetworkBehaviour
     NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
     NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
 
-    [SerializeField] private GameObject ConfirmUseButton;
-    [SerializeField] private GameObject InterruptUseButton;
-    [SerializeField] private GameObject DeclineUseButton;
+    internal GameObject confirmUseButton;
+    internal GameObject interruptUseButton;
+    internal GameObject declineUseButton;
 
     [SerializeField] short playersConfirmers = 0;
     [SerializeField] short playersDecliners = 0;
@@ -41,6 +41,12 @@ public class Card : NetworkBehaviour
         transform.Find("CardImage").GetComponent<Image>().sprite = cardValues.sprite;
         serverGameManager = ServerGameManager.serverGameManager;
         awaitUseConfirmation = AwaitUseConfirmation();
+
+        confirmUseButton = Instantiate(CardsButtons.confirmUseButton, transform);
+        interruptUseButton = Instantiate(CardsButtons.interruptUseButton, transform);
+        declineUseButton = Instantiate(CardsButtons.declineUseButton, transform);
+
+        SetActiveCardUseButtons(false);
     }
 
     internal virtual void UseCard()
@@ -86,7 +92,7 @@ public class Card : NetworkBehaviour
             yield return new WaitForSecondsRealtime(0.10f);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-        PlayerInGame.localPlayerInGame.RpcPutCardOnTable(this.netId);
+        RpcAwaitUseConfirmation();
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
@@ -117,7 +123,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void InterruptUseCard()  
+    internal void InterruptUseCard()
     {
         interrupted = true;
     }
@@ -146,5 +152,28 @@ public class Card : NetworkBehaviour
     virtual internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
         throw new NotImplementedException();
+    }
+
+    [ClientRpc]
+    void RpcAwaitUseConfirmation()
+    {
+        SetActiveCardUseButtons(true);
+        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
+    }
+
+    internal void SetActiveCardUseButtons( bool active )
+    {
+        if (active)
+        {
+            confirmUseButton.SetActive(true);
+            interruptUseButton.SetActive(true);
+            declineUseButton.SetActive(true);
+        }
+        else
+        {
+            confirmUseButton.SetActive(false);
+            interruptUseButton.SetActive(false);
+            declineUseButton.SetActive(false);
+        }
     }
 }

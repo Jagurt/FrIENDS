@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2133027474758886725}
   - component: {fileID: 2133027474758886724}
+  - component: {fileID: 2590809637860850855}
   - component: {fileID: 5394087250291003360}
   m_Layer: 0
   m_Name: DecksOnServer
@@ -93,6 +94,24 @@ MonoBehaviour:
   discardedtreasuresDeck: {fileID: 0}
   discardedHelpHandsDeck: {fileID: 0}
   discardedSpellsDeck: {fileID: 0}
+--- !u!114 &2590809637860850855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133027474758886722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1ca3defcd7d3174c9c44e1e84de18c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ConfirmUseButton: {fileID: 2404555114812605433, guid: 5e6a48f5d802aab44857b204dc780fc7,
+    type: 3}
+  InterruptUseButton: {fileID: 1574636453847298435, guid: 33df11a273ed6a94aaf8454c24147df2,
+    type: 3}
+  DeclineUseButton: {fileID: 6492028141064598257, guid: 63a3541f8b807004a8daddfdd0685cfd,
+    type: 3}
 --- !u!114 &5394087250291003360
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -545,6 +545,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdConfirmUseCard(confirm);
     }
 
+    [Command]
     void CmdConfirmUseCard( bool confirm )
     {
         serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().ConfirmUseCard(confirm);
@@ -555,6 +556,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdInterruptUseCard();
     }
 
+    [Command]
     void CmdInterruptUseCard()
     {
         serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().InterruptUseCard();
@@ -583,13 +585,11 @@ public class PlayerInGame : NetworkBehaviour
         {
             if (CustomNetworkManager.isServerBusy)
                 yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-            Debug.Log("isServerBusy = true");
             CustomNetworkManager.isServerBusy = true;
 
             CmdDiscardCard(card.GetComponent<Card>().netId);
 
             yield return new WaitForEndOfFrame();
-            Debug.Log("isServerBusy = false");
             CustomNetworkManager.isServerBusy = false;
         }
     }
@@ -636,6 +636,9 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardNetId);
         Card cardScript = card.GetComponent<Card>();
         Debug.Log("Rpc discarding card : " + card);
+
+        cardScript.SetActiveCardUseButtons(false);
+        serverGameManager.StoredCardUsesToConfirm.Remove(card);
 
         switch (cardScript.cardValues.deck)
         {

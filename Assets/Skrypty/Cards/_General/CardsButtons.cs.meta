@@ -1,10 +1,9 @@
 fileFormatVersion: 2
-guid: 2d5cadba4bf59494f8aecdb5862c281e
+guid: a1ca3defcd7d3174c9c44e1e84de18c9
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - cardValues: {instanceID: 0}
   - ConfirmUseButton: {fileID: 2404555114812605433, guid: 5e6a48f5d802aab44857b204dc780fc7,
       type: 3}
   - InterruptUseButton: {fileID: 1574636453847298435, guid: 33df11a273ed6a94aaf8454c24147df2,
