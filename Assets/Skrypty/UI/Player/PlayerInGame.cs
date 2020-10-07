@@ -175,6 +175,7 @@ public class PlayerInGame : NetworkBehaviour
 
         card.GetComponent<Draggable>().enabled = true;
         card.GetComponent<Card>().SetActiveCardUseButtons(false);
+        serverGameManager.StoredCardUsesToConfirm.Remove(card);
 
         //Debug.Log("Equipping " + equipmentCard.cardValues.name + " in the " + equipmentCard.eqPart + " slot");
         equippedItems.Add(card);                                            // player.equippedItems.Add(this.gameObject);                                                   
@@ -388,6 +389,7 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardsNetId);
         card.GetComponent<Card>().SetActiveCardUseButtons(false);
         card.GetComponent<Draggable>().enabled = true;
+        serverGameManager.StoredCardUsesToConfirm.Remove(card);
         ReceiveCard(card, worksOnDrawingPlayer, choice);
     }
 

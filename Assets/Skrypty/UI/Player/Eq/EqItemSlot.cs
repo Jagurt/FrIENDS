@@ -108,7 +108,6 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         Debug.Log("ReturnEq()");
 
         heldItem.transform.SetParent(PlayerInGame.localPlayerInGame.handContent);
-        heldItem.gameObject.SetActive(true);
         heldItem.GetComponent<CanvasGroup>().blocksRaycasts = true;
         heldItem = null;
         eqImage.sprite = placeholderImage;
