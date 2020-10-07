@@ -79,7 +79,7 @@ public class ChoicePanel : MonoBehaviour
             Destroy(placeholderScript.gameObject); // Destroying placeholders
         }
 
-        PlayerInGame.localPlayerInGame.RequestDiscardCards(cardsToDiscard); // Executing discarding cards
+        StartCoroutine(PlayerInGame.localPlayerInGame.DiscardCard(cardsToDiscard)); // Executing discarding cards
         PlayerInGame.localPlayerInGame.storedObject = chosenDoors;
 
         if (worksOnPlayer)

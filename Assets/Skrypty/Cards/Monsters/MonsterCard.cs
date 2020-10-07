@@ -60,7 +60,6 @@ public class MonsterCard : Card
         PlayerInGame.localPlayerInGame.ProgressButton.ActivateButton();
         PlayerInGame.localPlayerInGame.HelpButton.ActivateButton();
         PlayerInGame.localPlayerInGame.levelCounter.StartFight();
-        PlayerInGame.localPlayerInGame.DisableTable();
         InfoPanel.Alert("Fight with " + cardValues.name + " starts!");
     }
 

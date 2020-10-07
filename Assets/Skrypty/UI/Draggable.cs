@@ -109,16 +109,16 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void OnEndDrag( PointerEventData eventData )
     {
-        if (parentToReturnTo.GetComponent<DrawCardZone>() != null)  // Sprawdzam czy miejsce do którego idzie
-        {                                                           // karta ma DrawCardZone skrypt(jest deckiem, więc WRACA do niego), jeśli tak
+        if (parentToReturnTo.GetComponent<DrawCardZone>() != null)  // Card goes back to Deck
+        {
             ReturnToParent();
-            this.transform.position = parentToReturnTo.position;    // to muszę zmienić pozycję karty na pozycję decku
+            this.transform.position = parentToReturnTo.position;
         }
-        else if (deckToReturnTo)                                    // jeśli nie wraca do decku to sprawdzam czy karta jest wzięta z decku
-        {                                                           // jeśli jest wzięta z decku to muszę aktywować następną kartę w decku do wzięcia
+        else if (deckToReturnTo)                                    
+        {                                                           
             GetComponent<CanvasGroup>().blocksRaycasts = true;
         }
-        else if (                                                   // jeśli karta nie jest wzięta z decku i nie jest dropowana na konkretny DropZone to wraca na poprzednie miejsce
+        else if (                                                   
             eventData.pointerCurrentRaycast.gameObject == null ||
             eventData.pointerCurrentRaycast.gameObject.transform == parentToReturnTo ||
             eventData.pointerCurrentRaycast.gameObject.GetComponent<DropZone>() == null)
@@ -126,10 +126,11 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
             ReturnToParent();
         }
 
-        PlayerInGame.localPlayerInGame.DisableTable();
+        GetComponent<CanvasGroup>().blocksRaycasts = true;
 
         if (placeholder)
             Destroy(placeholder);
+
     }
 
     public void ReturnToParent()
@@ -138,7 +139,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
         if (placeholder)
             this.transform.SetSiblingIndex(placeholder.transform.GetSiblingIndex());
-            
+
         GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 }

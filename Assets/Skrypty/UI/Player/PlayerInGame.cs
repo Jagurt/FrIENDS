@@ -173,6 +173,9 @@ public class PlayerInGame : NetworkBehaviour
         if (hasAuthority)
             Destroy(card.GetComponent<Draggable>().Placeholder);
 
+        card.GetComponent<Draggable>().enabled = true;
+        card.GetComponent<Card>().SetActiveCardUseButtons(false);
+
         //Debug.Log("Equipping " + equipmentCard.cardValues.name + " in the " + equipmentCard.eqPart + " slot");
         equippedItems.Add(card);                                            // player.equippedItems.Add(this.gameObject);                                                   
 
@@ -183,7 +186,6 @@ public class PlayerInGame : NetworkBehaviour
         LocalUpdateOwnedCards();
         LocalUpdateLevelUI();
     }
-
 
     [ClientRpc]
     void RpcEquip( NetworkInstanceId cardNetId ) // Calling equiping card on all clients
@@ -383,8 +385,10 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     private void RpcReceiveCard( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
     {
-        GameObject drawnCard = ClientScene.FindLocalObject(cardsNetId);
-        ReceiveCard(drawnCard, worksOnDrawingPlayer, choice);
+        GameObject card = ClientScene.FindLocalObject(cardsNetId);
+        card.GetComponent<Card>().SetActiveCardUseButtons(false);
+        card.GetComponent<Draggable>().enabled = true;
+        ReceiveCard(card, worksOnDrawingPlayer, choice);
     }
 
     IEnumerator RpcReceiveCardCoroutine( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
@@ -568,18 +572,7 @@ public class PlayerInGame : NetworkBehaviour
         table.GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 
-    internal void DisableTable()
-    {
-        table.GetComponent<CanvasGroup>().blocksRaycasts = false;
-    }
-
-    // Odrzucanie kart
-    public void RequestDiscardCards( List<GameObject> cardsToDiscard )
-    {
-        StartCoroutine(ClientDiscardCard(cardsToDiscard));
-    }
-
-    IEnumerator ClientDiscardCard( List<GameObject> cardsToDiscard )
+    internal IEnumerator DiscardCard( List<GameObject> cardsToDiscard )
     {
         foreach (var card in cardsToDiscard)
         {
@@ -639,6 +632,7 @@ public class PlayerInGame : NetworkBehaviour
 
         cardScript.SetActiveCardUseButtons(false);
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
+        card.GetComponent<Draggable>().enabled = true;
 
         switch (cardScript.cardValues.deck)
         {

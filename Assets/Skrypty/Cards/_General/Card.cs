@@ -81,6 +81,8 @@ public class Card : NetworkBehaviour
 
         serverGameManager.StoredCardUsesToConfirm.Add(this.gameObject);
         PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
+
+        GetComponent<Draggable>().enabled = false;
     }
 
     [Server]
@@ -131,20 +133,23 @@ public class Card : NetworkBehaviour
     [Server]
     internal void ConfirmationCheck( bool endOfTime )
     {
-        if (playersDecliners >= Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
+        if (playersDecliners > Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
         {
+            StopCoroutine(awaitUseConfirmation);
             StartCoroutine(ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>().ServerReceiveCard(this.netId, ownerNetId, false, false));
-            StopCoroutine(awaitUseConfirmation);
-        }
-        else if (playersDecliners + playersConfirmers == serverGameManager.connectedPlayers)
-        {
-            StartCoroutine(EffectOnUse(targetNetId));
-            StopCoroutine(awaitUseConfirmation);
+            awaitUseConfirmation = AwaitUseConfirmation(); // Reassigning Coroutine to make it work next time
+
+            playersConfirmers = 0; // Reseting values
+            playersDecliners = 0;
         }
         else if (endOfTime || playersConfirmers >= Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
         {
-            StartCoroutine(EffectOnUse(targetNetId));
             StopCoroutine(awaitUseConfirmation);
+            StartCoroutine(EffectOnUse(targetNetId));
+            awaitUseConfirmation = AwaitUseConfirmation();
+
+            playersConfirmers = 0;
+            playersDecliners = 0;
         }
     }
 

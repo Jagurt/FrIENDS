@@ -34,11 +34,15 @@ public class EquipmentCard : TreasureCard
             levelChange -= eqSlot.heldItem.GetComponent<EquipmentCard>().cardValues.level;
             player.Level += levelChange;
 
+            yield return new WaitForEndOfFrame();
+
             RpcSwitchEq(targetNetId);
         }
         else
         {
             player.Level += levelChange;
+
+            yield return new WaitForEndOfFrame();
 
             RpcEquip(targetNetId);
         }
@@ -52,6 +56,7 @@ public class EquipmentCard : TreasureCard
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();    // Finding player locally via its "NetworkInstanceId"
         player.LocalEquip(this.gameObject);
+        serverGameManager.StoredCardUsesToConfirm.Remove(gameObject);
     }
 
     [ClientRpc]

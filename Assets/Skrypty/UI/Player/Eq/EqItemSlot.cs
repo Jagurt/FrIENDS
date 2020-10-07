@@ -26,7 +26,6 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         }
 
         localPlayerInGame.Unequip(heldItem);
-        heldItem.SetActive(true);
 
         eventData.pointerDrag = heldItem;
         heldItem.GetComponent<Draggable>().OnBeginDrag(eventData);
@@ -99,7 +98,8 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         //Debug.Log("ReceiveEq(GameObject card) card - " + card);
 
         heldItem = card;
-        card.SetActive(false);
+        card.transform.SetParent(PlayerInGame.localPlayerInGame.playerCanvas.transform);
+        card.transform.position = new Vector3(-100, 0, 0);
         eqImage.sprite = card.GetComponentInChildren<Image>().sprite;
     }
 
