@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -36,7 +38,7 @@ public class BuffPlus5ToMonster : BuffCard
         var monster = ClientScene.FindLocalObject(monsterNetId); // Finding Monsters and Buffs Objects
         monster.GetComponent<MonsterCard>().appliedBuffs.Add(gameObject); // Adding buff do Monsters Applied Buffs List
         transform.SetParent(PlayerInGame.localPlayerInGame.table);    // Putting Buff Card on Table
-        PlayerInGame.localPlayerInGame.levelCounter.UpdateLevels();
+        PlayerInGame.localPlayerInGame.LevelCounter.UpdateLevels();
     }
 
     internal override void DispellEffect()

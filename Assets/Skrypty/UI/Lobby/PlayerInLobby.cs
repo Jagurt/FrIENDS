@@ -1,4 +1,6 @@
-﻿using TMPro;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -57,14 +59,12 @@ public class PlayerInLobby : NetworkBehaviour
     {
         readyToStart = !readyToStart;
         if (readyToStart)
-        {
             lobby.ReadyPlayer();
-        }
         else
-        {
             lobby.UnreadyPlayer();
-        }
-        // INWORK: zupdatowanie ikony gotowości ^
+
+        // TODO: Update Readiness Icon
+
         RpcSwitchReadiness(isOn);
     }
 

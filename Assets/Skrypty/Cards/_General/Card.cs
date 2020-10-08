@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,18 +16,22 @@ public class Card : NetworkBehaviour
     NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
     NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
 
-    internal GameObject confirmUseButton;
-    internal GameObject interruptUseButton;
-    internal GameObject declineUseButton;
+    GameObject confirmUseButton;
+    GameObject interruptUseButton;
+    GameObject interruptUseTimer;
+    GameObject declineUseButton;
 
-    [SerializeField] short playersConfirmers = 0;
-    [SerializeField] short playersDecliners = 0;
-    [SerializeField] bool interrupted = false;
+    [SerializeField] List<GameObject> playersConfirmers;
+    [SerializeField] List<GameObject> playersDecliners;
+    [SerializeField] [SyncVar] int interruptTimer = 0;
     [SerializeField] IEnumerator awaitUseConfirmation;
 
     void Start()
     {
         Initialize();
+
+        playersConfirmers = new List<GameObject>();
+        playersDecliners = new List<GameObject>();
 
         //deck = cardValues.deck;
         //transform.Find("CardDescription").GetComponent<TMPro.TextMeshProUGUI>().text = cardValues.description;
@@ -44,9 +50,10 @@ public class Card : NetworkBehaviour
 
         confirmUseButton = Instantiate(CardsButtons.confirmUseButton, transform);
         interruptUseButton = Instantiate(CardsButtons.interruptUseButton, transform);
+        interruptUseTimer = Instantiate(CardsButtons.interruptUseTimer, transform);
         declineUseButton = Instantiate(CardsButtons.declineUseButton, transform);
 
-        SetActiveCardUseButtons(false);
+        ClientSetActiveCardUseButtons(false);
     }
 
     internal virtual void UseCard()
@@ -99,15 +106,9 @@ public class Card : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
 
-        for (int i = 0; i < 30; i++)
+        for (interruptTimer = 0; interruptTimer < 30; interruptTimer++)
         {
-            Debug.Log("Time for \"" + gameObject + "\" to be auto-used: " + Math.Abs(i - 30) / 10f);
-
-            if (interrupted)
-            {
-                interrupted = false;
-                i -= 50;
-            }
+            //Debug.Log("Time for \"" + gameObject + "\" to be auto-used: " + Math.Abs(interruptTimer - 30) / 10f);
 
             yield return new WaitForSecondsRealtime(0.10f);
         }
@@ -115,11 +116,38 @@ public class Card : NetworkBehaviour
         ConfirmationCheck(true);
     }
 
-    [Server]
-    internal void ConfirmUseCard( bool confirm ) // TODO: Make a button 
+    [ClientRpc]
+    void RpcAwaitUseConfirmation()
     {
-        if (confirm) playersConfirmers++;
-        else playersDecliners++;
+        ClientSetActiveCardUseButtons(true);
+        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
+        StartCoroutine(ClientInterruptUseTimerUI());
+    }
+
+    [Client]
+    IEnumerator ClientInterruptUseTimerUI()
+    {
+        while (interruptTimer < 30 && interruptUseTimer.activeInHierarchy)
+        {
+            Debug.Log("Updating CardUseTimer in UI - " + (Math.Abs(interruptTimer - 30) / 10f).ToString("0.0"));
+            interruptUseTimer.GetComponent<TMPro.TextMeshProUGUI>().text = (Math.Abs(interruptTimer - 30) / 10f).ToString("0.0");
+            yield return new WaitForSecondsRealtime(0.05f);
+        }
+    }
+
+    [Server]
+    internal void ConfirmUseCard( bool confirm, GameObject player )
+    {
+        if (confirm && !playersConfirmers.Contains(player))
+        {
+            playersConfirmers.Add(player);
+            playersDecliners.Remove(player);
+        }
+        else if (!playersDecliners.Contains(player))
+        {
+            playersDecliners.Add(player);
+            playersConfirmers.Remove(player);
+        }
 
         ConfirmationCheck(false);
     }
@@ -127,29 +155,32 @@ public class Card : NetworkBehaviour
     [Server]
     internal void InterruptUseCard()
     {
-        interrupted = true;
+        interruptTimer -= 50;
     }
 
     [Server]
     internal void ConfirmationCheck( bool endOfTime )
     {
-        if (playersDecliners > Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
+        Debug.Log("Players To Decline Needed > " + serverGameManager.playersObjects.Count * 0.51f);
+        Debug.Log("Players To Confirm Needed >= " + serverGameManager.playersObjects.Count * 0.51f);
+
+        if (playersDecliners.Count > serverGameManager.playersObjects.Count * 0.51f)
         {
             StopCoroutine(awaitUseConfirmation);
             StartCoroutine(ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>().ServerReceiveCard(this.netId, ownerNetId, false, false));
             awaitUseConfirmation = AwaitUseConfirmation(); // Reassigning Coroutine to make it work next time
 
-            playersConfirmers = 0; // Reseting values
-            playersDecliners = 0;
+            playersConfirmers.Clear(); // Reseting values
+            playersDecliners.Clear();
         }
-        else if (endOfTime || playersConfirmers >= Mathf.Round(serverGameManager.connectedPlayers * 0.51f))
+        else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.51f)
         {
             StopCoroutine(awaitUseConfirmation);
             StartCoroutine(EffectOnUse(targetNetId));
             awaitUseConfirmation = AwaitUseConfirmation();
 
-            playersConfirmers = 0;
-            playersDecliners = 0;
+            playersConfirmers.Clear();
+            playersDecliners.Clear();
         }
     }
 
@@ -159,26 +190,22 @@ public class Card : NetworkBehaviour
         throw new NotImplementedException();
     }
 
-    [ClientRpc]
-    void RpcAwaitUseConfirmation()
-    {
-        SetActiveCardUseButtons(true);
-        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
-    }
-
-    internal void SetActiveCardUseButtons( bool active )
+    [Client]
+    internal void ClientSetActiveCardUseButtons( bool active )
     {
         if (active)
         {
             confirmUseButton.SetActive(true);
             interruptUseButton.SetActive(true);
             declineUseButton.SetActive(true);
+            interruptUseTimer.SetActive(true);
         }
         else
         {
             confirmUseButton.SetActive(false);
             interruptUseButton.SetActive(false);
             declineUseButton.SetActive(false);
+            interruptUseTimer.SetActive(false);
         }
     }
 }

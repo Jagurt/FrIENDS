@@ -1,20 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Serializable]
 public class SavePlayerData
 {
-    public int level;
+    public bool hasTurn;
     public bool isPlayerAlive;
+    public int level;
 
-    public int[] cardsInHand;
-
-    public int head;
-    public int chest;
-    public int hand;
-    public int legs;
-    public int feet;
-    public int ring;
-    public int weapon1;
-    public int weapon2;
+    public List<GameObject> equippedItems;
+    public List<GameObject> cardsInHand;
 }

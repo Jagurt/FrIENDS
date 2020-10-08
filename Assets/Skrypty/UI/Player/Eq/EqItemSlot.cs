@@ -69,7 +69,6 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         if (draggable != null && equipmentCard != null && 
             (equipmentCard.cardValues as EquipmentValue).eqPart == eqPart)
         {
-            equipmentCard.gameObject.SetActive(false);
             eqImage.sprite = equipmentCard.GetComponentInChildren<Image>().sprite;
         }
     }
@@ -109,7 +108,9 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
 
         heldItem.transform.SetParent(PlayerInGame.localPlayerInGame.handContent);
         heldItem.GetComponent<CanvasGroup>().blocksRaycasts = true;
+        heldItem.GetComponent<Draggable>().enabled = true;
         heldItem = null;
+
         eqImage.sprite = placeholderImage;
     }
 

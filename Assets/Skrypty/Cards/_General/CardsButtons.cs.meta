@@ -8,6 +8,8 @@ MonoImporter:
       type: 3}
   - InterruptUseButton: {fileID: 1574636453847298435, guid: 33df11a273ed6a94aaf8454c24147df2,
       type: 3}
+  - InterruptUseTimer: {fileID: 6232940169738062018, guid: 1312ada1676b4f34485a3d921d47ef0f,
+      type: 3}
   - DeclineUseButton: {fileID: 6492028141064598257, guid: 63a3541f8b807004a8daddfdd0685cfd,
       type: 3}
   executionOrder: 0

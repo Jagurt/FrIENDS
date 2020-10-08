@@ -90,7 +90,7 @@ public class TableDropZone : DropZone
         {
             borrowedCards[i].transform.SetParent(this.transform);
             borrowedCards[i].transform.SetSiblingIndex(borrowedCardPlaceholders[i].transform.GetSiblingIndex());
-            borrowedCards[i].GetComponent<CanvasGroup>().blocksRaycasts = true;
+            borrowedCards[i].GetComponent<Draggable>().enabled = true;
             Destroy(borrowedCardPlaceholders[i].gameObject);
         }
 

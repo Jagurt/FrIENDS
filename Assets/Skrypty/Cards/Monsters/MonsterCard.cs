@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -54,12 +56,13 @@ public class MonsterCard : Card
     [ClientRpc]
     void RpcInitiateFight()
     {
-        Debug.Log("RpcInititating fight with: " + this.gameObject);
+        //Debug.Log("RpcInititating fight with: " + this.gameObject);
         transform.SetParent(PlayerInGame.localPlayerInGame.table);
         serverGameManager.fightingMonsters.Add(this.gameObject);
         PlayerInGame.localPlayerInGame.ProgressButton.ActivateButton();
         PlayerInGame.localPlayerInGame.HelpButton.ActivateButton();
-        PlayerInGame.localPlayerInGame.levelCounter.StartFight();
+        PlayerInGame.localPlayerInGame.LevelCounter.StartFight();
+        ClientSetActiveCardUseButtons(false);
         InfoPanel.Alert("Fight with " + cardValues.name + " starts!");
     }
 
@@ -75,6 +78,6 @@ public class MonsterCard : Card
 
     virtual internal void FightEndEffect()
     {
-        throw new NotImplementedException();
+        
     }
 }

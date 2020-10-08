@@ -71,7 +71,7 @@ public class ChoicePanel : MonoBehaviour
         foreach (var placeholderScript in this.GetComponentsInChildren<CardChoicePlaceholder>())
         {
             placeholderScript.heldObject.transform.SetParent(PlayerInGame.localPlayerInGame.transform); // Throwing cards of choice panel to avoid unintended behaviour
-            placeholderScript.heldObject.GetComponent<CanvasGroup>().blocksRaycasts = true; // Enabling dragging of cards after chosing
+            placeholderScript.heldObject.GetComponent<Draggable>().enabled = true; // Enabling dragging of cards after chosing
 
             if (placeholderScript.heldObject != chosenDoors) // Setting unselected cards to discard
                 cardsToDiscard.Add(placeholderScript.heldObject);

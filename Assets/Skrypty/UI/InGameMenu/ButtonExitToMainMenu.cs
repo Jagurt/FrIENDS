@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ButtonInGameExit: MonoBehaviour
+public class ButtonExitToMainMenu : MonoBehaviour
 {
     Button button;
 

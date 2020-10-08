@@ -28,7 +28,6 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
     [SerializeField] [SyncVar] internal int activePlayerIndex = -1;
 
-    [SerializeField] [SyncVar] internal int connectedPlayers = 0;
     [SyncVar] internal int readyPlayers = 0;
 
     [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
@@ -76,7 +75,6 @@ public class ServerGameManager : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
-        this.connectedPlayers++;
         yield return new WaitForEndOfFrame();
 
         RpcReportPresence(connectedPlayersNetId);
@@ -108,7 +106,7 @@ public class ServerGameManager : NetworkBehaviour
     {
         this.readyPlayers++;
 
-        if (readyPlayers == connectedPlayers)
+        if (readyPlayers == playersObjects.Count)
         {
             switch (GamePhase)
             {
@@ -368,81 +366,7 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     void LoadGame()
-    {
-        SaveGameData data = SaveSystem.LoadGame();
-
-        if (data.playerXLevel.Count != playersObjects.Count)
-            Debug.LogError("Couldn't load the game. Number of Players Doesn't match");
-
-        for (int i = 0; i < playersObjects.Count; i++)
-        {
-            PlayerInGame playerScript = playersObjects[i].GetComponent<PlayerInGame>();
-            playerScript.Level = data.playerXLevel[i];
-            playerScript.isPlayerAlive = data.isPlayerXAlive[i];
-
-            foreach (var card in data.cardsInXHand[i])
-            {
-                serverDecksManager.SpawnCardByName(card, playerScript);
-            }
-
-            GameObject eqPiece = serverDecksManager.SpawnCardByName(data.playerXhead[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXchest[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXhands[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXlegs[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXfeet[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXring[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXweapon1[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-            eqPiece = null;
-
-            eqPiece = serverDecksManager.SpawnCardByName(data.playerXweapon2[i], playerScript);
-            if (eqPiece)
-                StartCoroutine(playerScript.ServerEquip(eqPiece.GetComponent<Card>().netId));
-        }
-
-        foreach (var card in data.cardsInDoorsDeck)
-        {
-            serverDecksManager.SpawnCardByName(card);
-        }
-
-        foreach (var card in data.cardsInTreasuresDeck)
-        {
-            serverDecksManager.SpawnCardByName(card);
-        }
-
-        foreach (var card in data.cardsInSpellsDeck)
-        {
-            serverDecksManager.SpawnCardByName(card);
-        }
-
-        foreach (var card in data.cardsInHelpHandsDeck)
-        {
-            serverDecksManager.SpawnCardByName(card);
-        }
+    { 
+    
     }
 }

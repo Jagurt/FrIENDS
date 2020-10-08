@@ -8,6 +8,7 @@ public class MainMenu : MonoBehaviour
 
     internal static Transform startGameMenu;
     internal static Transform joinGameMenu;
+    internal static Transform hostGameMenu;
     internal static Transform optionsMenu;
     internal static Transform profilePanel;
     internal static Transform lobby;
@@ -25,6 +26,7 @@ public class MainMenu : MonoBehaviour
         mainMenu = this;
         NetworkManager = FindObjectOfType<CustomNetworkManager>();
         startGameMenu = transform.parent.Find("StartGameMenu");
+        hostGameMenu = transform.parent.Find("HostGameMenu");
         joinGameMenu = transform.parent.Find("JoinGameMenu");
         optionsMenu = transform.parent.Find("OptionsMenu");
         profilePanel = transform.parent.Find("ProfilePanel");

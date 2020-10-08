@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618 // Typ lub składowa jest przestarzała
+﻿#pragma warning disable CS0618 // Type too old lul
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -33,8 +33,6 @@ public class PlayerInGame : NetworkBehaviour
     [SyncVar] private short ownedCardsLimit; // Limits maximum number of cards player can own at end of their turn.
 
     [SyncVar] private short luck;       // Modifies random outcomes of cards effects, Not Implemented Yet
-    [SyncVar] internal bool canPlayerDrawHelpHand = false;  // Not Implemented Yet
-    [SyncVar] internal bool canPlayerDrawSpells = false;    // Not Implemented Yet
 
     [SyncVar] internal bool isPlayerAlive;                           // Player cannot perform any actions until ressurected, Not Implemented Yet
     [SyncVar] [SerializeField] internal bool hasTurn = false; // Certain actions are only available when player has turn.
@@ -54,7 +52,7 @@ public class PlayerInGame : NetworkBehaviour
 
     internal ChoicePanel choicePanel;    // Reference to "ChoicePanel" script that manages choosing cards.
     private TradePanel tradePanel;      // Referance to "TradePanel" script that manages trading cards with other players.
-    internal LevelCounter levelCounter;
+    internal LevelCounter LevelCounter;
 
     //      Equipment       //
     [SerializeField] internal List<GameObject> equippedItems = new List<GameObject>();
@@ -92,8 +90,8 @@ public class PlayerInGame : NetworkBehaviour
             tradePanel = playerCanvas.transform.Find("TradePanel").GetComponent<TradePanel>();
             tradePanel.Initialize();
 
-            levelCounter = playerCanvas.transform.Find("LevelCounter").GetComponent<LevelCounter>();
-            levelCounter.Initialize();
+            LevelCounter = playerCanvas.transform.Find("LevelCounter").GetComponent<LevelCounter>();
+            LevelCounter.Initialize();
 
             ///////////////////////////////////////////////////
         }
@@ -174,7 +172,7 @@ public class PlayerInGame : NetworkBehaviour
             Destroy(card.GetComponent<Draggable>().Placeholder);
 
         card.GetComponent<Draggable>().enabled = true;
-        card.GetComponent<Card>().SetActiveCardUseButtons(false);
+        card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
 
         //Debug.Log("Equipping " + equipmentCard.cardValues.name + " in the " + equipmentCard.eqPart + " slot");
@@ -387,7 +385,7 @@ public class PlayerInGame : NetworkBehaviour
     private void RpcReceiveCard( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
     {
         GameObject card = ClientScene.FindLocalObject(cardsNetId);
-        card.GetComponent<Card>().SetActiveCardUseButtons(false);
+        card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
         card.GetComponent<Draggable>().enabled = true;
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
         ReceiveCard(card, worksOnDrawingPlayer, choice);
@@ -554,7 +552,7 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdConfirmUseCard( bool confirm )
     {
-        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().ConfirmUseCard(confirm);
+        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().ConfirmUseCard(confirm, gameObject);
     }
 
     internal void InterruptUseCard()
@@ -568,24 +566,12 @@ public class PlayerInGame : NetworkBehaviour
         serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().InterruptUseCard();
     }
 
-    public void EnableTable()
-    {
-        FindTable();
-        table.GetComponent<CanvasGroup>().blocksRaycasts = true;
-    }
-
     internal IEnumerator DiscardCard( List<GameObject> cardsToDiscard )
     {
         foreach (var card in cardsToDiscard)
         {
-            if (CustomNetworkManager.isServerBusy)
-                yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-            CustomNetworkManager.isServerBusy = true;
-
             CmdDiscardCard(card.GetComponent<Card>().netId);
-
-            yield return new WaitForEndOfFrame();
-            CustomNetworkManager.isServerBusy = false;
+            yield return null;
         }
     }
 
@@ -632,7 +618,7 @@ public class PlayerInGame : NetworkBehaviour
         Card cardScript = card.GetComponent<Card>();
         Debug.Log("Rpc discarding card : " + card);
 
-        cardScript.SetActiveCardUseButtons(false);
+        cardScript.ClientSetActiveCardUseButtons(false);
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
         card.GetComponent<Draggable>().enabled = true;
 
@@ -757,7 +743,7 @@ public class PlayerInGame : NetworkBehaviour
         // Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
 
         if (serverGameManager.fightInProggres)
-            localPlayerInGame.levelCounter.UpdateLevels();
+            localPlayerInGame.LevelCounter.UpdateLevels();
     }
 
     [Command]
@@ -1307,5 +1293,25 @@ public class PlayerInGame : NetworkBehaviour
         if (equipment.GetChild((int)eq).GetComponent<EqItemSlot>().heldItem)
             return equipment.GetChild((int)eq).GetComponent<EqItemSlot>().heldItem.name;
         else return null;
+    }
+
+    internal SavePlayerData GetPlayerData()
+    {
+        Debug.Log("Saving Player - " + NickName);
+
+        SavePlayerData playerData = new SavePlayerData();
+
+        playerData.hasTurn = hasTurn;
+        playerData.isPlayerAlive = isPlayerAlive;
+        playerData.level = level;
+
+        List<GameObject> cardsInHand = new List<GameObject>();
+        foreach (var card in handContent)
+            cardsInHand.Add(card as GameObject);
+
+        playerData.cardsInHand = cardsInHand;
+        playerData.equippedItems = equippedItems;
+
+        return playerData;
     }
 }

@@ -17,8 +17,8 @@ public class CardChoicePlaceholder : MonoBehaviour, IPointerClickHandler
     {
         Debug.Log("Initializating Placeholder For - " + objectToHold);
 
-        if (objectToHold.GetComponent<CanvasGroup>())
-            objectToHold.GetComponent<CanvasGroup>().blocksRaycasts = false; // Preventing cards in choicePanel from being dragged
+        if (objectToHold.GetComponent<Draggable>())
+            objectToHold.GetComponent<Draggable>().enabled = false; // Preventing cards in choicePanel from being dragged
         else
             objectToHold.GetComponent<OpponentInPanel>().animating = false; // Prevent EnemyPanel from being animated
 

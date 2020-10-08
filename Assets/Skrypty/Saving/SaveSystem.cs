@@ -6,20 +6,18 @@ public static class SaveSystem
 {
     public static void SaveGame()
     {
-        BinaryFormatter formatter = new BinaryFormatter();
-        string path = Application.persistentDataPath + "/SavedGames.puff";
-        FileStream stream = new FileStream(path, FileMode.Create);
+        string gameData = JsonUtility.ToJson(new SaveGameData());
+        File.WriteAllText(Application.persistentDataPath + "/TestSave.json", gameData);
 
-        SaveGameData data = new SaveGameData(ServerGameManager.serverGameManager.playersObjects, ServerGameManager.serverGameManager.ServerDecksManager);
-
-        formatter.Serialize(stream, data);
-        stream.Close();
+        Debug.Log("Saving in: " + Application.persistentDataPath);
     }
 
     public static SaveGameData LoadGame()
     {
-        string path = Application.persistentDataPath + "/SavedGames.puff";
-        if(File.Exists(path))
+        throw new System.NotImplementedException();
+
+        string path = Application.persistentDataPath + "/TestSave.json";
+        if (File.Exists(path))
         {
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream stream = new FileStream(path, FileMode.Open);

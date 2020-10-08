@@ -6,10 +6,12 @@ public class CardsButtons : MonoBehaviour
 {
     [SerializeField] private GameObject ConfirmUseButton;
     [SerializeField] private GameObject InterruptUseButton;
+    [SerializeField] private GameObject InterruptUseTimer;
     [SerializeField] private GameObject DeclineUseButton;
 
     static internal GameObject confirmUseButton;
     static internal GameObject interruptUseButton;
+    static internal GameObject interruptUseTimer;
     static internal GameObject declineUseButton;
 
     void Start()
@@ -18,6 +20,7 @@ public class CardsButtons : MonoBehaviour
         {
             confirmUseButton = ConfirmUseButton;
             interruptUseButton = InterruptUseButton;
+            interruptUseTimer = InterruptUseTimer;
             declineUseButton = DeclineUseButton;
         }
         else

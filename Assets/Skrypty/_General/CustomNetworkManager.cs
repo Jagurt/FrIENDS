@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;

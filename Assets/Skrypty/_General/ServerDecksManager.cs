@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#pragma warning disable CS0618 // Type too old lul
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -22,7 +24,7 @@ public class ServerDecksManager : NetworkBehaviour
     [SerializeField] Transform discardedtreasuresDeck;
     [SerializeField] Transform discardedHelpHandsDeck;
     [SerializeField] Transform discardedSpellsDeck;
-    
+
     public List<GameObject> Doors { get => doors; }
     public List<GameObject> Treasures { get => treasures; }
     public List<GameObject> HelpHands { get => helpHands; }
@@ -168,28 +170,40 @@ public class ServerDecksManager : NetworkBehaviour
     }
 
     [Server]
-    public GameObject SpawnCardByName(string name, PlayerInGame owner = null )
+    public GameObject SpawnCardByName( string name, PlayerInGame owner = null )
     {
         GameObject cardToSpawn = null;
 
         foreach (var card in Doors)
             if (card.name == name)
+            {
                 cardToSpawn = card;
+                break;
+            }
 
         if (cardToSpawn == null)
             foreach (var card in Treasures)
                 if (card.name == name)
+                {
                     cardToSpawn = card;
+                    break;
+                }
 
         if (cardToSpawn == null)
             foreach (var card in Spells)
                 if (card.name == name)
+                {
                     cardToSpawn = card;
+                    break;
+                }
 
         if (cardToSpawn == null)
             foreach (var card in HelpHands)
                 if (card.name == name)
+                {
                     cardToSpawn = card;
+                    break;
+                }
 
         if (cardToSpawn == null) // TODO : Check if string was null
             return null;

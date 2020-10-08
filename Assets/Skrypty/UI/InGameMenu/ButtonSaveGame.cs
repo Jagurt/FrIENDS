@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ButtonReturnToGame : MonoBehaviour
+public class ButtonSaveGame : MonoBehaviour
 {
     Button button;
 
     void Start()
     {
         button = GetComponent<Button>();
-        button.onClick.AddListener(delegate { OnClick(); } );
+        button.onClick.AddListener(delegate { OnClick(); });
     }
 
     void OnClick()
     {
-        PlayerInGame.localPlayerInGame.playerCanvas.transform.Find("InGameMenu").gameObject.SetActive(false);
+        SaveSystem.SaveGame();
     }
 }

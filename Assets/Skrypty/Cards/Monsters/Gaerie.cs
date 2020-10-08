@@ -9,10 +9,4 @@ public class Gaerie : MonsterCard
         serverGameManager = ServerGameManager.serverGameManager;
         Initialize();
     }
-
-    [Server]
-    override internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
-    {
-        return base.EffectOnUse(targetNetId);
-    }
 }
