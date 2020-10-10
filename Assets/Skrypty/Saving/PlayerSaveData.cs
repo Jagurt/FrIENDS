@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class SavePlayerData
+public class PlayerSaveData
 {
     public bool hasTurn;
     public bool isPlayerAlive;
     public int level;
 
-    public List<GameObject> equippedItems;
-    public List<GameObject> cardsInHand;
+    public List<string> equippedItems;
+    public List<string> cardsInHand;
 }

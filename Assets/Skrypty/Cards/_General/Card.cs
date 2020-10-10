@@ -129,7 +129,7 @@ public class Card : NetworkBehaviour
     {
         while (interruptTimer < 30 && interruptUseTimer.activeInHierarchy)
         {
-            Debug.Log("Updating CardUseTimer in UI - " + (Math.Abs(interruptTimer - 30) / 10f).ToString("0.0"));
+            //Debug.Log("Updating CardUseTimer in UI - " + (Math.Abs(interruptTimer - 30) / 10f).ToString("0.0"));
             interruptUseTimer.GetComponent<TMPro.TextMeshProUGUI>().text = (Math.Abs(interruptTimer - 30) / 10f).ToString("0.0");
             yield return new WaitForSecondsRealtime(0.05f);
         }
@@ -207,5 +207,10 @@ public class Card : NetworkBehaviour
             declineUseButton.SetActive(false);
             interruptUseTimer.SetActive(false);
         }
+    }
+
+    internal string GetCardData()
+    {
+        return cardValues.name;
     }
 }

@@ -57,7 +57,7 @@ public class EquipmentCard : TreasureCard
     void RpcEquip( NetworkInstanceId targetNetId )
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();    // Finding player locally via its "NetworkInstanceId"
-        player.LocalEquip(this.gameObject);
+        player.ClientEquip(this.gameObject);
         serverGameManager.StoredCardUsesToConfirm.Remove(gameObject);
     }
 
@@ -65,6 +65,6 @@ public class EquipmentCard : TreasureCard
     void RpcSwitchEq( NetworkInstanceId targetNetId )
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();    // Finding player locally via its "NetworkInstanceId"
-        player.LocalSwitchEq(this.netId);
+        player.ClientSwitchEq(this.netId);
     }
 }

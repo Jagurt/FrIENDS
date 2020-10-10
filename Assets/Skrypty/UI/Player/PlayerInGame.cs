@@ -97,7 +97,8 @@ public class PlayerInGame : NetworkBehaviour
         }
         else // If player doesn't own this object
         {
-            Debug.Log("localPlayerInGame - " + localPlayerInGame);
+            // Debug.Log("localPlayerInGame - " + localPlayerInGame);
+            handContent = transform;
 
             if (localPlayerInGame)      // If local player static variable has been set by local players object
                                         // Initializing enemy panel ui object for local player
@@ -166,7 +167,7 @@ public class PlayerInGame : NetworkBehaviour
         CustomNetworkManager.isServerBusy = false;
     }
 
-    internal void LocalEquip( GameObject card )
+    internal void ClientEquip( GameObject card )
     {
         if (hasAuthority)
             Destroy(card.GetComponent<Draggable>().Placeholder);
@@ -182,8 +183,8 @@ public class PlayerInGame : NetworkBehaviour
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
 
         eqSlot.ReceiveEq(card);
-        LocalUpdateOwnedCards();
-        LocalUpdateLevelUI();
+        ClientUpdateOwnedCards();
+        ClientUpdateLevelUI();
     }
 
     [ClientRpc]
@@ -215,7 +216,7 @@ public class PlayerInGame : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
 
         GameObject card = ClientScene.FindLocalObject(cardNetId);
-        Debug.Log("Unequipping - " + card);
+        //Debug.Log("Unequipping - " + card);
 
         Level -= card.GetComponent<EquipmentCard>().cardValues.level;
 
@@ -230,40 +231,43 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     internal void RpcUnequip( NetworkInstanceId cardNetId )
     {
-        LocalUnequip(cardNetId);
+        ClientUnequip(cardNetId);
     }
 
-    internal void LocalUnequip( NetworkInstanceId cardNetId )
+    [Client]
+    internal void ClientUnequip( NetworkInstanceId cardNetId )
     {
         GameObject eqCard = ClientScene.FindLocalObject(cardNetId);
-        equippedItems.Remove(eqCard);
 
         EquipmentCard eqCardScript = eqCard.GetComponent<EquipmentCard>();
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
+
+        equippedItems.Remove(eqCard);
 
         if (!hasAuthority)
             eqSlot.ReturnEnemyEq();
 
-        LocalUpdateOwnedCards();
-
-        opponentInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
+        ClientUpdateOwnedCards();
+        ClientUpdateLevelUI();
     }
 
-    internal void LocalSwitchEq( NetworkInstanceId cardNetId )
+    [Client]
+    internal void ClientSwitchEq( NetworkInstanceId cardNetId )
     {
         GameObject eqCard = ClientScene.FindLocalObject(cardNetId);
-        equippedItems.Remove(eqCard);
 
         EquipmentCard eqCardScript = eqCard.GetComponent<EquipmentCard>();
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
+
+        equippedItems.Remove(eqSlot.heldItem);
 
         if (!hasAuthority)
             eqSlot.ReturnEnemyEq();
         else
             eqSlot.ReturnEq();
 
-        LocalEquip(eqCard);
-        LocalUpdateOwnedCards();
+        ClientEquip(eqCard);
+        ClientUpdateOwnedCards();
     }
 
     private void FindTable()
@@ -648,7 +652,7 @@ public class PlayerInGame : NetworkBehaviour
                 break;
         }
 
-        LocalUpdateOwnedCards();
+        ClientUpdateOwnedCards();
     }
 
     [Server]
@@ -733,10 +737,10 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcUpdateLevelUI()
     {
-        LocalUpdateLevelUI();
+        ClientUpdateLevelUI();
     }
 
-    void LocalUpdateLevelUI()
+    void ClientUpdateLevelUI()
     {
         opponentInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
 
@@ -768,10 +772,10 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcUpdateOwnedCards()
     {
-        LocalUpdateOwnedCards();
+        ClientUpdateOwnedCards();
     }
 
-    internal void LocalUpdateOwnedCards()
+    internal void ClientUpdateOwnedCards()
     {
         if (hasAuthority)
             opponentInPanel.GetComponent<OpponentInPanel>().UpdateOwnedCards(handContent.childCount, ownedCardsLimit);
@@ -1295,19 +1299,24 @@ public class PlayerInGame : NetworkBehaviour
         else return null;
     }
 
-    internal SavePlayerData GetPlayerData()
+    internal PlayerSaveData GetPlayerData()
     {
         Debug.Log("Saving Player - " + NickName);
 
-        SavePlayerData playerData = new SavePlayerData();
+        PlayerSaveData playerData = new PlayerSaveData();
 
         playerData.hasTurn = hasTurn;
         playerData.isPlayerAlive = isPlayerAlive;
         playerData.level = level;
 
-        List<GameObject> cardsInHand = new List<GameObject>();
-        foreach (var card in handContent)
-            cardsInHand.Add(card as GameObject);
+        List<string> cardsInHand = new List<string>();
+        List<string> equippedItems = new List<string>();
+
+        for (int i = 0; i < handContent.childCount; i++)
+            cardsInHand.Add(handContent.GetChild(i).GetComponent<Card>().GetCardData());
+
+        for (int i = 0; i < this.equippedItems.Count; i++)
+            equippedItems.Add(this.equippedItems[i].GetComponent<Card>().GetCardData());
 
         playerData.cardsInHand = cardsInHand;
         playerData.equippedItems = equippedItems;
