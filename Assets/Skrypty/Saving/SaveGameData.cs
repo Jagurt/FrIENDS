@@ -9,14 +9,7 @@ public class SaveGameData
 {
     public List<PlayerSaveData> playersData;
 
-    public List<string> cardsInDoorsDeck;
-    public List<string> cardsInTreasuresDeck;
-    public List<string> cardsInSpellsDeck;
-    public List<string> cardsInHelpHandsDeck;
-    public List<string> cardsInDiscardedDoorsDeck;
-    public List<string> cardsInDiscardedTreasuresDeck;
-    public List<string> cardsInDiscardedSpellsDeck;
-    public List<string> cardsInDiscardedHelpHandsDeck;
+    public List<string> discardedCards;
 
     public SaveGameData()
     {
@@ -32,45 +25,28 @@ public class SaveGameData
 
         // Saving Cards that are in decks
 
-        cardsInDoorsDeck = new List<string>();
-        cardsInTreasuresDeck = new List<string>();
-        cardsInSpellsDeck = new List<string>();
-        cardsInHelpHandsDeck = new List<string>();
-        cardsInDiscardedDoorsDeck = new List<string>();
-        cardsInDiscardedTreasuresDeck = new List<string>();
-        cardsInDiscardedSpellsDeck = new List<string>();
-        cardsInDiscardedHelpHandsDeck = new List<string>();
+
+
+        discardedCards = new List<string>();
 
         ServerDecksManager serverDecksManager = ServerGameManager.serverGameManager.ServerDecksManager;
 
-        for (int i = 0; i < serverDecksManager.DoorsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.DoorsDeck.GetChild(i).GetComponent<Card>().GetCardData());
-
-        for (int i = 0; i < serverDecksManager.TreasuresDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.TreasuresDeck.GetChild(i).GetComponent<Card>().GetCardData());
-
-        for (int i = 0; i < serverDecksManager.SpellsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.SpellsDeck.GetChild(i).GetComponent<Card>().GetCardData());
-
-        for (int i = 0; i < serverDecksManager.HelpHandsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.HelpHandsDeck.GetChild(i).GetComponent<Card>().GetCardData());
-
         for (int i = 0; i < serverDecksManager.DiscardedDoorsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.DiscardedDoorsDeck.GetChild(i).GetComponent<Card>().GetCardData());
+            discardedCards.Add(serverDecksManager.DiscardedDoorsDeck.GetChild(i).GetComponent<Card>().GetCardData());
 
         for (int i = 0; i < serverDecksManager.DiscardedTreasuresDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.DiscardedTreasuresDeck.GetChild(i).GetComponent<Card>().GetCardData());
+            discardedCards.Add(serverDecksManager.DiscardedTreasuresDeck.GetChild(i).GetComponent<Card>().GetCardData());
 
         for (int i = 0; i < serverDecksManager.DiscardedSpellsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.DiscardedSpellsDeck.GetChild(i).GetComponent<Card>().GetCardData());
+            discardedCards.Add(serverDecksManager.DiscardedSpellsDeck.GetChild(i).GetComponent<Card>().GetCardData());
 
         for (int i = 0; i < serverDecksManager.DiscardedHelpHandsDeck.childCount; i++)
-            cardsInDoorsDeck.Add(serverDecksManager.DiscardedHelpHandsDeck.GetChild(i).GetComponent<Card>().GetCardData());
+            discardedCards.Add(serverDecksManager.DiscardedHelpHandsDeck.GetChild(i).GetComponent<Card>().GetCardData());
     }
 }
 
 /*
- * using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;

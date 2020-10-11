@@ -14,7 +14,7 @@ public class StartGameButtonInLobby : MonoBehaviour
 
     void OnClick()
     {
-        MainMenu.NetworkManager.ServerChangeScene("GameScene");
+        CustomNetworkManager.customNetworkManager.ServerChangeScene("GameScene");
     }
 
     internal void EnableStartGameButton()

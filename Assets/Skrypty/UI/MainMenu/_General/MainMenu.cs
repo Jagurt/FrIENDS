@@ -13,8 +13,6 @@ public class MainMenu : MonoBehaviour
     internal static Transform profilePanel;
     internal static Transform lobby;
 
-    internal static CustomNetworkManager NetworkManager;
-
     [SerializeField] internal TMP_InputField IPAdressInputField;
     [SerializeField] internal TMP_InputField PortInputField;
 
@@ -24,7 +22,6 @@ public class MainMenu : MonoBehaviour
     private void Start()
     {
         mainMenu = this;
-        NetworkManager = FindObjectOfType<CustomNetworkManager>();
         startGameMenu = transform.parent.Find("StartGameMenu");
         hostGameMenu = transform.parent.Find("HostGameMenu");
         joinGameMenu = transform.parent.Find("JoinGameMenu");

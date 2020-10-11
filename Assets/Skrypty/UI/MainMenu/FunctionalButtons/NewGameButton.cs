@@ -18,6 +18,6 @@ public class NewGameButton : MonoBehaviour
     {
         MainMenu.hostGameMenu.GetComponent<MenuActiveController>().Deactivate();
         MainMenu.lobby.GetComponent<MenuActiveController>().Activate();
-        MainMenu.NetworkManager.StartHosting();
+        CustomNetworkManager.customNetworkManager.StartHosting();
     }
 }

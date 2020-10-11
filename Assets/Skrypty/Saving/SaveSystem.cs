@@ -12,25 +12,46 @@ public static class SaveSystem
         Debug.Log("Saving in: " + Application.persistentDataPath);
     }
 
-    public static SaveGameData LoadGame()
+    // [Server]
+    public static void LoadGame()
     {
-        throw new System.NotImplementedException();
-
         string path = Application.persistentDataPath + "/TestSave.json";
-        if (File.Exists(path))
+
+        SaveGameData gameData = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(path));
+
+        if (ServerGameManager.serverGameManager.playersObjects.Count != gameData.playersData.Count)
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
-
-            SaveGameData data = formatter.Deserialize(stream) as SaveGameData;
-            stream.Close();
-
-            return data;
+            InfoPanel.Alert("Number of players do not match!");
+            return;
         }
-        else
+
+        // Loading Players
+
+        for (int i = 0; i < gameData.playersData.Count; i++)
         {
-            Debug.LogError("Save not found in " + path);
-            return null;
+            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().Level = gameData.playersData[i].level;
+            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().hasTurn = gameData.playersData[i].hasTurn;
+            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().isAlive = gameData.playersData[i].isAlive;
+
+            for (int j = 0; j < gameData.playersData[i].cardsInHand.Count; j++)
+            {
+                GameObject card = ServerGameManager.serverGameManager.GetCardByName(gameData.playersData[i].cardsInHand[j]);
+                ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().OnLoadReceiveCard(card);
+            }
+
+            for (int j = 0; j < gameData.playersData[i].equippedItems.Count; j++)
+            {
+                GameObject card = ServerGameManager.serverGameManager.GetCardByName(gameData.playersData[i].equippedItems[j]);
+                ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().OnLoadEquip(card);
+            }
+        }
+
+        // Loading Decks
+
+        for (int i = 0; i < gameData.discardedCards.Count; i++)
+        {
+            GameObject card = ServerGameManager.serverGameManager.GetCardByName(gameData.discardedCards[i]);
+            ServerGameManager.serverGameManager.playersObjects[0].GetComponent<PlayerInGame>().OnLoadDiscardCard(card);
         }
     }
 }

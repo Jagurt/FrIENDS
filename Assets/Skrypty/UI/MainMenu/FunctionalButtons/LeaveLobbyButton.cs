@@ -17,6 +17,6 @@ public class LeaveLobbyButton : MonoBehaviour
     {
         MainMenu.lobby.GetComponent<MenuActiveController>().Deactivate();
         MainMenu.joinGameMenu.GetComponent<MenuActiveController>().Activate();
-        MainMenu.NetworkManager.Disconnect();
+        CustomNetworkManager.customNetworkManager.Disconnect();
     }
 }

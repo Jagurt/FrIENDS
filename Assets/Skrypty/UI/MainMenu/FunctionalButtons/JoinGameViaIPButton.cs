@@ -17,6 +17,6 @@ public class JoinGameViaIPButton : MonoBehaviour
     {
         MainMenu.joinGameMenu.GetComponent<MenuActiveController>().Deactivate();
         MainMenu.lobby.GetComponent<MenuActiveController>().Activate();
-        MainMenu.NetworkManager.JoinMatchViaIP();
+        CustomNetworkManager.customNetworkManager.JoinMatchViaIP();
     }
 }

@@ -148,9 +148,6 @@ public class ServerDecksManager : NetworkBehaviour
     [Server]
     void SpawnCards()
     {
-        // Zamieniam Prefab'y kart na GameObject'y kart i potem spawnuje je w grze
-        // Tylko serwer może spawnować karty
-
         for (int i = 0; i < doors.Capacity; i++)
         {
             NetworkServer.Spawn(Instantiate(doors[i]));
@@ -170,53 +167,42 @@ public class ServerDecksManager : NetworkBehaviour
     }
 
     [Server]
-    public GameObject SpawnCardByName( string name, PlayerInGame owner = null )
+    public GameObject GetCardByName( string name )
     {
-        GameObject cardToSpawn = null;
 
-        foreach (var card in Doors)
-            if (card.name == name)
-            {
-                cardToSpawn = card;
-                break;
-            }
-
-        if (cardToSpawn == null)
-            foreach (var card in Treasures)
-                if (card.name == name)
-                {
-                    cardToSpawn = card;
-                    break;
-                }
-
-        if (cardToSpawn == null)
-            foreach (var card in Spells)
-                if (card.name == name)
-                {
-                    cardToSpawn = card;
-                    break;
-                }
-
-        if (cardToSpawn == null)
-            foreach (var card in HelpHands)
-                if (card.name == name)
-                {
-                    cardToSpawn = card;
-                    break;
-                }
-
-        if (cardToSpawn == null) // TODO : Check if string was null
-            return null;
-
-        cardToSpawn = Instantiate(cardToSpawn);
-        NetworkServer.Spawn(cardToSpawn);
-
-
-        if (owner)
+        for (int i = 0; i < doorsDeck.childCount; i++)
         {
-            StartCoroutine(owner.ServerReceiveCard(cardToSpawn.GetComponent<Card>().netId, owner.netId, false, false));
+            GameObject card = doorsDeck.GetChild(i).gameObject;
+
+            if (card.GetComponent<Card>().cardValues.name == name)
+                return card;
         }
 
-        return cardToSpawn;
+        for (int i = 0; i < treasuresDeck.childCount; i++)
+        {
+            GameObject card = treasuresDeck.GetChild(i).gameObject;
+
+            if (card.GetComponent<Card>().cardValues.name == name)
+                return card;
+        }
+
+        for (int i = 0; i < spellsDeck.childCount; i++)
+        {
+            GameObject card = spellsDeck.GetChild(i).gameObject;
+
+            if (card.GetComponent<Card>().cardValues.name == name)
+                return card;
+        }
+
+        for (int i = 0; i < helpHandsDeck.childCount; i++)
+        {
+            GameObject card = helpHandsDeck.GetChild(i).gameObject;
+
+            if (card.GetComponent<Card>().cardValues.name == name)
+                return card;
+        }
+
+        Debug.LogError("CardToSpawnNotFound");
+        return null;
     }
 }

@@ -62,9 +62,9 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal virtual IEnumerator InitializeAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
+    internal virtual IEnumerator StartAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
     {
-        Debug.Log("InitializeAwaitUseConfirmation() in - " + this.gameObject);
+        Debug.Log("StartAwaitUseConfirmation() in - " + this.gameObject);
 
         this.targetNetId = targetNetId;
         this.ownerNetId = ownerNetId;
@@ -73,7 +73,7 @@ public class Card : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-        RpcInitializeAwaitUseConfirmation();
+        RpcStartAwaitUseConfirmation();
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
@@ -82,9 +82,9 @@ public class Card : NetworkBehaviour
     }
 
     [ClientRpc]
-    internal virtual void RpcInitializeAwaitUseConfirmation()
+    internal virtual void RpcStartAwaitUseConfirmation()
     {
-        Debug.Log("RpcInitializeAwaitUseConfirmation() in - " + this.gameObject);
+        Debug.Log("RpcStartAwaitUseConfirmation() in - " + this.gameObject);
 
         serverGameManager.StoredCardUsesToConfirm.Add(this.gameObject);
         PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
@@ -101,6 +101,7 @@ public class Card : NetworkBehaviour
             yield return new WaitForSecondsRealtime(0.10f);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
+        yield return new WaitForEndOfFrame();
         RpcAwaitUseConfirmation();
 
         yield return new WaitForEndOfFrame();
@@ -167,7 +168,8 @@ public class Card : NetworkBehaviour
         if (playersDecliners.Count > serverGameManager.playersObjects.Count * 0.51f)
         {
             StopCoroutine(awaitUseConfirmation);
-            StartCoroutine(ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>().ServerReceiveCard(this.netId, ownerNetId, false, false));
+            PlayerInGame cardOwner = ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>();
+            StartCoroutine(cardOwner.ServerReceiveCard(this.netId, false, false));
             awaitUseConfirmation = AwaitUseConfirmation(); // Reassigning Coroutine to make it work next time
 
             playersConfirmers.Clear(); // Reseting values
@@ -207,6 +209,11 @@ public class Card : NetworkBehaviour
             declineUseButton.SetActive(false);
             interruptUseTimer.SetActive(false);
         }
+    }
+
+    internal NetworkInstanceId GetNetId()
+    {
+        return this.netId;
     }
 
     internal string GetCardData()

@@ -34,7 +34,7 @@ public class PlayerInGame : NetworkBehaviour
 
     [SyncVar] private short luck;       // Modifies random outcomes of cards effects, Not Implemented Yet
 
-    [SyncVar] internal bool isPlayerAlive;                           // Player cannot perform any actions until ressurected, Not Implemented Yet
+    [SyncVar] internal bool isAlive;                           // Player cannot perform any actions until ressurected, Not Implemented Yet
     [SyncVar] [SerializeField] internal bool hasTurn = false; // Certain actions are only available when player has turn.
 
     //      UI      //
@@ -137,7 +137,7 @@ public class PlayerInGame : NetworkBehaviour
         bigItemsLimit = 1;
         ownedCardsLimit = 5;
         luck = 0;
-        isPlayerAlive = true;
+        isAlive = true;
         StartCoroutine(serverGameManager.ReportPresence(this.netId));
         this.NickName = NickName;
     }
@@ -149,7 +149,14 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal IEnumerator ServerEquip( NetworkInstanceId cardNetId )
+    internal void OnLoadEquip(GameObject card)
+    {
+        NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
+        StartCoroutine(ServerEquip(cardNetId));
+    }
+
+    [Server]
+    IEnumerator ServerEquip( NetworkInstanceId cardNetId )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -359,7 +366,7 @@ public class PlayerInGame : NetworkBehaviour
         drawnCard = drawCardZone.DrawCard(); // Gets Card from correct deck.
         Debug.Log("Sending Card - " + drawnCard);
 
-        RpcReceiveCard(drawnCard.GetComponent<Card>().netId, this.netId, worksOnDrawingPlayer, choice); // Updates parent of Drawn Card for all clients
+        RpcReceiveCard(drawnCard.GetComponent<Card>().netId, worksOnDrawingPlayer, choice); // Updates parent of Drawn Card for all clients
 
         // RemoveLastCardFromDecksList(deck);
     }
@@ -373,41 +380,36 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
+    internal void OnLoadReceiveCard(GameObject card)
+    {
+        NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
+        StartCoroutine(ServerReceiveCard(cardNetId, false, false));
+    }
+
+    [Server]
+    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer, bool choice )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
-        RpcReceiveCard(cardsNetId, newCardParentsId, worksOnDrawingPlayer, choice);
+        RpcReceiveCard(cardsNetId, worksOnDrawingPlayer, choice);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
-    private void RpcReceiveCard( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
+    private void RpcReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer, bool choice )
     {
         GameObject card = ClientScene.FindLocalObject(cardsNetId);
         card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
         card.GetComponent<Draggable>().enabled = true;
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
-        ReceiveCard(card, worksOnDrawingPlayer, choice);
+        ClientReceiveCard(card, worksOnDrawingPlayer, choice);
     }
 
-    IEnumerator RpcReceiveCardCoroutine( NetworkInstanceId cardsNetId, NetworkInstanceId newCardParentsId, bool worksOnDrawingPlayer, bool choice )
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-        CustomNetworkManager.isServerBusy = true;
-
-        RpcReceiveCard(cardsNetId, newCardParentsId, worksOnDrawingPlayer, choice);
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
-    }
-
-    private void ReceiveCard( GameObject card, bool worksOnDrawingPlayer = false, bool choice = false )
+    private void ClientReceiveCard( GameObject card, bool worksOnDrawingPlayer = false, bool choice = false )
     {
         //Debug.Log("Receiving Card - " + card);
 
@@ -431,34 +433,6 @@ public class PlayerInGame : NetworkBehaviour
             card.transform.SetParent(this.transform);
 
         CmdUpdateOwnedCards();
-    }
-
-    [Server]
-    private void RemoveLastCardFromDecksList( Deck deck )
-    {
-        switch (deck)
-        {
-            case Deck.Doors:
-                serverGameManager.ServerDecksManager.Doors.RemoveAt(serverGameManager.ServerDecksManager.Doors.Count - 1);
-                break;
-            case Deck.Treasures:
-                serverGameManager.ServerDecksManager.Treasures.RemoveAt(serverGameManager.ServerDecksManager.Treasures.Count - 1);
-                break;
-            case Deck.HelpingHand:
-                break;
-            case Deck.Spells:
-                break;
-            case Deck.DiscardedDoors:
-                break;
-            case Deck.DiscardedSpells:
-                break;
-            case Deck.DiscardedTreasures:
-                break;
-            case Deck.DiscardedHelpingHand:
-                break;
-            default:
-                break;
-        }
     }
 
     [Server] // Called on Server
@@ -545,7 +519,7 @@ public class PlayerInGame : NetworkBehaviour
 
         Debug.Log("CmdUseCard: Card to use: " + card.GetComponent<Card>().cardValues.name);
 
-        StartCoroutine(card.InitializeAwaitUseConfirmation(targetNetId, this.netId)); // Using Cards effect on chosen target
+        StartCoroutine(card.StartAwaitUseConfirmation(targetNetId, this.netId)); // Using Cards effect on chosen target
     }
 
     internal void ConfirmUseCard( bool confirm )
@@ -586,6 +560,13 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
+    internal void OnLoadDiscardCard(GameObject card)
+    {
+        NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
+        StartCoroutine(ServerDiscardCard(cardNetId));
+    }
+
+    [Server]
     IEnumerator ServerDiscardCards( List<GameObject> cardsToDiscard )
     {
         foreach (var card in cardsToDiscard)
@@ -608,6 +589,7 @@ public class PlayerInGame : NetworkBehaviour
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
+
         //Debug.Log("RpcDiscardCardCoroutine!" + cardToDiscardNetId);
         RpcDiscardCard(cardToDiscardNetId);
 
@@ -1109,7 +1091,7 @@ public class PlayerInGame : NetworkBehaviour
             Debug.Log("RpcRemoveTradingCard(): opponentsCard - " + opponentsCard);
             //tradePanel.RemoveEnemysCard(enemysCard);
             TradePanel.tradePanel.ResetAcceptance();
-            ReceiveCard(opponentsCard);
+            ClientReceiveCard(opponentsCard);
         }
     }
 
@@ -1202,7 +1184,7 @@ public class PlayerInGame : NetworkBehaviour
 
         foreach (GameObject card in cardsToReceive)
         {
-            ReceiveCard(card);
+            ClientReceiveCard(card);
         }
 
         TradePanel.tradePanel.Rest();
@@ -1266,7 +1248,7 @@ public class PlayerInGame : NetworkBehaviour
 
         foreach (GameObject card in cardsToReceive)
         {
-            ReceiveCard(card);
+            ClientReceiveCard(card);
         }
 
         TradePanel.tradePanel.Rest();
@@ -1292,13 +1274,6 @@ public class PlayerInGame : NetworkBehaviour
             InfoPanel.Alert(text);
     }
 
-    internal string GetEqFrom( EqPart eq )
-    {
-        if (equipment.GetChild((int)eq).GetComponent<EqItemSlot>().heldItem)
-            return equipment.GetChild((int)eq).GetComponent<EqItemSlot>().heldItem.name;
-        else return null;
-    }
-
     internal PlayerSaveData GetPlayerData()
     {
         Debug.Log("Saving Player - " + NickName);
@@ -1306,7 +1281,7 @@ public class PlayerInGame : NetworkBehaviour
         PlayerSaveData playerData = new PlayerSaveData();
 
         playerData.hasTurn = hasTurn;
-        playerData.isPlayerAlive = isPlayerAlive;
+        playerData.isAlive = isAlive;
         playerData.level = level;
 
         List<string> cardsInHand = new List<string>();

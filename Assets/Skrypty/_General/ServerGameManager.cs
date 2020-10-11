@@ -365,8 +365,8 @@ public class ServerGameManager : NetworkBehaviour
         InfoPanel.Alert(text);
     }
 
-    void LoadGame()
-    { 
-    
+    internal GameObject GetCardByName(string name)
+    {
+        return serverGameManager.GetCardByName(name);
     }
 }
