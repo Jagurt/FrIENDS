@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NewGameButton : MonoBehaviour
+public class HostGameButton : MonoBehaviour
 {
     Button Button;
 
-    // Start is called before the first frame update
     void Start()
     {
         Button = GetComponent<Button>();
@@ -16,7 +15,7 @@ public class NewGameButton : MonoBehaviour
 
     void OnClick()
     {
-        MainMenu.hostGameMenu.GetComponent<MenuActiveController>().Deactivate();
+        MainMenu.startGameMenu.GetComponent<MenuActiveController>().Deactivate();
         MainMenu.lobby.GetComponent<MenuActiveController>().Activate();
         CustomNetworkManager.customNetworkManager.StartHosting();
     }

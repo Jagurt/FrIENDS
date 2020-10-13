@@ -22,7 +22,6 @@ public class PlayerInLobby : NetworkBehaviour
 
     private void Start()
     {
-        lobby = FindObjectOfType<LobbyManager>();
         transform.localScale = Vector3.one;
         transform.localRotation = Quaternion.identity;
         transform.localPosition = Vector3.zero;
@@ -59,9 +58,9 @@ public class PlayerInLobby : NetworkBehaviour
     {
         readyToStart = !readyToStart;
         if (readyToStart)
-            lobby.ReadyPlayer();
+            LobbyManager.ReadyPlayer();
         else
-            lobby.UnreadyPlayer();
+            LobbyManager.UnreadyPlayer();
 
         // TODO: Update Readiness Icon
 
@@ -72,5 +71,6 @@ public class PlayerInLobby : NetworkBehaviour
     private void RpcSwitchReadiness( bool isOn )
     {
         toggle.isOn = isOn;
+        LobbyManager.UpdatePlayersCounter();
     }
 }

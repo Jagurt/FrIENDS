@@ -23,7 +23,6 @@ public class MainMenu : MonoBehaviour
     {
         mainMenu = this;
         startGameMenu = transform.parent.Find("StartGameMenu");
-        hostGameMenu = transform.parent.Find("HostGameMenu");
         joinGameMenu = transform.parent.Find("JoinGameMenu");
         optionsMenu = transform.parent.Find("OptionsMenu");
         profilePanel = transform.parent.Find("ProfilePanel");

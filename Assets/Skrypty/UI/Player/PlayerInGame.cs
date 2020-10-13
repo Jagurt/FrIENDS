@@ -1276,13 +1276,12 @@ public class PlayerInGame : NetworkBehaviour
 
     internal PlayerSaveData GetPlayerData()
     {
-        Debug.Log("Saving Player - " + NickName);
-
         PlayerSaveData playerData = new PlayerSaveData();
 
         playerData.hasTurn = hasTurn;
         playerData.isAlive = isAlive;
         playerData.level = level;
+        playerData.nickName = NickName;
 
         List<string> cardsInHand = new List<string>();
         List<string> equippedItems = new List<string>();

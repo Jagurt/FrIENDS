@@ -9,6 +9,7 @@ public class PlayerSaveData
     public bool hasTurn;
     public bool isAlive;
     public short level;
+    public string nickName;
 
     public List<string> equippedItems;
     public List<string> cardsInHand;

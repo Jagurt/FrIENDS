@@ -10,14 +10,12 @@ public class PlayerManager : NetworkBehaviour
 {
     [SerializeField] private GameObject playerInLobby;
     [SerializeField] private GameObject playerInGame;
-    [SerializeField] private LobbyManager lobby;
     CustomNetworkManager CustomNetworkManager;
     [SerializeField] [SyncVar] string nickName;
 
     private void Start()
     {
         DontDestroyOnLoad(this); // Setting this objec to not be destroyed on transition betwen scenes
-        lobby = FindObjectOfType<LobbyManager>();
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
 
         if (hasAuthority)
@@ -68,9 +66,8 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     void CmdSpawnPlayerLobbyPanel( string nickName )
     {
-        lobby = FindObjectOfType<LobbyManager>();
         this.nickName = nickName;
-        lobby.ConnectedPlayersUpdate();
+        LobbyManager.ConnectedPlayersUpdate();
         SpawnPlayerLobbyPanel();
     }
 
@@ -109,6 +106,6 @@ public class PlayerManager : NetworkBehaviour
     [Server]
     public override void OnNetworkDestroy()
     {
-        lobby.ConnectedPlayersDown();
+        LobbyManager.ConnectedPlayersDown();
     }
 }
