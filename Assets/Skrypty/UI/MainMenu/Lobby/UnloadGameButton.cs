@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LoadGameButton : MonoBehaviour
+public class UnloadGameButton : MonoBehaviour
 {
     Button Button;
 
@@ -15,8 +15,8 @@ public class LoadGameButton : MonoBehaviour
 
     void OnClick()
     {
-        SaveSystem.LoadGame();
-        LobbyPlayersCounter.OnLoadGame(SaveSystem.loadedSave.playersData.Count);
-        StartCoroutine(LobbyManager.ServerActivateLoadHeaders());
+        LobbyPlayersCounter.numOfLoadedPlayers = 0;
+        LobbyManager.UpdatePlayersCounter();
+        StartCoroutine(LobbyManager.ServerDeactivateLoadHeaders());
     }
 }

@@ -14,6 +14,7 @@ public class PlayerInGame : NetworkBehaviour
 
     [SyncVar] internal string NickName; // Nick name of player got from options in title screen.
     internal Sprite Avatar; // Not Implemented Yet
+    internal Color color;
 
     //      Statystyki      //
     [SyncVar] [SerializeField] private short level = 1; // Level of a player
@@ -1282,6 +1283,7 @@ public class PlayerInGame : NetworkBehaviour
         playerData.isAlive = isAlive;
         playerData.level = level;
         playerData.nickName = NickName;
+        playerData.color = color;
 
         List<string> cardsInHand = new List<string>();
         List<string> equippedItems = new List<string>();

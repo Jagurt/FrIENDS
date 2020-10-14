@@ -2,12 +2,15 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
+    internal static PlayerManager playerManager;
+
     [SerializeField] private GameObject playerInLobby;
     [SerializeField] private GameObject playerInGame;
     CustomNetworkManager CustomNetworkManager;
@@ -15,6 +18,7 @@ public class PlayerManager : NetworkBehaviour
 
     private void Start()
     {
+        playerManager = this;
         DontDestroyOnLoad(this); // Setting this objec to not be destroyed on transition betwen scenes
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
 
@@ -44,15 +48,15 @@ public class PlayerManager : NetworkBehaviour
             NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient); // "Spawning" object - Creating object on server and all clients, assigning player who requested spawn with authority for this object.
         }
         else
-            StartCoroutine(WaitForReady());
+            StartCoroutine(WaitToSpawnPlayerInGame());
     }
 
     [Server]
-    private IEnumerator WaitForReady()
+    private IEnumerator WaitToSpawnPlayerInGame()
     {
         while (!connectionToClient.isReady || CustomNetworkManager.isServerBusy)
         {
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSeconds(0.1f);
         }
         CustomNetworkManager.isServerBusy = true;
 
@@ -64,20 +68,27 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Command]
-    void CmdSpawnPlayerLobbyPanel( string nickName )
+    void CmdSpawnPlayerLobbyPanel(string nickName)
     {
         this.nickName = nickName;
         LobbyManager.ConnectedPlayersUpdate();
-        SpawnPlayerLobbyPanel();
+        StartCoroutine(SpawnPlayerLobbyPanel(nickName));
     }
 
     [Server]
-    private void SpawnPlayerLobbyPanel()
+    private IEnumerator SpawnPlayerLobbyPanel( string nickName )
     {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
         playerInLobby = Instantiate(playerInLobby);
-        PlayerInLobby playerLobbyPanelScript = playerInLobby.GetComponent<PlayerInLobby>();
 
         NetworkServer.SpawnWithClientAuthority(playerInLobby, connectionToClient);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
+
         StartCoroutine(SyncPlayersInLobby());
     }
 
@@ -101,6 +112,33 @@ public class PlayerManager : NetworkBehaviour
     {
         playerInLobby = ClientScene.FindLocalObject(playerInLobbyNetId);
         playerInLobby.GetComponent<PlayerInLobby>().Initialize(nickName);
+    }
+
+    [Command]
+    internal void CmdUpdateColors()
+    {
+        StartCoroutine(ServerUpdatePosition());
+    }
+
+    [Server]
+    internal IEnumerator ServerUpdatePosition()
+    {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
+        yield return new WaitForEndOfFrame();
+
+        RpcUpdatePosition();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
+    }
+
+    [ClientRpc]
+    internal void RpcUpdatePosition()
+    {
+        PlayerInLobby.ClientUpdateAllPositions();
     }
 
     [Server]

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LobbyPlayersCounter : MonoBehaviour
 {
-    static LobbyPlayersCounter lobbyPlayersCounter;
+    internal static LobbyPlayersCounter lobbyPlayersCounter;
 
     static TMPro.TextMeshProUGUI header;
     static TMPro.TextMeshProUGUI counter;
@@ -13,18 +13,20 @@ public class LobbyPlayersCounter : MonoBehaviour
 
     void Start()
     {
+        Initialize();
+    }
+
+    internal void Initialize()
+    {
+        numOfLoadedPlayers = 0;
+
         lobbyPlayersCounter = this;
 
         counter = transform.Find("Counter").GetComponent<TMPro.TextMeshProUGUI>();
         header = transform.Find("Header").GetComponent<TMPro.TextMeshProUGUI>();
     }
 
-    internal void Initialize()
-    {
-        numOfLoadedPlayers = 0;
-    }
-
-    internal static void UpdatePlayersCounter( short numOfPlayersReady, short numOfPlayersPresent )
+    internal static void UpdatePlayersCounter( int numOfPlayersReady, int numOfPlayersPresent )
     {
         counter.text = numOfPlayersReady + " / " + numOfPlayersPresent;
 

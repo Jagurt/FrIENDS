@@ -163,7 +163,7 @@ public class Card : NetworkBehaviour
     internal void ConfirmationCheck( bool endOfTime )
     {
         Debug.Log("Players To Decline Needed > " + serverGameManager.playersObjects.Count * 0.51f);
-        Debug.Log("Players To Confirm Needed >= " + serverGameManager.playersObjects.Count * 0.51f);
+        Debug.Log("Players To Confirm Needed >= " + serverGameManager.playersObjects.Count * 0.5f);
 
         if (playersDecliners.Count > serverGameManager.playersObjects.Count * 0.51f)
         {
@@ -175,7 +175,7 @@ public class Card : NetworkBehaviour
             playersConfirmers.Clear(); // Reseting values
             playersDecliners.Clear();
         }
-        else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.51f)
+        else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.5f)
         {
             StopCoroutine(awaitUseConfirmation);
             StartCoroutine(EffectOnUse(targetNetId));

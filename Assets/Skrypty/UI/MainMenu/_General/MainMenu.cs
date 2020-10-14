@@ -12,12 +12,15 @@ public class MainMenu : MonoBehaviour
     internal static Transform optionsMenu;
     internal static Transform profilePanel;
     internal static Transform lobby;
+    internal static Transform lobbyPanel;
 
     [SerializeField] internal TMP_InputField IPAdressInputField;
     [SerializeField] internal TMP_InputField PortInputField;
 
     [SerializeField] internal TMP_InputField NicknameInOptionsInput;
     [SerializeField] internal TextMeshProUGUI NicknameInProfilePanelText;
+
+    internal static PILLoadHeader pILLoadHeader;
 
     private void Start()
     {
@@ -27,6 +30,8 @@ public class MainMenu : MonoBehaviour
         optionsMenu = transform.parent.Find("OptionsMenu");
         profilePanel = transform.parent.Find("ProfilePanel");
         lobby = transform.parent.Find("Lobby");
+        lobbyPanel = lobby.Find("LobbyPanel");
+        pILLoadHeader = lobbyPanel.transform.Find("LoadHeader").GetComponent<PILLoadHeader>();
         PortInputField = joinGameMenu.Find("PortInput").GetComponent<TMP_InputField>();
         IPAdressInputField = joinGameMenu.Find("IPAdressInput").GetComponent<TMP_InputField>();
         NicknameInOptionsInput = optionsMenu.Find("NicknameInput").GetComponent<TMP_InputField>();

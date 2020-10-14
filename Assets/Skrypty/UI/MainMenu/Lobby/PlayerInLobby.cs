@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS0618 // Type too old lul
 
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -16,8 +17,10 @@ public class PlayerInLobby : NetworkBehaviour
     private void Awake()
     {
         toggle = GetComponentInChildren<Toggle>();
-        nickName = transform.Find("PlayersName").GetComponent<TextMeshProUGUI>();
         toggle.interactable = false;
+        toggle.onValueChanged.AddListener(delegate { ToggleReady(); });
+
+        nickName = transform.Find("PlayersName").GetComponent<TextMeshProUGUI>();
     }
 
     private void Start()
@@ -26,12 +29,12 @@ public class PlayerInLobby : NetworkBehaviour
         transform.localRotation = Quaternion.identity;
         transform.localPosition = Vector3.zero;
 
-        LobbyManager lobbyManager = FindObjectOfType<LobbyManager>();
-        if (lobbyManager && lobbyManager.LobbyPanel)
-            transform.SetParent(lobbyManager.LobbyPanel);
+        transform.SetParent(MainMenu.lobbyPanel);
+
+        StartCoroutine(PlayerManager.playerManager.ServerUpdatePosition());
     }
 
-    internal void Initialize(string nickName)
+    internal void Initialize( string nickName )
     {
         if (!this.nickName)
             this.nickName = GetComponentInChildren<TextMeshProUGUI>();
@@ -72,5 +75,25 @@ public class PlayerInLobby : NetworkBehaviour
     {
         toggle.isOn = isOn;
         LobbyManager.UpdatePlayersCounter();
+    }
+
+    // (siblingIndex - (siblingIndex % 2)) / 2
+    [Client]
+    static internal void ClientUpdateAllPositions()
+    {
+        int playerCount = 0;
+        int limit = LobbyManager.lobbyManager.ConnectedPlayers;
+
+        for (int i = 0; i < MainMenu.lobbyPanel.childCount && playerCount < limit; i++)
+        {
+            PlayerInLobby player = MainMenu.lobbyPanel.GetChild(i).GetComponent<PlayerInLobby>();
+            if (player != null)
+            {
+                Debug.Log("playerCount - " + playerCount);
+                player.GetComponent<Image>().color = LobbyManager.Colors[playerCount];
+                player.transform.SetSiblingIndex(playerCount * 2 + 1);
+                playerCount++;
+            }
+        }
     }
 }
