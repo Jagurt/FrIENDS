@@ -16,7 +16,7 @@ public class UnloadGameButton : MonoBehaviour
     void OnClick()
     {
         LobbyPlayersCounter.numOfLoadedPlayers = 0;
-        LobbyManager.UpdatePlayersCounter();
+        LobbyManager.lobbyManager.StartCoroutine(LobbyManager.ServerUpdatePlayersCounter());
         StartCoroutine(LobbyManager.ServerDeactivateLoadHeaders());
     }
 }

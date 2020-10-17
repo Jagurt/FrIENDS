@@ -16,7 +16,7 @@ public class LobbyManager : NetworkBehaviour
     [SerializeField] [SyncVar] private int connectedPlayers = 0;
     public int ConnectedPlayers { get => connectedPlayers; }
 
-    [SerializeField] GameObject PlayerCounter;
+    static List<string> playerNames = new List<string>();
 
     static internal Color[] Colors =
     {
@@ -32,9 +32,24 @@ public class LobbyManager : NetworkBehaviour
         new Color(255, 90, 255, 255)
     };
 
+    static internal PILLoadHeader[] PILLoadHeaders;
 
     private void Start()
     {
+        PILLoadHeaders = new PILLoadHeader[]
+    {
+        MainMenu.lobbyPanel.Find("LoadHeader").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (1)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (2)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (3)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (4)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (5)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (6)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (7)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (8)").GetComponent<PILLoadHeader>(),
+        MainMenu.lobbyPanel.Find("LoadHeader (9)").GetComponent<PILLoadHeader>()
+    };
+
         lobbyManager = this;
     }
 
@@ -77,9 +92,24 @@ public class LobbyManager : NetworkBehaviour
             lobbyManager.startGameButton.DisableStartGameButton();
     }
 
-    internal static void UpdatePlayersCounter()
+    [Server]
+    internal static IEnumerator ServerUpdatePlayersCounter()
     {
-        LobbyPlayersCounter.UpdatePlayersCounter(lobbyManager.readyPlayers, lobbyManager.connectedPlayers);
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+        lobbyManager.RpcUpdatePlayersCounter(LobbyPlayersCounter.numOfLoadedPlayers);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
+    }
+
+    [ClientRpc]
+    void RpcUpdatePlayersCounter( int numOfLoadedPlayers )
+    {
+        LobbyPlayersCounter.numOfLoadedPlayers = numOfLoadedPlayers;
+        LobbyPlayersCounter.UpdatePlayersCounter(readyPlayers, connectedPlayers);
     }
 
     [Server]
@@ -89,35 +119,46 @@ public class LobbyManager : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-        lobbyManager.RpcActivateLoadHeaders();
+        lobbyManager.RpcInitGetPlayerNames();
+        yield return new WaitForEndOfFrame();
+
+        int limit = LobbyPlayersCounter.numOfLoadedPlayers;
+        for (int i = 0; i < limit; i++)
+        {
+            lobbyManager.RpcGetPlayerName(SaveSystem.loadedSave.playersData[i].nickName);
+            yield return new WaitForEndOfFrame();
+        }
+
+        lobbyManager.RpcUpdatePlayersNamesInHeaders();
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
-    void RpcActivateLoadHeaders()
+    void RpcInitGetPlayerNames()
     {
-        ClientActivateLoadHeaders();
+        //Debug.Log("RpcInitGetPlayerNames()");
+        playerNames.Clear();
     }
 
-    [Client]
-    void ClientActivateLoadHeaders()
+    [ClientRpc]
+    void RpcGetPlayerName( string name )
     {
-        Debug.Log("ClientActivateLoadHeaders");
+        //Debug.Log("RpcGetPlayerName().name - " + name);
+        playerNames.Add(name);
+    }
 
+    [ClientRpc]
+    void RpcUpdatePlayersNamesInHeaders()
+    {
         int limit = LobbyPlayersCounter.numOfLoadedPlayers;
+
+        //Debug.Log("RpcUpdatePlayersNamesInHeaders().limit - " + limit);
 
         for (int i = 0; i < limit; i++)
         {
-            PILLoadHeader pIL = MainMenu.lobbyPanel.GetChild(i).GetComponent<PILLoadHeader>();
-
-            if (pIL)
-            {
-                pIL.gameObject.SetActive(true);
-            }
-            else
-                limit += 1;
+            PILLoadHeaders[i].Initialize(playerNames[i]);
         }
     }
 

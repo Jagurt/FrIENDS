@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS0618 // Type too old lul
 
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -31,7 +32,8 @@ public class PlayerInLobby : NetworkBehaviour
 
         transform.SetParent(MainMenu.lobbyPanel);
 
-        StartCoroutine(PlayerManager.playerManager.ServerUpdatePosition());
+        if (GlobalVariables.IsHost) // Each Spawned PlayerInLobby object calls following coroutine setting its correct positioning and color
+            StartCoroutine(ServerUpdateAllPILSiblingIndexes());
     }
 
     internal void Initialize( string nickName )
@@ -74,12 +76,11 @@ public class PlayerInLobby : NetworkBehaviour
     private void RpcSwitchReadiness( bool isOn )
     {
         toggle.isOn = isOn;
-        LobbyManager.UpdatePlayersCounter();
+        LobbyManager.ServerUpdatePlayersCounter();
     }
 
-    // (siblingIndex - (siblingIndex % 2)) / 2
-    [Client]
-    static internal void ClientUpdateAllPositions()
+    [Server]
+    static internal IEnumerator ServerUpdateAllPILSiblingIndexes()
     {
         int playerCount = 0;
         int limit = LobbyManager.lobbyManager.ConnectedPlayers;
@@ -89,11 +90,31 @@ public class PlayerInLobby : NetworkBehaviour
             PlayerInLobby player = MainMenu.lobbyPanel.GetChild(i).GetComponent<PlayerInLobby>();
             if (player != null)
             {
-                Debug.Log("playerCount - " + playerCount);
-                player.GetComponent<Image>().color = LobbyManager.Colors[playerCount];
-                player.transform.SetSiblingIndex(playerCount * 2 + 1);
+                if (CustomNetworkManager.customNetworkManager.isServerBusy)
+                    yield return new WaitUntil(() => CustomNetworkManager.customNetworkManager.isServerBusy);
+                CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+                player.RpcUpdatePILSiblingIndex(playerCount);
+
+                yield return new WaitForEndOfFrame();
+                CustomNetworkManager.customNetworkManager.isServerBusy = false;
+
                 playerCount++;
             }
         }
+    }
+
+    [ClientRpc]
+    internal void RpcUpdatePILSiblingIndex( int newSiblingIndex )
+    {
+        ClientUpdatePILSiblingIndex(newSiblingIndex);
+    }
+
+    [Client]
+    internal void ClientUpdatePILSiblingIndex( int newSiblingIndex )
+    {
+        Debug.Log("newSiblingIndex - " + newSiblingIndex);
+        transform.SetSiblingIndex(newSiblingIndex * 2 + 1);
+        GetComponent<Image>().color = LobbyManager.Colors[newSiblingIndex];
     }
 }

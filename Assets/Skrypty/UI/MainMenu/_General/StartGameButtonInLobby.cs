@@ -19,7 +19,8 @@ public class StartGameButtonInLobby : MonoBehaviour
 
     internal void EnableStartGameButton()
     {
-        button.interactable = true;
+        if (button)
+            button.interactable = true;
     }
 
     internal void DisableStartGameButton()

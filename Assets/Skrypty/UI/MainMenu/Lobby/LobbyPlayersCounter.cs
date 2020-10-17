@@ -42,6 +42,6 @@ public class LobbyPlayersCounter : MonoBehaviour
     static internal void OnLoadGame( int numOfLoadedPlayers )
     {
         LobbyPlayersCounter.numOfLoadedPlayers = numOfLoadedPlayers;
-        LobbyManager.UpdatePlayersCounter();
+        LobbyManager.lobbyManager.StartCoroutine(LobbyManager.ServerUpdatePlayersCounter());
     }
 }

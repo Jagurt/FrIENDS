@@ -43,11 +43,14 @@ public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnEndDrag( PointerEventData eventData )
     {
+        if (!GlobalVariables.IsHost)
+            return;
+
         this.transform.SetParent(placeholder.transform.parent);
         this.transform.SetSiblingIndex(placeholder.transform.GetSiblingIndex());
         Destroy(placeholder);
 
-        StartCoroutine(PlayerManager.playerManager.ServerUpdatePosition());
+        StartCoroutine(PlayerInLobby.ServerUpdateAllPILSiblingIndexes());
     }
 
     void CreatePlaceholder()

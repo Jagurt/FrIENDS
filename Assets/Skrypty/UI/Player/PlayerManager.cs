@@ -114,33 +114,6 @@ public class PlayerManager : NetworkBehaviour
         playerInLobby.GetComponent<PlayerInLobby>().Initialize(nickName);
     }
 
-    [Command]
-    internal void CmdUpdateColors()
-    {
-        StartCoroutine(ServerUpdatePosition());
-    }
-
-    [Server]
-    internal IEnumerator ServerUpdatePosition()
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
-        CustomNetworkManager.isServerBusy = true;
-
-        yield return new WaitForEndOfFrame();
-
-        RpcUpdatePosition();
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
-    }
-
-    [ClientRpc]
-    internal void RpcUpdatePosition()
-    {
-        PlayerInLobby.ClientUpdateAllPositions();
-    }
-
     [Server]
     public override void OnNetworkDestroy()
     {
