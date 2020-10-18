@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class PlayerInLobby : NetworkBehaviour
 {
     private LobbyManager lobby;
+    internal PlayerManager playerManager;
 
     [SerializeField] [SyncVar] private bool readyToStart = false;
     [SerializeField] private Toggle toggle;
@@ -31,17 +32,18 @@ public class PlayerInLobby : NetworkBehaviour
         transform.localPosition = Vector3.zero;
 
         transform.SetParent(MainMenu.lobbyPanel);
-
-        if (GlobalVariables.IsHost) // Each Spawned PlayerInLobby object calls following coroutine setting its correct positioning and color
-            StartCoroutine(ServerUpdateAllPILSiblingIndexes());
     }
 
-    internal void Initialize( string nickName )
+    internal void Initialize( string nickName, PlayerManager playerManager )
     {
         if (!this.nickName)
             this.nickName = GetComponentInChildren<TextMeshProUGUI>();
 
         this.nickName.text = nickName;
+        this.playerManager = playerManager;
+
+        if (GlobalVariables.IsHost) // Each Spawned PlayerInLobby object calls following coroutine setting its correct positioning and color
+            StartCoroutine(ServerUpdateAllPILSiblingIndexes());
     }
 
     public override void OnStartAuthority()
@@ -83,7 +85,7 @@ public class PlayerInLobby : NetworkBehaviour
     static internal IEnumerator ServerUpdateAllPILSiblingIndexes()
     {
         int playerCount = 0;
-        int limit = LobbyManager.lobbyManager.ConnectedPlayers;
+        int limit = LobbyManager.lobbyManager.connectedPlayers;
 
         for (int i = 0; i < MainMenu.lobbyPanel.childCount && playerCount < limit; i++)
         {
@@ -94,6 +96,7 @@ public class PlayerInLobby : NetworkBehaviour
                     yield return new WaitUntil(() => CustomNetworkManager.customNetworkManager.isServerBusy);
                 CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
+                player.playerManager.playerIndex = playerCount;
                 player.RpcUpdatePILSiblingIndex(playerCount);
 
                 yield return new WaitForEndOfFrame();
@@ -113,7 +116,7 @@ public class PlayerInLobby : NetworkBehaviour
     [Client]
     internal void ClientUpdatePILSiblingIndex( int newSiblingIndex )
     {
-        Debug.Log("newSiblingIndex - " + newSiblingIndex);
+        //Debug.Log("newSiblingIndex - " + newSiblingIndex);
         transform.SetSiblingIndex(newSiblingIndex * 2 + 1);
         GetComponent<Image>().color = LobbyManager.Colors[newSiblingIndex];
     }

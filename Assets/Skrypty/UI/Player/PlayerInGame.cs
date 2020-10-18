@@ -139,7 +139,7 @@ public class PlayerInGame : NetworkBehaviour
         ownedCardsLimit = 5;
         luck = 0;
         isAlive = true;
-        StartCoroutine(serverGameManager.ReportPresence(this.netId));
+        StartCoroutine(serverGameManager.ReportPresence());
         this.NickName = NickName;
     }
 

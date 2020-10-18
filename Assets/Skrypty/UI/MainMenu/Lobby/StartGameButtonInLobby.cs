@@ -14,6 +14,7 @@ public class StartGameButtonInLobby : MonoBehaviour
 
     void OnClick()
     {
+        CustomNetworkManager.playersToConnect = LobbyManager.lobbyManager.connectedPlayers;
         CustomNetworkManager.customNetworkManager.ServerChangeScene("GameScene");
     }
 
@@ -25,6 +26,7 @@ public class StartGameButtonInLobby : MonoBehaviour
 
     internal void DisableStartGameButton()
     {
-        button.interactable = false;
+        if (button)
+            button.interactable = false;
     }
 }

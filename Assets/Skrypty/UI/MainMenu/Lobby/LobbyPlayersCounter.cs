@@ -13,11 +13,6 @@ public class LobbyPlayersCounter : MonoBehaviour
 
     void Start()
     {
-        Initialize();
-    }
-
-    internal void Initialize()
-    {
         numOfLoadedPlayers = 0;
 
         lobbyPlayersCounter = this;

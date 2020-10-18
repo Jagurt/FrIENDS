@@ -13,8 +13,7 @@ public class LobbyManager : NetworkBehaviour
 
     [SerializeField] private StartGameButtonInLobby startGameButton;
     [SerializeField] [SyncVar] private int readyPlayers = 0;
-    [SerializeField] [SyncVar] private int connectedPlayers = 0;
-    public int ConnectedPlayers { get => connectedPlayers; }
+    [SerializeField] [SyncVar] internal int connectedPlayers = 0;
 
     static List<string> playerNames = new List<string>();
 

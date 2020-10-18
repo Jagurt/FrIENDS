@@ -28,6 +28,7 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
     [SerializeField] [SyncVar] internal int activePlayerIndex = -1;
 
+    [SyncVar] internal int connectedPlayers = 0;
     [SyncVar] internal int readyPlayers = 0;
 
     [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
@@ -39,14 +40,16 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] internal List<PlayerInGame> offeringHelpPlayers = new List<PlayerInGame>();
     [SerializeField] [SyncVar] internal NetworkInstanceId helpingPlayerNetId = NetworkInstanceId.Invalid;
 
+    [SerializeField] [SyncVar] internal bool fightInProggres;
+
     internal List<GameObject> fightingMonsters = new List<GameObject>();
 
     [SerializeField] [SyncVar] internal int fightingMonstersLevel;
+
     [SerializeField] [SyncVar] internal short fightingPlayerLevel;
     [SerializeField] [SyncVar] internal short helpingPlayerLevel;
     [SerializeField] [SyncVar] internal short fightingPlayersLevel;
 
-    [SerializeField] [SyncVar] internal bool fightInProggres;
     [SyncVar] internal bool foughtInThisRound;
 
     private void Start()
@@ -69,22 +72,52 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
-    internal IEnumerator ReportPresence( NetworkInstanceId connectedPlayersNetId )
+    internal IEnumerator ReportPresence()
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
-        yield return new WaitForEndOfFrame();
+        connectedPlayers++;
 
-        RpcReportPresence(connectedPlayersNetId);
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
+
+        if (connectedPlayers == CustomNetworkManager.playersToConnect)
+            StartCoroutine(ServerArrangePlayersList());
+    }
+
+    [Server]
+    IEnumerator ServerArrangePlayersList()
+    {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
+        Debug.Log("Players To Connect - " + CustomNetworkManager.playersToConnect);
+        Debug.Log("Connected Players - " + connectedPlayers);
+
+        PlayerManager[] players = FindObjectsOfType<PlayerManager>();
+
+        for (int i = 0; i < connectedPlayers; i++)
+        {
+            for (int j = 0; j < connectedPlayers; j++)
+            {
+                if (players[j].playerIndex == i)
+                {
+                    RpcAddToPlayersList(players[j].PlayerInGame.GetComponent<PlayerInGame>().netId);
+                    yield return new WaitForEndOfFrame();
+                    break;
+                }
+            }
+        }
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
 
     [ClientRpc]
-    void RpcReportPresence( NetworkInstanceId connectedPlayersNetId )
+    void RpcAddToPlayersList( NetworkInstanceId connectedPlayersNetId )
     {
         playersObjects.Add(ClientScene.FindLocalObject(connectedPlayersNetId));
     }

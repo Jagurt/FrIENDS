@@ -9,21 +9,22 @@ using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
-    internal static PlayerManager playerManager;
-
     [SerializeField] private GameObject playerInLobby;
     [SerializeField] private GameObject playerInGame;
     CustomNetworkManager CustomNetworkManager;
     [SerializeField] [SyncVar] string nickName;
 
+    public GameObject PlayerInGame { get => playerInGame; }
+
+    [SerializeField] internal int playerIndex = 0;
+
     private void Start()
     {
-        playerManager = this;
         DontDestroyOnLoad(this); // Setting this objec to not be destroyed on transition betwen scenes
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
 
         if (hasAuthority)
-            CmdSpawnPlayerLobbyPanel(GlobalVariables.NickName);
+            CmdSpawnPlayerInLobby(GlobalVariables.NickName);
 
         SceneManager.sceneLoaded += InitializeInGameScene;
     }
@@ -68,15 +69,15 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Command]
-    void CmdSpawnPlayerLobbyPanel(string nickName)
+    void CmdSpawnPlayerInLobby(string nickName)
     {
         this.nickName = nickName;
         LobbyManager.ConnectedPlayersUpdate();
-        StartCoroutine(SpawnPlayerLobbyPanel(nickName));
+        StartCoroutine(SpawnPlayerInLobby(nickName));
     }
 
     [Server]
-    private IEnumerator SpawnPlayerLobbyPanel( string nickName )
+    IEnumerator SpawnPlayerInLobby( string nickName )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
@@ -100,7 +101,7 @@ public class PlayerManager : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
             CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
-            player.RpcInitializePlayerLobbyPanel(player.playerInLobby.GetComponent<PlayerInLobby>().netId);
+            player.RpcInitializePlayerInLobby(player.playerInLobby.GetComponent<PlayerInLobby>().netId);
 
             yield return new WaitForEndOfFrame();
             CustomNetworkManager.customNetworkManager.isServerBusy = false;
@@ -108,10 +109,10 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcInitializePlayerLobbyPanel( NetworkInstanceId playerInLobbyNetId )
+    void RpcInitializePlayerInLobby( NetworkInstanceId playerInLobbyNetId )
     {
         playerInLobby = ClientScene.FindLocalObject(playerInLobbyNetId);
-        playerInLobby.GetComponent<PlayerInLobby>().Initialize(nickName);
+        playerInLobby.GetComponent<PlayerInLobby>().Initialize(nickName, this);
     }
 
     [Server]

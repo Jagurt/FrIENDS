@@ -9,9 +9,10 @@ using UnityEngine.Networking.Match;
 public class CustomNetworkManager : NetworkManager
 {
     private NetworkClient myClient;
+    internal static CustomNetworkManager customNetworkManager;
 
     [SerializeField] internal bool isServerBusy = false;
-    internal static CustomNetworkManager customNetworkManager;
+    internal static int playersToConnect;
 
     private void Start()
     {
