@@ -18,7 +18,7 @@ public class ServerGameManager : NetworkBehaviour
     //      Stored References       //
     internal static ServerGameManager serverGameManager;
     CustomNetworkManager CustomNetworkManager;
-    [SerializeField] private ServerDecksManager serverDecksManager;
+    private static ServerDecksManager serverDecksManager;
     internal ServerDecksManager ServerDecksManager { get => serverDecksManager; }
 
     //      Turn and Players Vars       //
@@ -162,19 +162,25 @@ public class ServerGameManager : NetworkBehaviour
     {
         Debug.Log("Game Begins!");
         GamePhase = GamePhase.InProgress;
-
-        foreach (var player in playersObjects)
+        if (CustomNetworkManager.gameLoaded)
         {
-            player.GetComponent<PlayerInGame>().SendStartingHand();
+            StartCoroutine(SaveSystem.LoadGame());
         }
+        else
+        {
+            foreach (var player in playersObjects)
+            {
+                player.GetComponent<PlayerInGame>().SendStartingHand();
+            }
 
-        NewTurnSet();
+            NewTurnSet();
+        }
     }
 
     [Server] // Called on server
-    void NewTurnSet() // Setting vars for new turn
+    void NewTurnSet( TurnPhase turnPhase = TurnPhase.Beginning ) // Setting vars for new turn
     {
-        turnPhase = TurnPhase.Beginning;
+        this.turnPhase = turnPhase;
 
         if (activePlayerIndex >= 0)
             playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().hasTurn = false;
@@ -182,11 +188,11 @@ public class ServerGameManager : NetworkBehaviour
         activePlayerIndex = (activePlayerIndex + 1) % playersObjects.Count;
         PlayerInGame playerWithTurn = playersObjects[activePlayerIndex].GetComponent<PlayerInGame>();
         playerWithTurn.hasTurn = true;
-        StartCoroutine(playerWithTurn.ServerPersonalAlertCoroutine("You Turn Now!"));
+        StartCoroutine(playerWithTurn.ServerPersonalAlertCoroutine("Your Turn Now!"));
 
         activePlayerNetId = playersObjects[activePlayerIndex].GetComponent<NetworkIdentity>().netId;
 
-        TurnOwnerReadiness();
+        StartCoroutine(ServerTurnOwnerReadiness());
         playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().StartTurn();
         StartCoroutine(ServerAlert("New Turn Starts!"));
     }
@@ -214,13 +220,7 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
-    internal void TurnOwnerReadiness()
-    {
-        StartCoroutine(ServerTurnOwnerReadiness());
-    }
-
-    [Server]
-    IEnumerator ServerTurnOwnerReadiness()
+    internal IEnumerator ServerTurnOwnerReadiness()
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -234,7 +234,7 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-    
+
     [Server]
     internal IEnumerator ServerAllPlayersReadiness()
     {
@@ -249,12 +249,6 @@ public class ServerGameManager : NetworkBehaviour
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
-    }
-
-    [Server]
-    internal void AllPlayersReadiness()
-    {
-        StartCoroutine(ServerAllPlayersReadiness());
     }
 
     [Server]
@@ -288,7 +282,7 @@ public class ServerGameManager : NetworkBehaviour
         fightingPlayerNetId = NetworkInstanceId.Invalid;
         helpingPlayerNetId = NetworkInstanceId.Invalid;
         PlayerInGame.localPlayerInGame.EndFight();
-        TurnOwnerReadiness();
+        StartCoroutine(ServerTurnOwnerReadiness());
     }
 
     [Server]
@@ -398,8 +392,8 @@ public class ServerGameManager : NetworkBehaviour
         InfoPanel.Alert(text);
     }
 
-    internal GameObject GetCardByName(string name)
+    internal static GameObject GetCardByName( string name )
     {
-        return serverGameManager.GetCardByName(name);
+        return serverDecksManager.GetCardByName(name);
     }
 }

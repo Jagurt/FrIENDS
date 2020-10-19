@@ -15,7 +15,7 @@ public class LoadGameButton : MonoBehaviour
 
     void OnClick()
     {
-        SaveSystem.LoadGame();
+        SaveSystem.LoadSaveFile();
         LobbyPlayersCounter.OnLoadGame(SaveSystem.loadedSave.playersData.Count);
         StartCoroutine(LobbyManager.ServerActivateLoadHeaders());
     }

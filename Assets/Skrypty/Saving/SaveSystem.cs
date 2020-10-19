@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections;
 
 public static class SaveSystem
 {
@@ -9,6 +10,9 @@ public static class SaveSystem
 
     public static void SaveGame()
     {
+        // TODO: Players can't save when there are cards on board
+        // TODO: Players can't save during fights
+
         string gameData = JsonUtility.ToJson(new SaveGameData());
         File.WriteAllText(path, gameData);
 
@@ -16,39 +20,72 @@ public static class SaveSystem
     }
 
     // [Server]
-    public static void LoadObjectsToGame( SaveGameData save )
+    public static IEnumerator LoadGame()
     {
+        CustomNetworkManager CustomNetworkManager = CustomNetworkManager.customNetworkManager;
+
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
         // Loading Players
+        ServerGameManager serverGameManager = ServerGameManager.serverGameManager;
 
-        for (int i = 0; i < save.playersData.Count; i++)
+        serverGameManager.turnPhase = loadedSave.turnPhase;
+        yield return new WaitForEndOfFrame();
+
+        for (int i = 0; i < loadedSave.playersData.Count; i++)
         {
-            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().Level = save.playersData[i].level;
-            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().hasTurn = save.playersData[i].hasTurn;
-            ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().isAlive = save.playersData[i].isAlive;
+            GameObject playerGO = serverGameManager.playersObjects[i];
+            PlayerInGame playerScript = playerGO.GetComponent<PlayerInGame>();
 
-            for (int j = 0; j < save.playersData[i].cardsInHand.Count; j++)
+            playerScript.Level = loadedSave.playersData[i].level;
+            yield return new WaitForEndOfFrame();
+
+            playerScript.hasTurn = loadedSave.playersData[i].hasTurn;
+            yield return new WaitForEndOfFrame();
+
+            if (playerScript.hasTurn)
             {
-                GameObject card = ServerGameManager.serverGameManager.GetCardByName(save.playersData[i].cardsInHand[j]);
-                ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().OnLoadReceiveCard(card);
+                serverGameManager.activePlayerNetId = playerScript.netId;
+                yield return new WaitForEndOfFrame();
+
+                serverGameManager.activePlayerIndex = i;
+                yield return new WaitForEndOfFrame();
             }
 
-            for (int j = 0; j < save.playersData[i].equippedItems.Count; j++)
+            playerScript.isAlive = loadedSave.playersData[i].isAlive;
+            yield return new WaitForEndOfFrame();
+
+            for (int j = 0; j < loadedSave.playersData[i].cardsInHand.Count; j++)
             {
-                GameObject card = ServerGameManager.serverGameManager.GetCardByName(save.playersData[i].equippedItems[j]);
-                ServerGameManager.serverGameManager.playersObjects[i].GetComponent<PlayerInGame>().OnLoadEquip(card);
+                GameObject card = ServerGameManager.GetCardByName(loadedSave.playersData[i].cardsInHand[j]);
+                playerScript.OnLoadReceiveCard(card);
+                yield return new WaitForEndOfFrame();
+            }
+
+            for (int j = 0; j < loadedSave.playersData[i].equippedItems.Count; j++)
+            {
+                GameObject card = ServerGameManager.GetCardByName(loadedSave.playersData[i].equippedItems[j]);
+                playerScript.ServerOnLoadEquip(card);
+                yield return new WaitForEndOfFrame();
             }
         }
 
         // Loading Decks
-
-        for (int i = 0; i < save.discardedCards.Count; i++)
+        for (int i = 0; i < loadedSave.discardedCards.Count; i++)
         {
-            GameObject card = ServerGameManager.serverGameManager.GetCardByName(save.discardedCards[i]);
-            ServerGameManager.serverGameManager.playersObjects[0].GetComponent<PlayerInGame>().OnLoadDiscardCard(card);
+            GameObject card = ServerGameManager.GetCardByName(loadedSave.discardedCards[i]);
+            PlayerInGame.OnLoadDiscardCard(card);
+            yield return new WaitForEndOfFrame();
         }
+
+        CustomNetworkManager.isServerBusy = false;
+
+        serverGameManager.StartCoroutine(serverGameManager.ServerTurnOwnerReadiness());
     }
 
-    public static SaveGameData LoadGame()
+    public static SaveGameData LoadSaveFile()
     {
         loadedSave = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(path));
         return loadedSave;

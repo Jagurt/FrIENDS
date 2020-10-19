@@ -105,7 +105,7 @@ public class LobbyManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcUpdatePlayersCounter( int numOfLoadedPlayers )
+    internal void RpcUpdatePlayersCounter( int numOfLoadedPlayers )
     {
         LobbyPlayersCounter.numOfLoadedPlayers = numOfLoadedPlayers;
         LobbyPlayersCounter.UpdatePlayersCounter(readyPlayers, connectedPlayers);

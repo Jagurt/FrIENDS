@@ -10,11 +10,10 @@ public class PlayerInGame : NetworkBehaviour
     internal ServerGameManager serverGameManager; // Reference to ServerGameManager script for easier use here.
     internal static PlayerInGame localPlayerInGame; // Static reference to PlayerInGame(this) script, it gets set by the object that is meant to be local player.
 
-    CustomNetworkManager CustomNetworkManager;
+    static CustomNetworkManager CustomNetworkManager;
 
     [SyncVar] internal string NickName; // Nick name of player got from options in title screen.
     internal Sprite Avatar; // Not Implemented Yet
-    internal Color color;
 
     //      Statystyki      //
     [SyncVar] [SerializeField] private short level = 1; // Level of a player
@@ -150,10 +149,10 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal void OnLoadEquip(GameObject card)
+    internal void ServerOnLoadEquip(GameObject card)
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
-        StartCoroutine(ServerEquip(cardNetId));
+        RpcEquip(cardNetId);
     }
 
     [Server]
@@ -384,11 +383,11 @@ public class PlayerInGame : NetworkBehaviour
     internal void OnLoadReceiveCard(GameObject card)
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
-        StartCoroutine(ServerReceiveCard(cardNetId, false, false));
+        StartCoroutine(ServerReceiveCard(cardNetId));
     }
 
     [Server]
-    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer, bool choice )
+    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer = false, bool choice = false)
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -561,10 +560,10 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal void OnLoadDiscardCard(GameObject card)
+    internal static void OnLoadDiscardCard(GameObject card)
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
-        StartCoroutine(ServerDiscardCard(cardNetId));
+        localPlayerInGame.StartCoroutine(ServerDiscardCard(cardNetId));
     }
 
     [Server]
@@ -585,14 +584,14 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal IEnumerator ServerDiscardCard( NetworkInstanceId cardToDiscardNetId )
+    internal static IEnumerator ServerDiscardCard( NetworkInstanceId cardToDiscardNetId )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
         //Debug.Log("RpcDiscardCardCoroutine!" + cardToDiscardNetId);
-        RpcDiscardCard(cardToDiscardNetId);
+        localPlayerInGame.RpcDiscardCard(cardToDiscardNetId);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
@@ -1283,7 +1282,6 @@ public class PlayerInGame : NetworkBehaviour
         playerData.isAlive = isAlive;
         playerData.level = level;
         playerData.nickName = NickName;
-        playerData.color = color;
 
         List<string> cardsInHand = new List<string>();
         List<string> equippedItems = new List<string>();

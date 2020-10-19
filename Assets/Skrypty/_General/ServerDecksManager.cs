@@ -175,7 +175,11 @@ public class ServerDecksManager : NetworkBehaviour
             GameObject card = doorsDeck.GetChild(i).gameObject;
 
             if (card.GetComponent<Card>().cardValues.name == name)
-                return card;
+                if (card.GetComponent<Card>().cardValues.name == name)
+                {
+                    card.transform.SetAsLastSibling();
+                    return card;
+                }
         }
 
         for (int i = 0; i < treasuresDeck.childCount; i++)
@@ -183,7 +187,11 @@ public class ServerDecksManager : NetworkBehaviour
             GameObject card = treasuresDeck.GetChild(i).gameObject;
 
             if (card.GetComponent<Card>().cardValues.name == name)
-                return card;
+                if (card.GetComponent<Card>().cardValues.name == name)
+                {
+                    card.transform.SetAsLastSibling();
+                    return card;
+                }
         }
 
         for (int i = 0; i < spellsDeck.childCount; i++)
@@ -191,7 +199,10 @@ public class ServerDecksManager : NetworkBehaviour
             GameObject card = spellsDeck.GetChild(i).gameObject;
 
             if (card.GetComponent<Card>().cardValues.name == name)
+            {
+                card.transform.SetAsLastSibling();
                 return card;
+            }
         }
 
         for (int i = 0; i < helpHandsDeck.childCount; i++)
@@ -199,7 +210,11 @@ public class ServerDecksManager : NetworkBehaviour
             GameObject card = helpHandsDeck.GetChild(i).gameObject;
 
             if (card.GetComponent<Card>().cardValues.name == name)
-                return card;
+                if (card.GetComponent<Card>().cardValues.name == name)
+                {
+                    card.transform.SetAsLastSibling();
+                    return card;
+                }
         }
 
         Debug.LogError("CardToSpawnNotFound");

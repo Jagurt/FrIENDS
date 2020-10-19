@@ -12,6 +12,7 @@ public class CustomNetworkManager : NetworkManager
     internal static CustomNetworkManager customNetworkManager;
 
     [SerializeField] internal bool isServerBusy = false;
+    internal static bool gameLoaded = false;
     internal static int playersToConnect;
 
     private void Start()

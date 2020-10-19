@@ -38,14 +38,12 @@ public class CurseLevelDown : Effect
 
 
         player.Level -= 1;
-
         yield return new WaitForEndOfFrame();
 
         PlayerInGame.localPlayerInGame.RpcDiscardCard(this.netId);
-
         yield return new WaitForEndOfFrame();
 
-        serverGameManager.TurnOwnerReadiness();
+        StartCoroutine(serverGameManager.ServerTurnOwnerReadiness());
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;

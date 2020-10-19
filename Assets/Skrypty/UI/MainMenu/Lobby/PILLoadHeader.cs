@@ -19,7 +19,7 @@ public class PILLoadHeader : NetworkBehaviour
 
     internal void Initialize(string name)
     {
-        Debug.Log("RpcInitialize.name - " + name);
+        //Debug.Log("RpcInitialize.name - " + name);
 
         gameObject.SetActive(true);
         TMPro.text = name;

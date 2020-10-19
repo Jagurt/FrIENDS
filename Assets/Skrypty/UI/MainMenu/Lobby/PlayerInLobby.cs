@@ -63,22 +63,32 @@ public class PlayerInLobby : NetworkBehaviour
     [Command]
     private void CmdSwitchReadiness( bool isOn )
     {
+        StartCoroutine(ServerSwitchReadindess(isOn));        
+    }
+
+    IEnumerator ServerSwitchReadindess(bool isOn)
+    {
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
         readyToStart = !readyToStart;
         if (readyToStart)
             LobbyManager.ReadyPlayer();
         else
             LobbyManager.UnreadyPlayer();
 
-        // TODO: Update Readiness Icon
+        yield return new WaitForEndOfFrame();
+        LobbyManager.lobbyManager.RpcUpdatePlayersCounter(LobbyPlayersCounter.numOfLoadedPlayers);
 
-        RpcSwitchReadiness(isOn);
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
-    [ClientRpc]
-    private void RpcSwitchReadiness( bool isOn )
+    [Client]
+    void ClientSwitchReadiness(bool isOn)
     {
         toggle.isOn = isOn;
-        LobbyManager.ServerUpdatePlayersCounter();
     }
 
     [Server]

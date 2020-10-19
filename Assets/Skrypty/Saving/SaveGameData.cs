@@ -10,6 +10,7 @@ public class SaveGameData
     public List<PlayerSaveData> playersData;
 
     public List<string> discardedCards;
+    public TurnPhase turnPhase;
 
     public SaveGameData()
     {
@@ -17,6 +18,8 @@ public class SaveGameData
 
         if (!ServerGameManager.serverGameManager)
             return;
+
+        turnPhase = ServerGameManager.serverGameManager.turnPhase;
 
         playersData = new List<PlayerSaveData>();
 
