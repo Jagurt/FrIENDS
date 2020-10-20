@@ -15,8 +15,12 @@ public class LoadGameButton : MonoBehaviour
 
     void OnClick()
     {
-        SaveSystem.LoadSaveFile();
+        if (LoadGameMenu.selectedSavePath == null)
+            return;
+
+        SaveSystem.LoadSaveFile(LoadGameMenu.selectedSavePath);
         LobbyPlayersCounter.OnLoadGame(SaveSystem.loadedSave.playersData.Count);
-        StartCoroutine(LobbyManager.ServerActivateLoadHeaders());
+        LobbyManager.lobbyManager.StartCoroutine(LobbyManager.ServerActivateLoadHeaders());
+        LoadGameMenu.Deactivate();
     }
 }

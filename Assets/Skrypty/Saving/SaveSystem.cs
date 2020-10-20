@@ -6,7 +6,8 @@ using System.Collections;
 public static class SaveSystem
 {
     public static SaveGameData loadedSave;
-    static string path = Application.persistentDataPath + "/TestSave.json";
+    static string testPath = Application.persistentDataPath + "/TestSave.json";
+    internal static string savesFolderPath = Application.persistentDataPath + "/Saves/";
 
     public static void SaveGame()
     {
@@ -14,9 +15,9 @@ public static class SaveSystem
         // TODO: Players can't save during fights
 
         string gameData = JsonUtility.ToJson(new SaveGameData());
-        File.WriteAllText(path, gameData);
+        File.WriteAllText(testPath, gameData);
 
-        Debug.Log("Saving in: " + path);
+        Debug.Log("Saving in: " + testPath);
     }
 
     // [Server]
@@ -85,9 +86,9 @@ public static class SaveSystem
         serverGameManager.StartCoroutine(serverGameManager.ServerTurnOwnerReadiness());
     }
 
-    public static SaveGameData LoadSaveFile()
+    public static SaveGameData LoadSaveFile(string saveFilePath)
     {
-        loadedSave = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(path));
+        loadedSave = JsonUtility.FromJson<SaveGameData>(File.ReadAllText(saveFilePath));
         return loadedSave;
     }
 }

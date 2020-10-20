@@ -26,7 +26,18 @@ public class PlayerManager : NetworkBehaviour
         if (hasAuthority)
             CmdSpawnPlayerInLobby(GlobalVariables.NickName);
 
-        SceneManager.sceneLoaded += InitializeInGameScene;
+        //SceneManager.sceneLoaded += InitializeInGameScene;
+    }
+
+    [Server]
+    internal static void ServerPrepToStartGame()
+    {
+        PlayerManager[] playerManagers = FindObjectsOfType<PlayerManager>();
+
+        foreach (var playerManager in playerManagers)
+        {
+            SceneManager.sceneLoaded += playerManager.InitializeInGameScene;
+        }
     }
 
     void InitializeInGameScene( Scene scene, LoadSceneMode mode ) // Spawning PlayerInGame object in Game Scene
@@ -37,11 +48,11 @@ public class PlayerManager : NetworkBehaviour
             return;
         }
 
-        SpawnPlayerInGame();
+        ServerSpawnPlayerInGame();
     }
 
     [Server]
-    private void SpawnPlayerInGame()
+    private void ServerSpawnPlayerInGame()
     {
         if (connectionToClient.isReady && !CustomNetworkManager.isServerBusy) // If client is connected and ready, this is set by Unity automatically
         {

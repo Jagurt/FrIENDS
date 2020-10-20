@@ -16,6 +16,7 @@ public class StartGameButtonInLobby : MonoBehaviour
     {
         CustomNetworkManager.gameLoaded = System.Convert.ToBoolean(LobbyPlayersCounter.numOfLoadedPlayers);
         CustomNetworkManager.playersToConnect = LobbyManager.lobbyManager.connectedPlayers;
+        PlayerManager.ServerPrepToStartGame();
         CustomNetworkManager.customNetworkManager.ServerChangeScene("GameScene");
     }
 
