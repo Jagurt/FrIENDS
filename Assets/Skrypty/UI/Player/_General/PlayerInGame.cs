@@ -41,18 +41,11 @@ public class PlayerInGame : NetworkBehaviour
     [SerializeField] internal GameObject opponentInPanel;   // Reference to opponentInPanel Prefab
     [SerializeField] internal GameObject playerCanvas;      // Reference to playerCanvas Prefab
 
-    internal ProgressButton ProgressButton; // Reference to Progress Button object. Enables managing of if player has to report readiness or not.
-    internal HelpButton HelpButton;         // Reference to Help Button object. Enables managing of "helping in combat" mechanic.
-
     internal Transform handContent;  // Reference to players "Hand" Transform that stores players owned cards.
 
     internal Transform table;           // Reference to "Table" Transform that stores cards being currently in use.
     private Transform opponentsPanel;   // Reference to panels Transform that stores objects (OpponentInPanel) which show information about enemies
     internal Transform equipment;        // Reference to Transform that stores slots for eqipment.
-
-    internal ChoicePanel choicePanel;    // Reference to "ChoicePanel" script that manages choosing cards.
-    private TradePanel tradePanel;      // Referance to "TradePanel" script that manages trading cards with other players.
-    internal LevelCounter LevelCounter;
 
     //      Equipment       //
     [SerializeField] internal List<GameObject> equippedItems = new List<GameObject>();
@@ -72,6 +65,15 @@ public class PlayerInGame : NetworkBehaviour
             CmdStart(GlobalVariables.NickName);
 
             playerCanvas = Instantiate(playerCanvas); // Gets prefab stored in "playerCanvas" variable -> creates it as GameObject -> and stores reference to it in same variable
+            PlayerCanvas.Initialize(playerCanvas);
+            ProgressButton.Initialize();
+            HelpButton.Initialize();
+            ChoicePanel.Initialize();
+            TradePanel.Initialize();
+            LevelCounter.Initialize();
+            SaveGameMenu.Initialize();
+            InGameMenu.Initialize();
+            AcceptTradeButton.Initialize();
 
             //      Setting references for UI Objects      //
 
@@ -80,18 +82,6 @@ public class PlayerInGame : NetworkBehaviour
 
             equipment = opponentInPanel.transform.Find("Eq");
             handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
-
-            ProgressButton = playerCanvas.transform.Find("ProgressButton").GetComponent<ProgressButton>();
-            HelpButton = playerCanvas.transform.Find("HelpButton").GetComponent<HelpButton>();
-
-            choicePanel = playerCanvas.transform.Find("ChoicePanel").GetComponent<ChoicePanel>();
-            choicePanel.Initialize();
-
-            tradePanel = playerCanvas.transform.Find("TradePanel").GetComponent<TradePanel>();
-            tradePanel.Initialize();
-
-            LevelCounter = playerCanvas.transform.Find("LevelCounter").GetComponent<LevelCounter>();
-            LevelCounter.Initialize();
 
             ///////////////////////////////////////////////////
         }
@@ -149,7 +139,7 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal void ServerOnLoadEquip(GameObject card)
+    internal void ServerOnLoadEquip( GameObject card )
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
         RpcEquip(cardNetId);
@@ -380,14 +370,14 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal void OnLoadReceiveCard(GameObject card)
+    internal void OnLoadReceiveCard( GameObject card )
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
         StartCoroutine(ServerReceiveCard(cardNetId));
     }
 
     [Server]
-    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer = false, bool choice = false)
+    internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer = false, bool choice = false )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -417,10 +407,10 @@ public class PlayerInGame : NetworkBehaviour
         {
             if (choice) // If cards are selectable => transfer it to choice panel => choose 1 and discard the others
             {
-                if (!choicePanel.gameObject.activeInHierarchy)
-                    choicePanel.PrepareToReceiveObjects(ChoicePanelTitle.DrawFirstDoor, choice);
+                if (!ChoicePanel.choicePanel.gameObject.activeInHierarchy)
+                    ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.DrawFirstDoor, choice);
 
-                choicePanel.ReceiveObjectToChoose(card);
+                ChoicePanel.ReceiveObjectToChoose(card);
                 return;
             }
 
@@ -451,7 +441,7 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     internal void RpcAllPlayersReadiness() // Activates readiness checking for all players
     {
-        localPlayerInGame.ProgressButton.ActivateButton();
+        ProgressButton.ActivateButton();
     }
 
     internal void UseCardOnLocalPlayer( NetworkInstanceId cardNetId )
@@ -560,7 +550,7 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal static void OnLoadDiscardCard(GameObject card)
+    internal static void OnLoadDiscardCard( GameObject card )
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
         localPlayerInGame.StartCoroutine(ServerDiscardCard(cardNetId));
@@ -694,9 +684,10 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcEndFight()
     {
-        localPlayerInGame.HelpButton.DeactivateButton();
+        HelpButton.DeactivateButton();
         ServerGameManager.serverGameManager.fightingMonsters.Clear();
         ServerGameManager.serverGameManager.offeringHelpPlayers.Clear();
+        LevelCounter.Deactivate();
     }
 
     IEnumerator ServerUpdateLevelUI()
@@ -729,7 +720,7 @@ public class PlayerInGame : NetworkBehaviour
         // Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
 
         if (serverGameManager.fightInProggres)
-            localPlayerInGame.LevelCounter.UpdateLevels();
+            LevelCounter.UpdateLevels();
     }
 
     [Command]
@@ -776,8 +767,8 @@ public class PlayerInGame : NetworkBehaviour
     {
         if (serverGameManager.offeringHelpPlayers.Count > 0)
         {
-            choicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayer);
-            choicePanel.ReceivePlayersToChoose(serverGameManager.offeringHelpPlayers.ToArray());
+            ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayer);
+            ChoicePanel.ReceivePlayersToChoose(serverGameManager.offeringHelpPlayers.ToArray());
         }
     }
 
@@ -817,7 +808,7 @@ public class PlayerInGame : NetworkBehaviour
         serverGameManager.offeringHelpPlayers.Add(this);
 
         if (localPlayerInGame.netId == serverGameManager.fightingPlayerNetId)
-            localPlayerInGame.HelpButton.UpdateHelpers(true);
+            HelpButton.UpdateHelpers(true);
     }
 
     internal void CancelHelp()
@@ -855,7 +846,7 @@ public class PlayerInGame : NetworkBehaviour
             serverGameManager.offeringHelpPlayers.Remove(this);
 
         if (localPlayerInGame.netId == serverGameManager.fightingPlayerNetId)
-            localPlayerInGame.HelpButton.UpdateHelpers(false);
+            HelpButton.UpdateHelpers(false);
     }
 
     void ChoosePlayerToHelp( PlayerInGame helpingPlayer )
@@ -888,7 +879,7 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcChoosePlayerToHelp( NetworkInstanceId helpingPlayerNetId )
     {
-        localPlayerInGame.HelpButton.DeactivateButton();
+        HelpButton.DeactivateButton();
         serverGameManager.offeringHelpPlayers.Clear();      // Clearing players which offered help 
 
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(serverGameManager.fightingPlayerNetId).GetComponent<PlayerInGame>();
@@ -898,8 +889,8 @@ public class PlayerInGame : NetworkBehaviour
 
     internal void ChoosePlayerToTradeWith( PlayerInGame[] playersFreeToTrade )
     {
-        choicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayerToTrade);
-        choicePanel.ReceivePlayersToChoose(playersFreeToTrade);
+        ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayerToTrade);
+        ChoicePanel.ReceivePlayersToChoose(playersFreeToTrade);
     }
 
     internal void RequestTrade( PlayerInGame requestedPlayer )
@@ -939,7 +930,7 @@ public class PlayerInGame : NetworkBehaviour
 
     internal void AcceptTradeRequest( PlayerInGame requestingTradePIG ) // this is called on REQUESTED player object locally
     {
-        tradePanel.PrepareForTrade(requestingTradePIG);
+        TradePanel.PrepareForTrade(requestingTradePIG);
         // Open Trade Panel, Can add owned cards to panel or view cards added by enemy.
         CmdAcceptTradeRequest(requestingTradePIG.netId); // Calling trade acceptance on server.
     }
@@ -975,7 +966,7 @@ public class PlayerInGame : NetworkBehaviour
             // Open Trade Panel, Can add owned cards to panel or view cards added by enemy.
             PlayerInGame requestedTradePIG = ClientScene.FindLocalObject(requestedTradePIGNetId).GetComponent<PlayerInGame>();
 
-            tradePanel.PrepareForTrade(requestedTradePIG);
+            TradePanel.PrepareForTrade(requestedTradePIG);
         }
     }
 
@@ -1018,7 +1009,7 @@ public class PlayerInGame : NetworkBehaviour
         if (!cardScript)
             return;
 
-        tradePanel.ResetAcceptance();
+        TradePanel.ResetAcceptance();
         CmdReceiveTradingCard(cardScript.netId, playerWeTradeWith.netId);
     }
 
@@ -1050,13 +1041,13 @@ public class PlayerInGame : NetworkBehaviour
         if (hasAuthority)
         {
             GameObject enemysCard = ClientScene.FindLocalObject(tradingCardNetId);
-            tradePanel.ReceiveEnemysCard(enemysCard);
+            TradePanel.ReceiveEnemysCard(enemysCard);
         }
     }
 
     internal void RemoveTradingCard( GameObject tradingCard ) // This is called on player which receives card
     {
-        tradePanel.ResetAcceptance();
+        TradePanel.ResetAcceptance();
 
         Card cardScript = tradingCard.GetComponent<Card>();
         CmdRemoveTradingCard(cardScript.netId);
@@ -1090,7 +1081,7 @@ public class PlayerInGame : NetworkBehaviour
             GameObject opponentsCard = ClientScene.FindLocalObject(tradingCardNetId);
             Debug.Log("RpcRemoveTradingCard(): opponentsCard - " + opponentsCard);
             //tradePanel.RemoveEnemysCard(enemysCard);
-            TradePanel.tradePanel.ResetAcceptance();
+            TradePanel.ResetAcceptance();
             ClientReceiveCard(opponentsCard);
         }
     }
@@ -1125,7 +1116,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         if (hasAuthority)
         {
-            tradePanel.TradeAcceptance();
+            TradePanel.TradeAcceptance();
         }
     }
 
@@ -1167,27 +1158,17 @@ public class PlayerInGame : NetworkBehaviour
         List<GameObject> cardsToReceive = new List<GameObject>();
 
         if (hasAuthority) // If player object is local Player  || player object matches the on we traded with
-        {
             // Receive cards from tradePanels playersCardsPanel
-            foreach (Transform card in tradePanel.playersCardsPanel)
-            {
+            foreach (Transform card in TradePanel.playersCardsPanel)
                 cardsToReceive.Add(card.gameObject);
-            }
-        }
         else
-        {
-            foreach (Transform card in TradePanel.tradePanel.opponentsCardsPanel)
-            {
+            foreach (Transform card in TradePanel.opponentsCardsPanel)
                 cardsToReceive.Add(card.gameObject);
-            }
-        }
 
         foreach (GameObject card in cardsToReceive)
-        {
             ClientReceiveCard(card);
-        }
 
-        TradePanel.tradePanel.Rest();
+        TradePanel.Deactivate();
     }
 
     internal void FinalizeTrade( PlayerInGame playerWeTradeWith )
@@ -1219,39 +1200,30 @@ public class PlayerInGame : NetworkBehaviour
     void RpcFinalizeTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
         Debug.Log("RpcFinalizeTrade()");
-        ExecuteFinalizeTrade(); // Finalizing trade for first player
+        ClientFinalizeTrade(); // Finalizing trade for first player
 
         PlayerInGame playerWeTradeWith = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
-        playerWeTradeWith.ExecuteFinalizeTrade(); // Finalizing trade for second player
+        playerWeTradeWith.ClientFinalizeTrade(); // Finalizing trade for second player
     }
 
-    void ExecuteFinalizeTrade()
+    [Client]
+    void ClientFinalizeTrade()
     {
         Debug.Log("ExecuteFinalizeTrade()");
         List<GameObject> cardsToReceive = new List<GameObject>();
 
         if (hasAuthority) // If player object is local Player
-        {
             // Receive cards from tradePanels 
-            foreach (Transform card in tradePanel.opponentsCardsPanel)
-            {
+            foreach (Transform card in TradePanel.opponentsCardsPanel)
                 cardsToReceive.Add(card.gameObject);
-            }
-        }
         else
-        {
-            foreach (Transform card in TradePanel.tradePanel.playersCardsPanel)
-            {
+            foreach (Transform card in TradePanel.playersCardsPanel)
                 cardsToReceive.Add(card.gameObject);
-            }
-        }
 
         foreach (GameObject card in cardsToReceive)
-        {
             ClientReceiveCard(card);
-        }
 
-        TradePanel.tradePanel.Rest();
+        TradePanel.Deactivate();
     }
 
     [Server]

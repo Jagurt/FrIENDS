@@ -22,7 +22,7 @@ public class TradeDropZone : DropZone
     {
         base.OnDrop(eventData);
         // Add card to enemy's tradePanel
-        TradePanel.tradePanel.ResetAcceptance();
+        TradePanel.ResetAcceptance();
         localPlayerInGame.ReceiveTradingCard(eventData.pointerDrag, playerWeTradeWith);
     }
 

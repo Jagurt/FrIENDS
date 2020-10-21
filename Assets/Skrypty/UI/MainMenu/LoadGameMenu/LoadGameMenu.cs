@@ -10,32 +10,42 @@ public class LoadGameMenu : MonoBehaviour
     internal static Transform content;
 
     internal static string selectedSavePath;
-    internal static string[] savePaths;
 
     [SerializeField] internal GameObject SaveFilePanel;
 
     internal static void Initialize()
     {
-        if (!loadGameMenu)
-            loadGameMenu = MainMenu.loadGameMenu.GetComponent<LoadGameMenu>();
-        if (!content)
-            content = loadGameMenu.transform.Find("Scroll View").Find("Viewport").Find("Content");
-
-        loadGameMenu.gameObject.SetActive(true);
-        selectedSavePath = null;
-        SearchForSaves();
+        loadGameMenu = MainMenu.mainMenu.transform.parent.Find("LoadGameMenu").GetComponent<LoadGameMenu>();
+        content = loadGameMenu.transform.Find("Scroll View").Find("Viewport").Find("Content");
     }
 
-    internal static void SearchForSaves(bool refresh = false)
+    internal static void SearchForSaves( Transform content = null)
     {
-        if (savePaths != null && !refresh)
-            return;
+        selectedSavePath = null;
 
-        savePaths = Directory.GetFiles(SaveSystem.savesFolderPath);
+
+        SaveFilePanel[] existingSaveFilePanels = FindObjectsOfType<SaveFilePanel>();
+
+        foreach (var item in existingSaveFilePanels)
+        {
+            Destroy(item.gameObject);
+        }
+
+
+        if (!content)
+            content = LoadGameMenu.content;
+
+        GameObject SaveFilePanel;
+        if (loadGameMenu)
+            SaveFilePanel = loadGameMenu.SaveFilePanel;
+        else
+            SaveFilePanel = SaveGameMenu.saveGameMenu.SaveFilePanel;
+
+        string[] savePaths = Directory.GetFiles(SaveSystem.savesFolderPath);
 
         foreach (var savePath in savePaths)
         {
-            GameObject saveFilePanel = Instantiate(loadGameMenu.SaveFilePanel, content);
+            GameObject saveFilePanel = Instantiate(SaveFilePanel, content);
 
             string saveFileName = Path.GetFileNameWithoutExtension(savePath);
 
@@ -44,6 +54,13 @@ public class LoadGameMenu : MonoBehaviour
 
             saveFilePanel.GetComponent<SaveFilePanel>().Initialize(savePath, saveFileName, saveFileDate);
         }
+    }
+
+    internal static void Activate()
+    {
+        loadGameMenu.gameObject.SetActive(true);
+        selectedSavePath = null;
+        SearchForSaves();
     }
 
     internal static void Deactivate()

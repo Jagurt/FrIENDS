@@ -28,13 +28,13 @@ public class Effect : Card
             switch (target)
             {
                 case Target.Player:
-                    localPlayer.choicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayer);
-                    localPlayer.choicePanel.ReceivePlayersToChoose(FindObjectsOfType<PlayerInGame>());
+                    ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChoosePlayer);
+                    ChoicePanel.ReceivePlayersToChoose(FindObjectsOfType<PlayerInGame>());
                     break;
                 case Target.Monster:
                     break;
                 case Target.All:
-                    localPlayer.choicePanel.SetWhichToChoose(); // Not Implemented yet
+                    ChoicePanel.SetWhichToChoose(); // Not Implemented yet
                     break;
                 default:
                     break;

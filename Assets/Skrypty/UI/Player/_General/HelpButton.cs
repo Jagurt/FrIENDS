@@ -6,31 +6,40 @@ using UnityEngine.UI;
 
 public class HelpButton : MonoBehaviour
 {
-    TextMeshProUGUI textMesh;
+    internal static HelpButton helpButton;
+
     Button Button;
-    int helpers = 0;
-    bool helping = false;
+    static TextMeshProUGUI textMesh;
+    static int helpers = 0;
+    static bool helping = false;
 
     private void Start()
     {
         textMesh = transform.Find("Text").GetComponent<TextMeshProUGUI>();
+
         Button = GetComponent<Button>();
         Button.onClick.AddListener(delegate { OnClick(); });
+
         gameObject.SetActive(false);
     }
 
-    internal void Initialize()
+    internal static void Initialize()
+    {
+        helpButton = PlayerCanvas.playerCanvas.transform.Find("HelpButton").GetComponent<HelpButton>();
+    }
+
+    internal static void Activate()
     {
         helpers = 0;
 
-        gameObject.SetActive(true);
+        helpButton.gameObject.SetActive(true);
         if (ServerGameManager.serverGameManager.fightingPlayerNetId == PlayerInGame.localPlayerInGame.netId)
             textMesh.text = "Request Help (0)";
         else
             textMesh.text = "Offer Help";
     }
 
-    internal void UpdateHelpers( bool helping )
+    internal static void UpdateHelpers( bool helping )
     {
         Debug.Log("Updating Helpers");
 
@@ -59,17 +68,17 @@ public class HelpButton : MonoBehaviour
         }
     }
 
-    internal void ActivateButton()
+    internal static void ActivateButton()
     {
-        gameObject.SetActive(true);
-        GetComponent<Image>().raycastTarget = true;
-        Initialize();
+        helpButton.gameObject.SetActive(true);
+        helpButton.GetComponent<Image>().raycastTarget = true;
+        Activate();
         helping = false;
     }
 
-    internal void DeactivateButton()
+    internal static void DeactivateButton()
     {
         helping = false;
-        gameObject.SetActive(false);
+        helpButton.gameObject.SetActive(false);
     }
 }

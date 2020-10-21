@@ -7,13 +7,13 @@ public class TradePanel : MonoBehaviour
 {
     internal static TradePanel tradePanel;
 
-    PlayerInGame playerWeTradeWith;
-    internal Transform opponentsCardsPanel;
-    internal Transform playersCardsPanel;
-    TextMeshProUGUI tradePanelTitle;
+    static PlayerInGame playerWeTradeWith;
+    internal static Transform opponentsCardsPanel;
+    internal static Transform playersCardsPanel;
+    static TextMeshProUGUI tradePanelTitle;
 
-    [SerializeField] bool enemyAcceptedTrade;
-    [SerializeField] bool enemyConfirmedTrade;
+    static bool enemyAcceptedTrade;
+    static bool enemyConfirmedTrade;
 
     private void Awake()
     {
@@ -23,24 +23,23 @@ public class TradePanel : MonoBehaviour
         //tradePanelTitle = transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
     }
 
-    internal void Initialize()
+    internal static void Initialize()
     {
-        tradePanel = this;
-        opponentsCardsPanel = transform.Find("EnemysCardsPanel");
-        playersCardsPanel = transform.Find("PlayersCardsPanel");
-        tradePanelTitle = transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
-        gameObject.SetActive(false);
+        tradePanel = PlayerCanvas.playerCanvas.transform.Find("TradePanel").GetComponent<TradePanel>(); ;
+        opponentsCardsPanel = tradePanel.transform.Find("EnemysCardsPanel");
+        playersCardsPanel = tradePanel.transform.Find("PlayersCardsPanel");
+        tradePanelTitle = tradePanel.transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
     }
 
-    internal void PrepareForTrade( PlayerInGame playerWeTradeWith )
+    internal static void PrepareForTrade( PlayerInGame playerWeTradeWith )
     {
-        gameObject.SetActive(true);
-        this.playerWeTradeWith = playerWeTradeWith;
-        this.GetComponentInChildren<TradeDropZone>().playerWeTradeWith = playerWeTradeWith;
+        tradePanel.gameObject.SetActive(true);
+        TradePanel.playerWeTradeWith = playerWeTradeWith;
+        tradePanel.GetComponentInChildren<TradeDropZone>().playerWeTradeWith = playerWeTradeWith;
         ResetAcceptance();
     }
 
-    internal void ReceiveEnemysCard( GameObject enemysCard )
+    internal static void ReceiveEnemysCard( GameObject enemysCard )
     {
         enemysCard.transform.SetParent(opponentsCardsPanel);
         ResetAcceptance();
@@ -53,13 +52,13 @@ public class TradePanel : MonoBehaviour
     //    ResetAcceptance();
     //}
 
-    internal void AcceptTrade(bool accepted ) // Changing players trade acceptance state
+    internal void AcceptTrade( bool accepted ) // Changing players trade acceptance state
     {
         PlayerInGame.localPlayerInGame.AcceptTrade(playerWeTradeWith);
 
         if (accepted && enemyConfirmedTrade)// If player has already accepted trade and enemy has confirmed trade, trade needs to be finalized
         {
-             PlayerInGame.localPlayerInGame.FinalizeTrade(playerWeTradeWith);
+            PlayerInGame.localPlayerInGame.FinalizeTrade(playerWeTradeWith);
         }
     }
 
@@ -68,7 +67,7 @@ public class TradePanel : MonoBehaviour
         PlayerInGame.localPlayerInGame.CancelTrade(playerWeTradeWith);
     }
 
-    internal void TradeAcceptance() // Changing opponents trade acceptance state
+    internal static void TradeAcceptance() // Changing opponents trade acceptance state
     {
         if (enemyAcceptedTrade)
         {
@@ -84,7 +83,7 @@ public class TradePanel : MonoBehaviour
         }
     }
 
-    internal void ResetAcceptance()
+    internal static void ResetAcceptance()
     {
         tradePanelTitle.text = "Trading...";
         tradePanelTitle.color = Color.white;
@@ -92,11 +91,11 @@ public class TradePanel : MonoBehaviour
         enemyAcceptedTrade = false;
         enemyConfirmedTrade = false;
 
-        GetComponentInChildren<AcceptTradeButton>().ResetButton();
+        AcceptTradeButton.ResetButton();
     }
 
-    internal void Rest()
+    internal static void Deactivate()
     {
-        gameObject.SetActive(false);
+        tradePanel.gameObject.SetActive(false);
     }
 }

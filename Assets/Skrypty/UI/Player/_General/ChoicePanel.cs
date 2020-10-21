@@ -10,15 +10,18 @@ enum ChoicePanelTitle { DrawFirstDoor, ChooseCard, ChooseMonsterToBuff, ChoosePl
 
 public class ChoicePanel : MonoBehaviour
 {
-    [SerializeField] GameObject cardChoicePlaceholder;
-    [SerializeField] bool worksOnPlayer;
-    [SerializeField] Transform objectsContainer;
-    [SerializeField] TextMeshProUGUI titleTMP;
+    internal static ChoicePanel choicePanel;
+
+    static Transform objectsContainer;
+    static TextMeshProUGUI titleTMP;
     ChoicePanelTitle panelTitle;
 
-    List<GameObject> placeholders = new List<GameObject>();
+    [SerializeField] GameObject cardChoicePlaceholder;
+    [SerializeField] bool worksOnPlayer;
 
-    string[] titles = {
+    static List<GameObject> placeholders = new List<GameObject>();
+
+    static string[] titles = {
         "Choose first doors in your turn",  // ChoicePanelTitle.FirstDoor
         "Choose Card",                      // ChoicePanelTitle.ChooseCard
         "Choose Monster",                   // ChoicePanelTitle.ChooseMonster
@@ -26,17 +29,11 @@ public class ChoicePanel : MonoBehaviour
         "Choose Player to trade"
     };
 
-    private void Start()
+    internal static void Initialize()
     {
-        //objectsContainer = transform.Find("ObjectsContainer");
-        //titleTMP = transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
-    }
-
-    public void Initialize()
-    {
-        objectsContainer = transform.Find("ObjectsContainer");
-        titleTMP = transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
-        this.gameObject.SetActive(false);
+        choicePanel = PlayerCanvas.playerCanvas.transform.Find("ChoicePanel").GetComponent<ChoicePanel>();
+        objectsContainer = choicePanel.transform.Find("ObjectsContainer");
+        titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
     }
 
     internal void Choose( GameObject chosenObject )
@@ -86,7 +83,7 @@ public class ChoicePanel : MonoBehaviour
         {
             // Debug.Log("ChoicePanel:ChooseDoors - worksOnPlayer - " + worksOnPlayer);
             PlayerInGame.localPlayerInGame.UseCardOnTarget(PlayerInGame.localPlayerInGame.gameObject); // if chosen card works on local player, use it on them.
-            PlayerInGame.localPlayerInGame.ProgressButton.ActivateButton();
+            ProgressButton.ActivateButton();
         }
         else
             chosenDoors.GetComponent<Card>().UseCard(); // if not choose target for chosen card.
@@ -112,16 +109,16 @@ public class ChoicePanel : MonoBehaviour
         PlayerInGame.localPlayerInGame.UseCardOnTarget(enemyInPanel.storedPlayer.gameObject);
     }
 
-    internal void ReceiveObjectToChoose( GameObject receivedObject )
+    internal static void ReceiveObjectToChoose( GameObject receivedObject )
     {
-        GameObject placeholder = Instantiate(cardChoicePlaceholder);
+        GameObject placeholder = Instantiate(choicePanel.cardChoicePlaceholder);
 
         placeholders.Add(placeholder);
         
-        placeholder.GetComponent<CardChoicePlaceholder>().Initialize(this, receivedObject, objectsContainer);
+        placeholder.GetComponent<CardChoicePlaceholder>().Initialize(choicePanel, receivedObject, objectsContainer);
     }
 
-    internal void ReceivePlayersToChoose( PlayerInGame[] players )
+    internal static void ReceivePlayersToChoose( PlayerInGame[] players )
     {
         foreach (var player in players)
         {
@@ -132,17 +129,17 @@ public class ChoicePanel : MonoBehaviour
         }
     }
 
-    internal void SetWhichToChoose()
+    internal static void SetWhichToChoose()
     {
         throw new NotImplementedException();
     }
 
-    internal void PrepareToReceiveObjects( ChoicePanelTitle panelTitle, bool worksOnPlayer = false )
+    internal static void PrepareToReceiveObjects( ChoicePanelTitle panelTitle, bool worksOnPlayer = false )
     {
-        this.gameObject.SetActive(true);
-        this.worksOnPlayer = worksOnPlayer;
+        choicePanel.gameObject.SetActive(true);
+        choicePanel.worksOnPlayer = worksOnPlayer;
 
-        this.panelTitle = panelTitle;
+        choicePanel.panelTitle = panelTitle;
         titleTMP.text = titles[(int)panelTitle];
     }
 

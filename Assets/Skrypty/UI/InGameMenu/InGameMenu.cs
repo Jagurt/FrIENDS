@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InGameMenu : MonoBehaviour, IPointerClickHandler
+public class InGameMenu : MonoBehaviour
 {
-    public void OnPointerClick( PointerEventData eventData )
+    internal static InGameMenu inGameMenu;
+
+    internal static void Initialize()
     {
-        this.gameObject.SetActive(false);
+        inGameMenu = PlayerInGame.localPlayerInGame.playerCanvas.transform.Find("InGameMenu").GetComponent<InGameMenu>();
     }
 
-    public void OpenInGameMenu()
+    public static void Activate()
     {
-        this.gameObject.SetActive(true);
+        inGameMenu.gameObject.SetActive(true);
+    }
+
+    public static void Deactivate()
+    {
+        inGameMenu.gameObject.SetActive(false);
     }
 }

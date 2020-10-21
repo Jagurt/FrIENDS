@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ButtonSaveGame : MonoBehaviour
+public class OpenSaveGameMenuButton : MonoBehaviour
 {
     Button button;
 
@@ -15,6 +15,6 @@ public class ButtonSaveGame : MonoBehaviour
 
     void OnClick()
     {
-        SaveSystem.SaveGame();
+        SaveGameMenu.Activate();
     }
 }

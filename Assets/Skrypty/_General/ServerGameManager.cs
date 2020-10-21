@@ -173,15 +173,13 @@ public class ServerGameManager : NetworkBehaviour
                 player.GetComponent<PlayerInGame>().SendStartingHand();
             }
 
-            NewTurnSet();
+            ServerNewTurnSet();
         }
     }
 
     [Server] // Called on server
-    void NewTurnSet( TurnPhase turnPhase = TurnPhase.Beginning ) // Setting vars for new turn
+    void ServerNewTurnSet() // Setting vars for new turn
     {
-        this.turnPhase = turnPhase;
-
         if (activePlayerIndex >= 0)
             playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().hasTurn = false;
 
@@ -195,6 +193,7 @@ public class ServerGameManager : NetworkBehaviour
         StartCoroutine(ServerTurnOwnerReadiness());
         playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().StartTurn();
         StartCoroutine(ServerAlert("New Turn Starts!"));
+        SaveSystem.AutoSaveGame();
     }
 
     [Server]
@@ -370,7 +369,7 @@ public class ServerGameManager : NetworkBehaviour
     internal void EndTurn()
     {
         Debug.Log("ServerGameManager.EndTurn()");
-        NewTurnSet();
+        ServerNewTurnSet();
     }
 
     [Server]

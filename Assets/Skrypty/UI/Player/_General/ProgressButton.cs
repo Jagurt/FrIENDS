@@ -6,12 +6,19 @@ using UnityEngine.UI;
 
 public class ProgressButton : MonoBehaviour
 {
-    Button button;
+    internal static ProgressButton progressButton;
+
+    static Button button;
 
     void Start()
     {
         button = GetComponent<Button>();
         button.onClick.AddListener(delegate { OnClick(); });
+    }
+
+    internal static void Initialize()
+    {
+        progressButton = PlayerCanvas.playerCanvas.transform.Find("ProgressButton").GetComponent<ProgressButton>();
     }
 
     public void OnClick()
@@ -26,11 +33,11 @@ public class ProgressButton : MonoBehaviour
         button.interactable = false;
     }
 
-    internal void ActivateButton()
+    internal static void ActivateButton()
     {
         button.interactable = true;
     }
-    internal void DeactivateButton()
+    internal static void DeactivateButton()
     {
         button.interactable = false;
     }

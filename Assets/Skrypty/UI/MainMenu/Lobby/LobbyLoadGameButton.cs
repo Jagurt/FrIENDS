@@ -15,6 +15,6 @@ public class LobbyLoadGameButton : MonoBehaviour
 
     void OnClick()
     {
-        LoadGameMenu.Initialize();
+        LoadGameMenu.Activate();
     }
 }

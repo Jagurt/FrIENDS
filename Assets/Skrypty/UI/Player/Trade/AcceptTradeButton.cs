@@ -6,15 +6,23 @@ using UnityEngine.UI;
 
 public class AcceptTradeButton : MonoBehaviour
 {
+    internal static AcceptTradeButton acceptTradeButton;
+
     Button Button;
-    bool accepted;
-    TextMeshProUGUI textMeshPro;
+
+    static bool accepted;
+    static TextMeshProUGUI textMeshPro;
 
     void Awake()
     {
         Button = GetComponent<Button>();
         Button.onClick.AddListener(delegate { OnClick(); });
-        textMeshPro = GetComponentInChildren<TextMeshProUGUI>();
+    }
+
+    internal static void Initialize()
+    {
+        acceptTradeButton = TradePanel.tradePanel.GetComponentInChildren<AcceptTradeButton>();
+        textMeshPro = acceptTradeButton.GetComponentInChildren<TextMeshProUGUI>();
     }
 
     void OnClick()
@@ -34,7 +42,7 @@ public class AcceptTradeButton : MonoBehaviour
         }
     }
 
-    internal void ResetButton() // To be called when players add/remove cards for trading or at start of new trade
+    internal static void ResetButton() // To be called when players add/remove cards for trading or at start of new trade
     {
         //if(!textMeshPro)
         //    textMeshPro = GetComponentInChildren<TextMeshProUGUI>();

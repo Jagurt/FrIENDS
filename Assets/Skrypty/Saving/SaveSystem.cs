@@ -1,23 +1,25 @@
 ﻿using UnityEngine;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 
 public static class SaveSystem
 {
     public static SaveGameData loadedSave;
-    static string testPath = Application.persistentDataPath + "/TestSave.json";
-    internal static string savesFolderPath = Application.persistentDataPath + "/Saves/";
+    public static string savesFolderPath = Application.persistentDataPath + "/Saves/";
 
-    public static void SaveGame()
+    public static void SaveGame(string path)
     {
-        // TODO: Players can't save when there are cards on board
-        // TODO: Players can't save during fights
-
         string gameData = JsonUtility.ToJson(new SaveGameData());
-        File.WriteAllText(testPath, gameData);
+        File.WriteAllText(path, gameData);
+        Debug.Log("Saving in: " + path);
+    }
 
-        Debug.Log("Saving in: " + testPath);
+    public static void AutoSaveGame()
+    {
+        string path = savesFolderPath + "Autosave";
+        string gameData = JsonUtility.ToJson(new SaveGameData());
+        File.WriteAllText(path, gameData);
+        Debug.Log("Saving in: " + path);
     }
 
     // [Server]
