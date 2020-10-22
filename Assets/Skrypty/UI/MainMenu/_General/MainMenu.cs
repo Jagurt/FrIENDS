@@ -8,7 +8,6 @@ public class MainMenu : MonoBehaviour
 
     internal static Transform startGameMenu;
     internal static Transform joinGameMenu;
-    internal static Transform hostGameMenu;
     internal static Transform optionsMenu;
     internal static Transform profilePanel;
     internal static Transform lobby;

@@ -10,11 +10,13 @@ public class ButtonExitToMainMenu : MonoBehaviour
     void Start()
     {
         button = GetComponent<Button>();
-        button.onClick.AddListener(delegate { OnClick(); } );
+        button.onClick.AddListener(delegate { OnClick(); });
     }
 
     void OnClick()
     {
-        Debug.Log("ADD EXITING GAME");
+        CustomNetworkManager.customNetworkManager.Disconnect();
+
+        CustomNetworkManager.customNetworkManager.ServerChangeScene("TitleScene");
     }
 }

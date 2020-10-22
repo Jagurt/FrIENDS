@@ -57,33 +57,11 @@ public class PlayerInGame : NetworkBehaviour
     {
         serverGameManager = ServerGameManager.serverGameManager;
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
-        table = serverGameManager.ServerDecksManager.Table;
+        table = ServerGameManager.ServerDecksManager.Table;
 
         if (hasAuthority) // Check if player "Owns" this object, this is set in "PlayerManager" script.
         {
-            localPlayerInGame = this;
             CmdStart(GlobalVariables.NickName);
-
-            playerCanvas = Instantiate(playerCanvas); // Gets prefab stored in "playerCanvas" variable -> creates it as GameObject -> and stores reference to it in same variable
-            PlayerCanvas.Initialize(playerCanvas);
-            ProgressButton.Initialize();
-            HelpButton.Initialize();
-            ChoicePanel.Initialize();
-            TradePanel.Initialize();
-            LevelCounter.Initialize();
-            SaveGameMenu.Initialize();
-            InGameMenu.Initialize();
-            AcceptTradeButton.Initialize();
-
-            //      Setting references for UI Objects      //
-
-            opponentInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
-            opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
-
-            equipment = opponentInPanel.transform.Find("Eq");
-            handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
-
-            ///////////////////////////////////////////////////
         }
         else // If player doesn't own this object
         {
@@ -104,12 +82,47 @@ public class PlayerInGame : NetworkBehaviour
         }
     }
 
+    public override void OnStartAuthority()
+    {
+        base.OnStartAuthority();
+
+        localPlayerInGame = this;
+
+        playerCanvas = Instantiate(playerCanvas); // Gets prefab stored in "playerCanvas" variable -> creates it as GameObject -> and stores reference to it in same variable
+        PlayerCanvas.Initialize(playerCanvas);
+        ProgressButton.Initialize();
+        HelpButton.Initialize();
+        ChoicePanel.Initialize();
+        TradePanel.Initialize();
+        LevelCounter.Initialize();
+        SaveGameMenu.Initialize();
+        InGameMenu.Initialize();
+        AcceptTradeButton.Initialize();
+
+        //      Setting references for UI Objects      //
+
+        opponentInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
+        opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
+
+        equipment = opponentInPanel.transform.Find("Eq");
+        handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
+
+        ///////////////////////////////////////////////////
+    }
+
     IEnumerator InitializeEnemiesPanel()
     {
         // Debug.Log("InCoroutine - InitializeEnemiesPanel");
+        float maxWaitTime = 7f;
+        float currentWaitTime = 0f;
+
         while (!localPlayerInGame || !localPlayerInGame.playerCanvas) // Waiting until needed references are set by the local player
         {
+            if (currentWaitTime > maxWaitTime)
+                yield break;
+
             Debug.Log("Waiting for localPlayerInGame");
+            currentWaitTime += 0.25f;
             yield return new WaitForSeconds(0.25f);
         }
 
@@ -324,12 +337,12 @@ public class PlayerInGame : NetworkBehaviour
         {
             case Deck.Doors:
                 // Draws a card, sets its parent to this player object
-                drawCardZone = serverGameManager.ServerDecksManager.DoorsDeck.GetComponent<DrawCardZone>();
-                last = serverGameManager.ServerDecksManager.Doors.Count - 1; // Number of cards in deck - 1
+                drawCardZone = ServerGameManager.ServerDecksManager.DoorsDeck.GetComponent<DrawCardZone>();
+                last = ServerGameManager.ServerDecksManager.Doors.Count - 1; // Number of cards in deck - 1
                 break;
             case Deck.Treasures:
-                drawCardZone = serverGameManager.ServerDecksManager.TreasuresDeck.GetComponent<DrawCardZone>();
-                last = serverGameManager.ServerDecksManager.Treasures.Count - 1;
+                drawCardZone = ServerGameManager.ServerDecksManager.TreasuresDeck.GetComponent<DrawCardZone>();
+                last = ServerGameManager.ServerDecksManager.Treasures.Count - 1;
                 break;
             case Deck.HelpingHand:
                 break;
@@ -602,11 +615,11 @@ public class PlayerInGame : NetworkBehaviour
         {
             case Deck.Doors:
                 cardScript.deck = Deck.DiscardedDoors;
-                serverGameManager.ServerDecksManager.DiscardedDoorsDeck.GetComponent<DrawCardZone>().ReceiveCard(card.transform);
+                ServerGameManager.ServerDecksManager.DiscardedDoorsDeck.GetComponent<DrawCardZone>().ReceiveCard(card.transform);
                 break;
             case Deck.Treasures:
                 cardScript.deck = Deck.DiscardedTreasures;
-                serverGameManager.ServerDecksManager.DiscardedTreasuresDeck.GetComponent<DrawCardZone>().ReceiveCard(card.transform);
+                ServerGameManager.ServerDecksManager.DiscardedTreasuresDeck.GetComponent<DrawCardZone>().ReceiveCard(card.transform);
                 break;
             case Deck.HelpingHand:
                 break;

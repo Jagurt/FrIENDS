@@ -23,7 +23,5 @@ public class CardsButtons : MonoBehaviour
             interruptUseTimer = InterruptUseTimer;
             declineUseButton = DeclineUseButton;
         }
-        else
-            Debug.LogError("Cards Buttons Statics set additional times!");
     }
 }

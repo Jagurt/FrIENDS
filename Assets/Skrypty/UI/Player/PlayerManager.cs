@@ -9,6 +9,8 @@ using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
+    internal static PlayerManager localPlayerManager;
+
     [SerializeField] private GameObject playerInLobby;
     [SerializeField] private GameObject playerInGame;
     CustomNetworkManager CustomNetworkManager;
@@ -24,9 +26,15 @@ public class PlayerManager : NetworkBehaviour
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
 
         if (hasAuthority)
+        {
+            localPlayerManager = this;
             CmdSpawnPlayerInLobby(GlobalVariables.NickName);
+        }
 
-        //SceneManager.sceneLoaded += InitializeInGameScene;
+        if (GlobalVariables.IsHost)
+        {
+            Debug.Log("connectionToClient.address - " + connectionToClient.address);
+        }
     }
 
     [Server]
@@ -36,6 +44,12 @@ public class PlayerManager : NetworkBehaviour
 
         foreach (var playerManager in playerManagers)
         {
+            CustomNetworkConnection conn = CustomNetworkManager.playingConnections
+                .Find(x => x.address.Equals(playerManager.connectionToClient.address));
+
+            if (conn != null)
+                conn.clientOwnedObjects.Add(playerManager.netId);
+
             SceneManager.sceneLoaded += playerManager.InitializeInGameScene;
         }
     }
@@ -44,44 +58,37 @@ public class PlayerManager : NetworkBehaviour
     {
         if (scene.name != "GameScene")
         {
-            Debug.LogError("Initialization of Players In Game object outside Game Scene!");
             return;
         }
 
-        ServerSpawnPlayerInGame();
+        StartCoroutine(ServerWaitToSpawnPlayerInGame());
     }
 
     [Server]
-    private void ServerSpawnPlayerInGame()
+    private IEnumerator ServerWaitToSpawnPlayerInGame()
     {
-        if (connectionToClient.isReady && !CustomNetworkManager.isServerBusy) // If client is connected and ready, this is set by Unity automatically
-        {
-            playerInGame = Instantiate(playerInGame); // Creating PlayerInGame object from PlayerInGame Prefab stored in playerInGame variable and storing created object in that variable
-            NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient); // "Spawning" object - Creating object on server and all clients, assigning player who requested spawn with authority for this object.
-        }
-        else
-            StartCoroutine(WaitToSpawnPlayerInGame());
-    }
-
-    [Server]
-    private IEnumerator WaitToSpawnPlayerInGame()
-    {
-        while (!connectionToClient.isReady || CustomNetworkManager.isServerBusy)
+        while (!connectionToClient.isReady || CustomNetworkManager.isServerBusy) // "!connectionToClient.isReady" Wait if client isn't connected and ready, this is set by Unity automatically
         {
             yield return new WaitForSeconds(0.1f);
         }
         CustomNetworkManager.isServerBusy = true;
 
-        playerInGame = Instantiate(playerInGame);
-        NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient);
+        playerInGame = Instantiate(playerInGame);                                   // Creating PlayerInGame object from PlayerInGame Prefab stored in playerInGame variable and storing created object in that variable
+        NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient);   // "Spawning" object - Creating object on server and all clients, assigning player who requested spawn with authority for this object.
+        CustomNetworkManager.playingConnections
+            .Find(x => x.address.Equals(connectionToClient.address))
+            .clientOwnedObjects.Add(playerInGame.GetComponent<PlayerInGame>().netId);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
 
     [Command]
-    void CmdSpawnPlayerInLobby(string nickName)
+    void CmdSpawnPlayerInLobby( string nickName )
     {
+        if (SceneManager.GetActiveScene().name.Equals("GameScene"))
+            return;
+
         this.nickName = nickName;
         LobbyManager.ConnectedPlayersUpdate();
         StartCoroutine(SpawnPlayerInLobby(nickName));
@@ -127,8 +134,12 @@ public class PlayerManager : NetworkBehaviour
     }
 
     [Server]
-    public override void OnNetworkDestroy()
+    public override void OnNetworkDestroy() // According to OnServerDisconnect() override, this should be called only in "TitleScene", more specifically in Lobby
     {
         LobbyManager.ConnectedPlayersDown();
+        CustomNetworkManager.playingConnections.Remove(
+            CustomNetworkManager.playingConnections
+            .Find(x => x.address.Equals(connectionToClient.address)
+            ));
     }
 }

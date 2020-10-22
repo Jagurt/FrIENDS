@@ -33,7 +33,7 @@ public class SaveGameData
 
         discardedCards = new List<string>();
 
-        ServerDecksManager serverDecksManager = ServerGameManager.serverGameManager.ServerDecksManager;
+        ServerDecksManager serverDecksManager = ServerGameManager.ServerDecksManager;
 
         for (int i = 0; i < serverDecksManager.DiscardedDoorsDeck.childCount; i++)
             discardedCards.Add(serverDecksManager.DiscardedDoorsDeck.GetChild(i).GetComponent<Card>().GetCardData());

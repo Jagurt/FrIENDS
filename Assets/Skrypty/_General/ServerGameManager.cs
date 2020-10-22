@@ -19,7 +19,7 @@ public class ServerGameManager : NetworkBehaviour
     internal static ServerGameManager serverGameManager;
     CustomNetworkManager CustomNetworkManager;
     private static ServerDecksManager serverDecksManager;
-    internal ServerDecksManager ServerDecksManager { get => serverDecksManager; }
+    internal static ServerDecksManager ServerDecksManager { get => serverDecksManager; }
 
     //      Turn and Players Vars       //
     [SerializeField] [SyncVar] internal TurnPhase turnPhase;

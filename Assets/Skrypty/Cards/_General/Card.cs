@@ -46,7 +46,17 @@ public class Card : NetworkBehaviour
         transform.Find("CardDescription").Find("Text").GetComponent<TMPro.TextMeshProUGUI>().text = cardValues.description;
         transform.Find("CardImage").GetComponent<Image>().sprite = cardValues.sprite;
         serverGameManager = ServerGameManager.serverGameManager;
-        awaitUseConfirmation = AwaitUseConfirmation();
+
+
+        if (isServer)
+            awaitUseConfirmation = AwaitUseConfirmation();
+
+        StartCoroutine(ClientWaitInstantiateButtons());
+    }
+
+    IEnumerator ClientWaitInstantiateButtons()
+    {
+        yield return new WaitUntil(() => CardsButtons.confirmUseButton);
 
         confirmUseButton = Instantiate(CardsButtons.confirmUseButton, transform);
         interruptUseButton = Instantiate(CardsButtons.interruptUseButton, transform);

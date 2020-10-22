@@ -52,6 +52,13 @@ public class LobbyManager : NetworkBehaviour
         lobbyManager = this;
     }
 
+    [Server]
+    internal static void Initialize()
+    {
+        lobbyManager.readyPlayers = 0;
+        lobbyManager.connectedPlayers = 0;
+    }
+
     public static void ReadyPlayer()
     {
         lobbyManager.readyPlayers += 1;

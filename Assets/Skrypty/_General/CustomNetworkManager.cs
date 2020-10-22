@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
+using UnityEngine.SceneManagement;
 
 public class CustomNetworkManager : NetworkManager
 {
     private NetworkClient myClient;
     internal static CustomNetworkManager customNetworkManager;
 
-    [SerializeField] internal bool isServerBusy = false;
     internal static bool gameLoaded = false;
     internal static int playersToConnect;
+
+    [SerializeField] internal static List<CustomNetworkConnection> playingConnections = new List<CustomNetworkConnection>();
+
+    [SerializeField] internal bool isServerBusy = false;
 
     private void Start()
     {
@@ -56,8 +60,8 @@ public class CustomNetworkManager : NetworkManager
     {
         networkAddress = GlobalVariables.IpToConnect;
         networkPort = GlobalVariables.PortToConnect;
-        Debug.Log(networkAddress);
-        Debug.Log(networkPort);
+        //Debug.Log(networkAddress);
+        //Debug.Log(networkPort);
         GlobalVariables.IsHost = false;
         myClient = StartClient();
     }
@@ -72,7 +76,85 @@ public class CustomNetworkManager : NetworkManager
 
     public void Disconnect()
     {
-        if (GlobalVariables.IsHost) StopHost(); 
+        if (GlobalVariables.IsHost) StopHost();
         else StopClient();
+
+        NetworkServer.Shutdown();
+    }
+
+    public override void OnServerAddPlayer( NetworkConnection conn, short playerControllerId )
+    {
+        if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
+        {
+            base.OnServerAddPlayer(conn, playerControllerId);
+        }
+        else
+        {
+            base.OnServerConnect(conn);
+        }
+    }
+
+    public override void OnServerConnect( NetworkConnection conn )
+    {
+        if (!playingConnections.Exists(x => x.address.Equals(conn.address)))                // If player isn't in active connections, it is new player and has to be added there.
+        {
+            if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // if new player tries to enter existing game
+            {
+                Debug.Log("Unexpected player tries to connect!");
+                return;
+            }
+
+            //Debug.Log("New Player connects! conn.address - " + conn.address);
+            CustomNetworkConnection newConn = new CustomNetworkConnection(conn.address);    // Creating custom copy of connection, becouse original one gets messed up when player disconnects
+
+            playingConnections.Add(newConn);                                                // Adding connection to list of connections, this is removed in PlayerManager in case of leaving game in lobby
+            base.OnServerConnect(conn);
+        }
+        else                                                                                // If player has existing playingConnection it entered game from lobby, it is reconnecting and should have his objects reassigned
+        {
+            Debug.Log("Reconnected to server! conn.address - " + conn.address);
+            // In GameScene: Search for existing player connection to apply reconnection
+
+            if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // This should only happen in "GameScene", this if is probably unnecesary
+            {
+                CustomNetworkConnection comparedConn = playingConnections.Find(x => x.address.Equals(conn.address)); // Finding existing CustomConnection for reconnected player
+
+                foreach (var netId in comparedConn.clientOwnedObjects)
+                {
+                    GameObject gameObject = ClientScene.FindLocalObject(netId);
+                    bool authorityChangeSucces = gameObject.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+                }
+            }
+
+            if (conn.lastError != NetworkError.Ok)
+            {
+                if (LogFilter.logError)
+                {
+                    Debug.Log("What error is dis: " + conn.lastError);
+                }
+            }
+        }
+    }
+
+    public override void OnServerDisconnect( NetworkConnection conn )
+    {
+        if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
+        {
+            NetworkServer.DestroyPlayersForConnection(conn);
+        }
+        else
+        {
+            // TODO : check which player got disconnected?  conn.clientOwnedObjects
+            // Block all functionality until players reconnects
+            // Wait for players to reconnect, allow to disconnect in meantime
+        }
+
+        if (conn.lastError != NetworkError.Ok)
+        {
+            if (LogFilter.logError)
+            {
+                Debug.Log("ServerDisconnected due to error: " + conn.lastError);
+            }
+        }
     }
 }

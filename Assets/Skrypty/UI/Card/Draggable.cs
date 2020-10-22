@@ -20,16 +20,28 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void Start()
     {
-        serverDecksManager = FindObjectOfType<ServerDecksManager>();
-        serverGameManager = FindObjectOfType<ServerGameManager>();
-        GetAdopted();
+        serverGameManager = ServerGameManager.serverGameManager;
+        serverDecksManager = ServerGameManager.ServerDecksManager;
+        StartCoroutine(GetAdopted());
     }
 
-    void GetAdopted()
+    IEnumerator GetAdopted()
     {
+        while (!serverDecksManager)
+        {
+            serverDecksManager = ServerGameManager.ServerDecksManager;
+            yield return new WaitForEndOfFrame();
+        }
+
+        while (!serverDecksManager.DoorsDeck)
+            yield return new WaitForEndOfFrame();
+
         switch (GetComponent<Card>().cardValues.deck)
         {
             case Deck.Doors:
+                Debug.Log("serverDecksManager - " + serverDecksManager);
+                Debug.Log("DoorsDeck - " + serverDecksManager.DoorsDeck);
+                Debug.Log("DoorsDeck.GetComponent<DrawCardZone>() - " + serverDecksManager.DoorsDeck.GetComponent<DrawCardZone>());
                 serverDecksManager.DoorsDeck.GetComponent<DrawCardZone>().ReceiveCard(this.transform);
                 break;
             case Deck.Treasures:
@@ -115,11 +127,11 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
             ReturnToParent();
             this.transform.position = parentToReturnTo.position;
         }
-        else if (deckToReturnTo)                                    
-        {                                                           
+        else if (deckToReturnTo)
+        {
             GetComponent<CanvasGroup>().blocksRaycasts = true;
         }
-        else if (                                                   
+        else if (
             eventData.pointerCurrentRaycast.gameObject == null ||
             eventData.pointerCurrentRaycast.gameObject.transform == parentToReturnTo ||
             eventData.pointerCurrentRaycast.gameObject.GetComponent<DropZone>() == null)

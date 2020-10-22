@@ -17,6 +17,7 @@ public class HostGameButton : MonoBehaviour
     {
         MainMenu.startGameMenu.GetComponent<MenuActiveController>().Deactivate();
         MainMenu.lobby.GetComponent<MenuActiveController>().Activate();
+        LobbyManager.Initialize();
         CustomNetworkManager.customNetworkManager.StartHosting();
     }
 }
