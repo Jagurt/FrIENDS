@@ -39,9 +39,9 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         switch (GetComponent<Card>().cardValues.deck)
         {
             case Deck.Doors:
-                Debug.Log("serverDecksManager - " + serverDecksManager);
-                Debug.Log("DoorsDeck - " + serverDecksManager.DoorsDeck);
-                Debug.Log("DoorsDeck.GetComponent<DrawCardZone>() - " + serverDecksManager.DoorsDeck.GetComponent<DrawCardZone>());
+                //Debug.Log("serverDecksManager - " + serverDecksManager);
+                //Debug.Log("DoorsDeck - " + serverDecksManager.DoorsDeck);
+                //Debug.Log("DoorsDeck.GetComponent<DrawCardZone>() - " + serverDecksManager.DoorsDeck.GetComponent<DrawCardZone>());
                 serverDecksManager.DoorsDeck.GetComponent<DrawCardZone>().ReceiveCard(this.transform);
                 break;
             case Deck.Treasures:

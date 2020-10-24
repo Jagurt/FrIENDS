@@ -7,10 +7,11 @@ using System.Collections;
 
 public class PlayerInGame : NetworkBehaviour
 {
+    static CustomNetworkManager CustomNetworkManager;
+
     internal ServerGameManager serverGameManager; // Reference to ServerGameManager script for easier use here.
     internal static PlayerInGame localPlayerInGame; // Static reference to PlayerInGame(this) script, it gets set by the object that is meant to be local player.
-
-    static CustomNetworkManager CustomNetworkManager;
+    IEnumerator initializeEnemiesPanel;
 
     [SyncVar] internal string NickName; // Nick name of player got from options in title screen.
     internal Sprite Avatar; // Not Implemented Yet
@@ -28,7 +29,6 @@ public class PlayerInGame : NetworkBehaviour
         }
     }
 
-    [SyncVar] private short numberOfHands;   // Describes how many weapons can player use at once, Not Implemented Yet.
     [SyncVar] private short bigItemsLimit;   // Describes how many "Big" items can player use at once, Not Implemented Yet.
     [SyncVar] private short ownedCardsLimit; // Limits maximum number of cards player can own at end of their turn.
 
@@ -55,59 +55,65 @@ public class PlayerInGame : NetworkBehaviour
 
     void Start()
     {
+        Debug.Log("PlayerInGame.hasAuthority - " + hasAuthority);
+
         serverGameManager = ServerGameManager.serverGameManager;
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
-        table = ServerGameManager.ServerDecksManager.Table;
+        table = GameObject.Find("ServerCanvas").transform.Find("Table");
 
-        if (hasAuthority) // Check if player "Owns" this object, this is set in "PlayerManager" script.
+        if (!hasAuthority)          // If player doesn't own this object
         {
-            CmdStart(GlobalVariables.NickName);
-        }
-        else // If player doesn't own this object
-        {
-            // Debug.Log("localPlayerInGame - " + localPlayerInGame);
             handContent = transform;
-
-            if (localPlayerInGame)      // If local player static variable has been set by local players object
-                                        // Initializing enemy panel ui object for local player
+            if (!localPlayerInGame)      // If local player static variable has been set by local players object
             {
-                opponentsPanel = localPlayerInGame.playerCanvas.transform.Find("OpponentsPanel");
-                opponentInPanel = Instantiate(opponentInPanel);
-                opponentInPanel.transform.SetParent(opponentsPanel);
-                opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
-                equipment = opponentInPanel.transform.Find("EnemyEq");
+                initializeEnemiesPanel = InitializeEnemiesPanel();
+                StartCoroutine(initializeEnemiesPanel);
             }
-            else // If localPlayerInGame hasn't been set yet, wait for it
-                StartCoroutine(InitializeEnemiesPanel());
         }
+
+        //StartCoroutine(Initialize());
     }
 
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
+        StartCoroutine(Initialize());
+    }
 
-        localPlayerInGame = this;
+    internal IEnumerator Initialize()
+    {
+        yield return new WaitForEndOfFrame();
 
-        playerCanvas = Instantiate(playerCanvas); // Gets prefab stored in "playerCanvas" variable -> creates it as GameObject -> and stores reference to it in same variable
-        PlayerCanvas.Initialize(playerCanvas);
-        ProgressButton.Initialize();
-        HelpButton.Initialize();
-        ChoicePanel.Initialize();
-        TradePanel.Initialize();
-        LevelCounter.Initialize();
-        SaveGameMenu.Initialize();
-        InGameMenu.Initialize();
-        AcceptTradeButton.Initialize();
+        serverGameManager = ServerGameManager.serverGameManager;
+        CustomNetworkManager = CustomNetworkManager.customNetworkManager;
+        table = GameObject.Find("ServerCanvas").transform.Find("Table");
 
-        //      Setting references for UI Objects      //
+        if (hasAuthority) // Check if player "Owns" this object, this is set in "PlayerManager" script.
+        {
+            CmdStart(GlobalVariables.NickName);
 
-        opponentInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
-        opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
+            if (initializeEnemiesPanel != null)
+                StopCoroutine(initializeEnemiesPanel);
 
-        equipment = opponentInPanel.transform.Find("Eq");
-        handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
+            localPlayerInGame = this;
 
-        ///////////////////////////////////////////////////
+            playerCanvas = Instantiate(playerCanvas); // Gets prefab stored in "playerCanvas" variable -> creates it as GameObject -> and stores reference to it in same variable
+            PlayerCanvas.Initialize(playerCanvas);
+            ProgressButton.Initialize();
+            HelpButton.Initialize();
+            ChoicePanel.Initialize();
+            TradePanel.Initialize();
+            LevelCounter.Initialize();
+            SaveGameMenu.Initialize();
+            InGameMenu.Initialize();
+            AcceptTradeButton.Initialize();
+
+            //      Setting references for UI Objects      //
+            opponentInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
+            opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
+            equipment = opponentInPanel.transform.Find("Eq");
+            handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
+        }
     }
 
     IEnumerator InitializeEnemiesPanel()
@@ -126,6 +132,7 @@ public class PlayerInGame : NetworkBehaviour
             yield return new WaitForSeconds(0.25f);
         }
 
+        // Initializing enemy panel ui object for local player     
         opponentsPanel = localPlayerInGame.playerCanvas.transform.Find("OpponentsPanel");
         opponentInPanel = Instantiate(opponentInPanel);
         opponentInPanel.transform.SetParent(opponentsPanel);
@@ -136,7 +143,11 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdStart( string NickName ) // Initializes variables (for this object) on the server that are then set on clients
     {
-        numberOfHands = 2;
+        ServerStart(NickName);
+    }
+    [Server]
+    void ServerStart( string NickName ) // Initializes variables (for this object) on the server that are then set on clients
+    {
         bigItemsLimit = 1;
         ownedCardsLimit = 5;
         luck = 0;
@@ -149,6 +160,25 @@ public class PlayerInGame : NetworkBehaviour
     internal void CmdReadyPlayersUp() // Calling readiness on server
     {
         serverGameManager.ReadyPlayersUp();
+    }
+
+    [Server]
+    internal IEnumerator ServerInitializePIG()
+    {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
+        RpcInitializePIG();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
+    }
+
+    [ClientRpc]
+    void RpcInitializePIG()
+    {
+
     }
 
     [Server]
@@ -280,13 +310,6 @@ public class PlayerInGame : NetworkBehaviour
         ClientUpdateOwnedCards();
     }
 
-    private void FindTable()
-    {
-        if (!table)
-            table = localPlayerInGame.table;
-    }
-
-
     private IEnumerator RequestCardDrawCoroutine( Deck deck, int quantity, bool worksOnDrawingPlayer = false, bool choice = false )
     {
         for (int i = 0; i < quantity; i++)
@@ -367,7 +390,7 @@ public class PlayerInGame : NetworkBehaviour
         }
 
         drawnCard = drawCardZone.DrawCard(); // Gets Card from correct deck.
-        Debug.Log("Sending Card - " + drawnCard);
+        //Debug.Log("Sending Card - " + drawnCard);
 
         RpcReceiveCard(drawnCard.GetComponent<Card>().netId, worksOnDrawingPlayer, choice); // Updates parent of Drawn Card for all clients
 
@@ -408,6 +431,8 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardsNetId);
         card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
         card.GetComponent<Draggable>().enabled = true;
+        if (!serverGameManager)
+            serverGameManager = ServerGameManager.serverGameManager;
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
         ClientReceiveCard(card, worksOnDrawingPlayer, choice);
     }

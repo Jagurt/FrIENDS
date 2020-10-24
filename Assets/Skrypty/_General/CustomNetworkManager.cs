@@ -9,8 +9,18 @@ using UnityEngine.SceneManagement;
 
 public class CustomNetworkManager : NetworkManager
 {
-    private NetworkClient myClient;
+    public class EmptyMessage : MessageBase
+    {
+        // empty?
+    }
+
     internal static CustomNetworkManager customNetworkManager;
+
+    private NetworkClient myClient;
+
+    MessageBase msgEmpty = new EmptyMessage();
+    const short AddPlayerMsg = MsgType.Highest + 1;
+    const short ReconnectMsg = MsgType.Highest + 2;
 
     internal static bool gameLoaded = false;
     internal static int playersToConnect;
@@ -60,10 +70,15 @@ public class CustomNetworkManager : NetworkManager
     {
         networkAddress = GlobalVariables.IpToConnect;
         networkPort = GlobalVariables.PortToConnect;
-        //Debug.Log(networkAddress);
-        //Debug.Log(networkPort);
         GlobalVariables.IsHost = false;
         myClient = StartClient();
+    }
+
+    public override void OnStartClient( NetworkClient client )
+    {
+        client.RegisterHandler(AddPlayerMsg, OnClientAddPlayerMsg);
+        client.RegisterHandler(ReconnectMsg, OnClientAddPlayerMsg);
+        base.OnStartClient(client);
     }
 
     public void RefreshMatches()
@@ -79,24 +94,25 @@ public class CustomNetworkManager : NetworkManager
         if (GlobalVariables.IsHost) StopHost();
         else StopClient();
 
+        playingConnections.Clear();
+        myClient.Shutdown();
         NetworkServer.Shutdown();
+        NetworkTransport.Shutdown();
     }
 
     public override void OnServerAddPlayer( NetworkConnection conn, short playerControllerId )
     {
-        if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
-        {
-            base.OnServerAddPlayer(conn, playerControllerId);
-        }
-        else
-        {
-            base.OnServerConnect(conn);
-        }
+        base.OnServerAddPlayer(conn, playerControllerId);
+
+        //if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
+        //{
+        //    base.OnServerAddPlayer(conn, playerControllerId);
+        //}
     }
 
     public override void OnServerConnect( NetworkConnection conn )
     {
-        if (!playingConnections.Exists(x => x.address.Equals(conn.address)))                // If player isn't in active connections, it is new player and has to be added there.
+        if (!playingConnections.Exists(x => x.address.Equals(conn.address)))                // If player isn't in playing connections, it is new player and has to be added there.
         {
             if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // if new player tries to enter existing game
             {
@@ -104,11 +120,12 @@ public class CustomNetworkManager : NetworkManager
                 return;
             }
 
-            //Debug.Log("New Player connects! conn.address - " + conn.address);
             CustomNetworkConnection newConn = new CustomNetworkConnection(conn.address);    // Creating custom copy of connection, becouse original one gets messed up when player disconnects
 
             playingConnections.Add(newConn);                                                // Adding connection to list of connections, this is removed in PlayerManager in case of leaving game in lobby
             base.OnServerConnect(conn);
+
+            NetworkServer.SendToClient(conn.connectionId, AddPlayerMsg, msgEmpty);          // Send message to connected player that he may call ClientScene.AddPlayer(0);
         }
         else                                                                                // If player has existing playingConnection it entered game from lobby, it is reconnecting and should have his objects reassigned
         {
@@ -117,13 +134,21 @@ public class CustomNetworkManager : NetworkManager
 
             if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // This should only happen in "GameScene", this if is probably unnecesary
             {
-                CustomNetworkConnection comparedConn = playingConnections.Find(x => x.address.Equals(conn.address)); // Finding existing CustomConnection for reconnected player
+                NetworkServer.SendToClient(conn.connectionId, AddPlayerMsg, msgEmpty);      // Send message to connected player that he may call ClientScene.AddPlayer(0);
+                //CustomNetworkConnection playingConn = playingConnections.Find(x => x.address.Equals(conn.address)); // Finding existing CustomConnection for reconnected player
 
-                foreach (var netId in comparedConn.clientOwnedObjects)
-                {
-                    GameObject gameObject = ClientScene.FindLocalObject(netId);
-                    bool authorityChangeSucces = gameObject.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
-                }
+                //Debug.Log("Comparing adresses " + conn.address + " - " + playingConn.address);
+
+                //GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
+                //Debug.Log("Found object to assign authourity - " + GO);
+                //GO.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+
+                //foreach (var netId in comparedConn.clientOwnedObjects)
+                //{
+                //    GameObject gameObject = ClientScene.FindLocalObject(netId);
+                //    Debug.Log("Found object to assign authourity - " + gameObject);
+                //    bool authorityChangeSucces = gameObject.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
+                //}
             }
 
             if (conn.lastError != NetworkError.Ok)
@@ -144,6 +169,20 @@ public class CustomNetworkManager : NetworkManager
         }
         else
         {
+            string adress = conn.playerControllers[0].gameObject.GetComponent<PlayerManager>().address;
+            Debug.Log("OnServerDisconnect: conn.address - " + adress);
+            //conn.playerControllers[0].gameObject.GetComponent<PlayerManager>().connectionToClient;
+
+            var playingConnection = playingConnections.Find(x => x.address.Equals(adress));   // Finding custom connection with right adress
+            GameObject GO = ClientScene.FindLocalObject(playingConnection.clientOwnedObjects[0]);   // Finding Player Object
+            NetworkServer.Destroy(GO);                                                              // Manually destroying player Object
+            playingConnection.clientOwnedObjects[0] = NetworkInstanceId.Invalid;                    // Setting destroyed player Objects netId to invalid
+            GO = ClientScene.FindLocalObject(playingConnection.clientOwnedObjects[1]);              // This is PlayerInGame object
+            GO.GetComponent<NetworkIdentity>().RemoveClientAuthority(conn);                         // We need to remove authority to assign it later
+
+            conn.clientOwnedObjects.Clear();                                // Manually clearing clientOwnedObjects for connections to prevent them from being destroyed
+            NetworkServer.DestroyPlayersForConnection(conn);                // Clearing disconnected connection
+
             // TODO : check which player got disconnected?  conn.clientOwnedObjects
             // Block all functionality until players reconnects
             // Wait for players to reconnect, allow to disconnect in meantime
@@ -157,4 +196,21 @@ public class CustomNetworkManager : NetworkManager
             }
         }
     }
+
+    void OnClientAddPlayerMsg( NetworkMessage networkMessage )
+    {
+        ClientScene.AddPlayer(myClient.connection, 0);
+    }
+    void OnClientReconnect( NetworkMessage networkMessage )
+    {
+        ClientScene.Ready(myClient.connection);
+    }
+
+    public override void OnClientConnect( NetworkConnection conn ) { }
+    public override void OnClientNotReady( NetworkConnection conn )
+    {
+        //base.OnClientNotReady(conn);
+        ClientScene.Ready(conn);
+    }
+    public override void OnClientSceneChanged( NetworkConnection conn ) {  }
 }

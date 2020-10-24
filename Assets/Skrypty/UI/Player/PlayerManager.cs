@@ -10,10 +10,11 @@ using UnityEngine.SceneManagement;
 public class PlayerManager : NetworkBehaviour
 {
     internal static PlayerManager localPlayerManager;
+    CustomNetworkManager CustomNetworkManager;
 
     [SerializeField] private GameObject playerInLobby;
     [SerializeField] private GameObject playerInGame;
-    CustomNetworkManager CustomNetworkManager;
+    [SerializeField] internal string address;
     [SerializeField] [SyncVar] string nickName;
 
     public GameObject PlayerInGame { get => playerInGame; }
@@ -24,16 +25,35 @@ public class PlayerManager : NetworkBehaviour
     {
         DontDestroyOnLoad(this); // Setting this objec to not be destroyed on transition betwen scenes
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
-
+        
         if (hasAuthority)
         {
             localPlayerManager = this;
-            CmdSpawnPlayerInLobby(GlobalVariables.NickName);
+
+            if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
+                CmdSpawnPlayerInLobby(GlobalVariables.NickName);
+            else if(GlobalVariables.IsHost)
+            {
+                var playingConn = CustomNetworkManager.playingConnections
+                    .Find(x => x.address == connectionToClient.address);
+                if (playingConn.clientOwnedObjects[0] == NetworkInstanceId.Invalid) // This is set upon disconnection, if netId paired with this adress is invalid we know that we have reconnected to the game
+                {
+                    playingConn.clientOwnedObjects[0] = this.netId;
+                    GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
+                     bool authorityAssigned =  GO.GetComponent<NetworkIdentity>().AssignClientAuthority(connectionToClient);
+                    Debug.Log("authorityAssigned - " + authorityAssigned);
+                }
+            }
+            else
+            {
+                Debug.Log("PlayerManager.Start: Scene Name - " + SceneManager.GetActiveScene().name);
+            }
         }
 
         if (GlobalVariables.IsHost)
         {
             Debug.Log("connectionToClient.address - " + connectionToClient.address);
+            address = connectionToClient.address;
         }
     }
 
@@ -50,18 +70,17 @@ public class PlayerManager : NetworkBehaviour
             if (conn != null)
                 conn.clientOwnedObjects.Add(playerManager.netId);
 
-            SceneManager.sceneLoaded += playerManager.InitializeInGameScene;
+            SceneManager.sceneLoaded += playerManager.ServerInitializeInGameScene;
         }
     }
 
-    void InitializeInGameScene( Scene scene, LoadSceneMode mode ) // Spawning PlayerInGame object in Game Scene
+    [Server]
+    void ServerInitializeInGameScene( Scene scene, LoadSceneMode mode ) // Spawning PlayerInGame object in Game Scene
     {
         if (scene.name != "GameScene")
-        {
             return;
-        }
-
         StartCoroutine(ServerWaitToSpawnPlayerInGame());
+        SceneManager.sceneLoaded -= this.ServerInitializeInGameScene;
     }
 
     [Server]
@@ -69,6 +88,7 @@ public class PlayerManager : NetworkBehaviour
     {
         while (!connectionToClient.isReady || CustomNetworkManager.isServerBusy) // "!connectionToClient.isReady" Wait if client isn't connected and ready, this is set by Unity automatically
         {
+            Debug.Log("ServerWaitToSpawnPlayerInGame");
             yield return new WaitForSeconds(0.1f);
         }
         CustomNetworkManager.isServerBusy = true;
@@ -142,4 +162,6 @@ public class PlayerManager : NetworkBehaviour
             .Find(x => x.address.Equals(connectionToClient.address)
             ));
     }
+
+
 }

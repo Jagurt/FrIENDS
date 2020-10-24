@@ -16,7 +16,6 @@ public class ButtonExitToMainMenu : MonoBehaviour
     void OnClick()
     {
         CustomNetworkManager.customNetworkManager.Disconnect();
-
         CustomNetworkManager.customNetworkManager.ServerChangeScene("TitleScene");
     }
 }
