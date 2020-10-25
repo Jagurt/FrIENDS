@@ -25,7 +25,7 @@ public class SaveGameData
 
         foreach (var player in ServerGameManager.serverGameManager.playersObjects)
         {
-            Debug.Log("Save Player: " + player);
+            //Debug.Log("Save Player: " + player);
             playersData.Add(player.GetComponent<PlayerInGame>().GetPlayerData());
         }
 

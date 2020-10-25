@@ -83,7 +83,7 @@ public class ChoicePanel : MonoBehaviour
         {
             // Debug.Log("ChoicePanel:ChooseDoors - worksOnPlayer - " + worksOnPlayer);
             PlayerInGame.localPlayerInGame.UseCardOnTarget(PlayerInGame.localPlayerInGame.gameObject); // if chosen card works on local player, use it on them.
-            ProgressButton.ActivateButton();
+            PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
         }
         else
             chosenDoors.GetComponent<Card>().UseCard(); // if not choose target for chosen card.

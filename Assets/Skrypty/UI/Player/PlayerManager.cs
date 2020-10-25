@@ -25,35 +25,32 @@ public class PlayerManager : NetworkBehaviour
     {
         DontDestroyOnLoad(this); // Setting this objec to not be destroyed on transition betwen scenes
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
-        
+
         if (hasAuthority)
         {
             localPlayerManager = this;
-
             if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
                 CmdSpawnPlayerInLobby(GlobalVariables.NickName);
-            else if(GlobalVariables.IsHost)
-            {
-                var playingConn = CustomNetworkManager.playingConnections
-                    .Find(x => x.address == connectionToClient.address);
-                if (playingConn.clientOwnedObjects[0] == NetworkInstanceId.Invalid) // This is set upon disconnection, if netId paired with this adress is invalid we know that we have reconnected to the game
-                {
-                    playingConn.clientOwnedObjects[0] = this.netId;
-                    GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
-                     bool authorityAssigned =  GO.GetComponent<NetworkIdentity>().AssignClientAuthority(connectionToClient);
-                    Debug.Log("authorityAssigned - " + authorityAssigned);
-                }
-            }
-            else
-            {
-                Debug.Log("PlayerManager.Start: Scene Name - " + SceneManager.GetActiveScene().name);
-            }
         }
 
         if (GlobalVariables.IsHost)
         {
-            Debug.Log("connectionToClient.address - " + connectionToClient.address);
             address = connectionToClient.address;
+
+            if (SceneManager.GetActiveScene().name.Equals("GameScene"))
+            {
+                var playingConn = CustomNetworkManager.playingConnections
+                    .Find(x => x.address == connectionToClient.address &&
+                    x.clientOwnedObjects[0] == NetworkInstanceId.Invalid);      // This is set upon disconnection, if netId paired with this adress is invalid we know that we have reconnected to the game
+
+                Debug.Log("FoundPlayingConn - " + playingConn);
+                Debug.Log("playingConn.clientOwnedObjects[0] - " + playingConn.clientOwnedObjects[0]);
+
+                playingConn.clientOwnedObjects[0] = this.netId;
+                GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
+                bool authorityAssigned = GO.GetComponent<NetworkIdentity>().AssignClientAuthority(connectionToClient);
+                Debug.Log("authorityAssigned - " + authorityAssigned + " to GameObject - " + GO);
+            }
         }
     }
 

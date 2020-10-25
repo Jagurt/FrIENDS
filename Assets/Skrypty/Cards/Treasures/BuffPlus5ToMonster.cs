@@ -37,7 +37,7 @@ public class BuffPlus5ToMonster : BuffCard
     {
         var monster = ClientScene.FindLocalObject(monsterNetId); // Finding Monsters and Buffs Objects
         monster.GetComponent<MonsterCard>().appliedBuffs.Add(gameObject); // Adding buff do Monsters Applied Buffs List
-        transform.SetParent(PlayerInGame.localPlayerInGame.table);    // Putting Buff Card on Table
+        transform.SetParent(PlayerInGame.table);    // Putting Buff Card on Table
         LevelCounter.UpdateLevels();
     }
 

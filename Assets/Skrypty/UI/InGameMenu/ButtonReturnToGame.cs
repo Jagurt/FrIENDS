@@ -15,6 +15,6 @@ public class ButtonReturnToGame : MonoBehaviour
 
     void OnClick()
     {
-        PlayerInGame.localPlayerInGame.playerCanvas.transform.Find("InGameMenu").gameObject.SetActive(false);
+        PlayerInGame.playerCanvas.transform.Find("InGameMenu").gameObject.SetActive(false);
     }
 }

@@ -69,7 +69,7 @@ public class InfoPanel : MonoBehaviour
 
     static void InitializeAlert()
     {
-        infoPanel.activeAlert = Instantiate(infoPanel.alert, PlayerInGame.localPlayerInGame.playerCanvas.transform);
+        infoPanel.activeAlert = Instantiate(infoPanel.alert, PlayerInGame.playerCanvas.transform);
         infoPanel.activeAlert.GetComponent<Alert>().Initialize(infoPanel.alerts[0]);
     }
 }

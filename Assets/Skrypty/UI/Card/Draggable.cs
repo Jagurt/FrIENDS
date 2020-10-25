@@ -83,7 +83,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         placeholderParent = parentToReturnTo;                                               // set its placeholderParent to also handPanel so player can set its position in hand
         placeholder.transform.SetSiblingIndex(this.transform.GetSiblingIndex());
 
-        this.transform.SetParent(PlayerInGame.localPlayerInGame.playerCanvas.transform);
+        this.transform.SetParent(PlayerInGame.playerCanvas.transform);
 
         LayoutElement layoutElement = placeholder.AddComponent<LayoutElement>();            // set placeholders size to be same as held objects
         layoutElement.preferredWidth = this.GetComponent<LayoutElement>().preferredWidth;

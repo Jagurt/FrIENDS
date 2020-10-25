@@ -6,24 +6,17 @@ using UnityEngine.UI;
 
 public class ProgressButton : MonoBehaviour
 {
-    internal static ProgressButton progressButton;
-
-    static Button button;
+    Button button;
 
     void Start()
     {
         button = GetComponent<Button>();
-        button.onClick.AddListener(delegate { OnClick(); });
-    }
-
-    internal static void Initialize()
-    {
-        progressButton = PlayerCanvas.playerCanvas.transform.Find("ProgressButton").GetComponent<ProgressButton>();
+        button.onClick.AddListener(() => OnClick());
     }
 
     public void OnClick()
     {
-        if(!ServerGameManager.serverGameManager.fightInProggres && PlayerInGame.localPlayerInGame.serverGameManager.turnPhase == TurnPhase.Search)
+        if(!ServerGameManager.serverGameManager.fightInProggres && ServerGameManager.serverGameManager.turnPhase == TurnPhase.Search)
         {
             PlayerInGame.localPlayerInGame.EndTurn();
             return;
@@ -33,11 +26,11 @@ public class ProgressButton : MonoBehaviour
         button.interactable = false;
     }
 
-    internal static void ActivateButton()
+    internal void ActivateButton()
     {
         button.interactable = true;
     }
-    internal static void DeactivateButton()
+    internal void DeactivateButton()
     {
         button.interactable = false;
     }

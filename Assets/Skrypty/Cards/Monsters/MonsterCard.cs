@@ -57,9 +57,9 @@ public class MonsterCard : Card
     void RpcInitiateFight()
     {
         //Debug.Log("RpcInititating fight with: " + this.gameObject);
-        transform.SetParent(PlayerInGame.localPlayerInGame.table);
+        transform.SetParent(PlayerInGame.table);
         serverGameManager.fightingMonsters.Add(this.gameObject);
-        ProgressButton.ActivateButton();
+        PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
         HelpButton.ActivateButton();
         LevelCounter.StartFight();
         ClientSetActiveCardUseButtons(false);

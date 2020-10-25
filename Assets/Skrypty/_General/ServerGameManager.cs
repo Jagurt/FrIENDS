@@ -52,17 +52,17 @@ public class ServerGameManager : NetworkBehaviour
 
     [SyncVar] internal bool foughtInThisRound;
 
+    private void Awake()
+    {
+        //serverGameManager = this;
+        //serverDecksManager = FindObjectOfType<ServerDecksManager>();
+    }
+
     private void Start()
     {
         serverGameManager = this;
         serverDecksManager = FindObjectOfType<ServerDecksManager>();
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
-        SceneManager.sceneLoaded += InitializeInGameScene;
-    }
-
-    private void InitializeInGameScene( Scene scene, LoadSceneMode mode )
-    {
-
     }
 
     [Command]

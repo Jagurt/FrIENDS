@@ -97,7 +97,7 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         //Debug.Log("ReceiveEq(GameObject card) card - " + card);
 
         heldItem = card;
-        card.transform.SetParent(PlayerInGame.localPlayerInGame.playerCanvas.transform);
+        card.transform.SetParent(PlayerInGame.playerCanvas.transform);
         card.transform.position = new Vector3(-100, 0, 0);
         eqImage.sprite = card.GetComponentInChildren<Image>().sprite;
     }

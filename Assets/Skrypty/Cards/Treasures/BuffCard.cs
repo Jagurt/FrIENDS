@@ -22,11 +22,11 @@ public class BuffCard : TreasureCard
             case Entity.Player: // Not Implemented Yet
                 break;
             case Entity.Monster:
-                if (localPlayer.table.GetComponentsInChildren<MonsterCard>().Length > 1) // If there are multiple monsters in battle
+                if (PlayerInGame.table.GetComponentsInChildren<MonsterCard>().Length > 1) // If there are multiple monsters in battle
                 {
                     ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChooseMonsterToBuff);
 
-                    foreach (var monster in localPlayer.table.GetComponent<TableDropZone>().BorrowMonsterCards())
+                    foreach (var monster in PlayerInGame.table.GetComponent<TableDropZone>().BorrowMonsterCards())
                         ChoicePanel.ReceiveObjectToChoose(monster); // Create placeholders of monsters on table and send monsters to choice panel
                 }
                 else
