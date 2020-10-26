@@ -28,11 +28,6 @@ public class TableDropZone : DropZone
             localPlayerInGame = PlayerInGame.localPlayerInGame;
 
         draggable.GetComponent<Card>().UseCard();
-        
-        //if (draggable != null)
-        //{
-        //    draggable.parentToReturnTo = this.transform;
-        //}
     }
 
     override

@@ -29,9 +29,9 @@ public class ChoicePanel : MonoBehaviour
         "Choose Player to trade"
     };
 
-    internal static void Initialize()
+    private void Start()
     {
-        choicePanel = PlayerCanvas.playerCanvas.transform.Find("ChoicePanel").GetComponent<ChoicePanel>();
+        choicePanel = GetComponent<ChoicePanel>();
         objectsContainer = choicePanel.transform.Find("ObjectsContainer");
         titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
     }

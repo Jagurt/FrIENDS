@@ -5,9 +5,9 @@ using UnityEngine;
 public class PlayerCanvas : MonoBehaviour
 {
     internal static PlayerCanvas playerCanvas;
-    
-    internal static void Initialize(GameObject playerCanvas)
+
+    PlayerCanvas()
     {
-        PlayerCanvas.playerCanvas = playerCanvas.GetComponent<PlayerCanvas>();
+        playerCanvas = this;
     }
 }

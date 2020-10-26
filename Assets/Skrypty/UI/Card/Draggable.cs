@@ -21,19 +21,30 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
     private void Start()
     {
         serverGameManager = ServerGameManager.serverGameManager;
-        serverDecksManager = ServerGameManager.ServerDecksManager;
         StartCoroutine(GetAdopted());
     }
 
     IEnumerator GetAdopted()
     {
+        while (!serverGameManager)
+        {
+            serverGameManager = ServerGameManager.serverGameManager;
+            yield return new WaitForEndOfFrame();
+        }
+
         while (!serverDecksManager)
         {
-            serverDecksManager = ServerGameManager.ServerDecksManager;
+            serverDecksManager = ServerGameManager.serverGameManager.ServerDecksManager;
             yield return new WaitForEndOfFrame();
         }
 
         while (!serverDecksManager.DoorsDeck)
+            yield return new WaitForEndOfFrame();
+        while (!serverDecksManager.TreasuresDeck)
+            yield return new WaitForEndOfFrame();
+        while (!serverDecksManager.HelpHandsDeck)
+            yield return new WaitForEndOfFrame();
+        while (!serverDecksManager.SpellsDeck)
             yield return new WaitForEndOfFrame();
 
         switch (GetComponent<Card>().cardValues.deck)

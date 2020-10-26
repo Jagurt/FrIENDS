@@ -7,6 +7,11 @@ public class InGameMenu : MonoBehaviour
 {
     internal static InGameMenu inGameMenu;
 
+    InGameMenu()
+    {
+        inGameMenu = this;
+    }
+
     internal static void Initialize()
     {
         inGameMenu = PlayerInGame.playerCanvas.transform.Find("InGameMenu").GetComponent<InGameMenu>();

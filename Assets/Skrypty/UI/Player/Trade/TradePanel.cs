@@ -15,21 +15,25 @@ public class TradePanel : MonoBehaviour
     static bool enemyAcceptedTrade;
     static bool enemyConfirmedTrade;
 
-    private void Awake()
+    TradePanel()
     {
-        //tradePanel = this;
-        //opponentsCardsPanel = transform.Find("EnemysCardsPanel");
-        //playersCardsPanel = transform.Find("PlayersCardsPanel");
-        //tradePanelTitle = transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
+        tradePanel = this;
     }
 
     internal static void Initialize()
     {
-        tradePanel = PlayerCanvas.playerCanvas.transform.Find("TradePanel").GetComponent<TradePanel>(); ;
         opponentsCardsPanel = tradePanel.transform.Find("EnemysCardsPanel");
         playersCardsPanel = tradePanel.transform.Find("PlayersCardsPanel");
         tradePanelTitle = tradePanel.transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
     }
+
+    //private void Start()
+    //{
+    //    tradePanel = this;
+    //    opponentsCardsPanel = tradePanel.transform.Find("EnemysCardsPanel");
+    //    playersCardsPanel = tradePanel.transform.Find("PlayersCardsPanel");
+    //    tradePanelTitle = tradePanel.transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
+    //}
 
     internal static void PrepareForTrade( PlayerInGame playerWeTradeWith )
     {

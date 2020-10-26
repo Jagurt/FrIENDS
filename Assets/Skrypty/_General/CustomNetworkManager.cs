@@ -100,16 +100,6 @@ public class CustomNetworkManager : NetworkManager
         NetworkTransport.Shutdown();
     }
 
-    public override void OnServerAddPlayer( NetworkConnection conn, short playerControllerId )
-    {
-        base.OnServerAddPlayer(conn, playerControllerId);
-
-        //if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
-        //{
-        //    base.OnServerAddPlayer(conn, playerControllerId);
-        //}
-    }
-
     public override void OnServerConnect( NetworkConnection conn )
     {
         if (!playingConnections.Exists(x => x.address.Equals(conn.address)))                // If player isn't in playing connections, it is new player and has to be added there.
@@ -134,21 +124,8 @@ public class CustomNetworkManager : NetworkManager
 
             if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // This should only happen in "GameScene", this if is probably unnecesary
             {
+                NetworkServer.SetClientNotReady(conn);
                 NetworkServer.SendToClient(conn.connectionId, AddPlayerMsg, msgEmpty);      // Send message to connected player that he may call ClientScene.AddPlayer(0);
-                //CustomNetworkConnection playingConn = playingConnections.Find(x => x.address.Equals(conn.address)); // Finding existing CustomConnection for reconnected player
-
-                //Debug.Log("Comparing adresses " + conn.address + " - " + playingConn.address);
-
-                //GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
-                //Debug.Log("Found object to assign authourity - " + GO);
-                //GO.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
-
-                //foreach (var netId in comparedConn.clientOwnedObjects)
-                //{
-                //    GameObject gameObject = ClientScene.FindLocalObject(netId);
-                //    Debug.Log("Found object to assign authourity - " + gameObject);
-                //    bool authorityChangeSucces = gameObject.GetComponent<NetworkIdentity>().AssignClientAuthority(conn);
-                //}
             }
 
             if (conn.lastError != NetworkError.Ok)
@@ -160,7 +137,6 @@ public class CustomNetworkManager : NetworkManager
             }
         }
     }
-
     public override void OnServerDisconnect( NetworkConnection conn )
     {
         if (SceneManager.GetActiveScene().name.Equals("TitleScene"))
@@ -206,11 +182,16 @@ public class CustomNetworkManager : NetworkManager
         ClientScene.Ready(myClient.connection);
     }
 
-    public override void OnClientConnect( NetworkConnection conn ) { }
+    public override void OnClientConnect( NetworkConnection conn )
+    {
+        //if (this.clientLoadedScene)
+        //    return;
+        //ClientScene.Ready(conn);
+    }
     public override void OnClientNotReady( NetworkConnection conn )
     {
-        //base.OnClientNotReady(conn);
-        ClientScene.Ready(conn);
+        base.OnClientNotReady(conn);
+        //ClientScene.Ready(conn);
     }
-    public override void OnClientSceneChanged( NetworkConnection conn ) {  }
+    public override void OnClientSceneChanged( NetworkConnection conn ) { ClientScene.Ready(conn); }
 }

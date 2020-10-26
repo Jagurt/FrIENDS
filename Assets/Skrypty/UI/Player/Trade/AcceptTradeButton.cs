@@ -13,6 +13,11 @@ public class AcceptTradeButton : MonoBehaviour
     static bool accepted;
     static TextMeshProUGUI textMeshPro;
 
+    AcceptTradeButton()
+    {
+        acceptTradeButton = this;
+    }
+
     void Awake()
     {
         Button = GetComponent<Button>();
@@ -21,7 +26,7 @@ public class AcceptTradeButton : MonoBehaviour
 
     internal static void Initialize()
     {
-        acceptTradeButton = TradePanel.tradePanel.GetComponentInChildren<AcceptTradeButton>();
+        //acceptTradeButton = TradePanel.tradePanel.GetComponentInChildren<AcceptTradeButton>();
         textMeshPro = acceptTradeButton.GetComponentInChildren<TextMeshProUGUI>();
     }
 

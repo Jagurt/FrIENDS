@@ -18,8 +18,8 @@ public class ServerGameManager : NetworkBehaviour
     //      Stored References       //
     internal static ServerGameManager serverGameManager;
     CustomNetworkManager CustomNetworkManager;
-    private static ServerDecksManager serverDecksManager;
-    internal static ServerDecksManager ServerDecksManager { get => serverDecksManager; }
+    private ServerDecksManager serverDecksManager;
+    internal ServerDecksManager ServerDecksManager { get => serverDecksManager; }
 
     //      Turn and Players Vars       //
     [SerializeField] [SyncVar] internal TurnPhase turnPhase;
@@ -28,8 +28,8 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
     [SerializeField] [SyncVar] internal int activePlayerIndex = -1;
 
-    [SyncVar] internal int connectedPlayers = 0;
-    [SyncVar] internal int readyPlayers = 0;
+    [SerializeField] [SyncVar] internal int connectedPlayers = 0;
+    [SerializeField] [SyncVar] internal int readyPlayers = 0;
 
     [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
 
@@ -52,16 +52,10 @@ public class ServerGameManager : NetworkBehaviour
 
     [SyncVar] internal bool foughtInThisRound;
 
-    private void Awake()
-    {
-        //serverGameManager = this;
-        //serverDecksManager = FindObjectOfType<ServerDecksManager>();
-    }
-
     private void Start()
     {
         serverGameManager = this;
-        serverDecksManager = FindObjectOfType<ServerDecksManager>();
+        serverDecksManager =  FindObjectOfType<ServerDecksManager>();
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
     }
 
@@ -137,6 +131,7 @@ public class ServerGameManager : NetworkBehaviour
     [Server]
     internal void ReadyPlayersUp()
     {
+        //Debug.Log("ReadyPlayersUp()");
         this.readyPlayers++;
 
         if (readyPlayers == playersObjects.Count)
@@ -393,6 +388,6 @@ public class ServerGameManager : NetworkBehaviour
 
     internal static GameObject GetCardByName( string name )
     {
-        return serverDecksManager.GetCardByName(name);
+        return serverGameManager.serverDecksManager.GetCardByName(name);
     }
 }

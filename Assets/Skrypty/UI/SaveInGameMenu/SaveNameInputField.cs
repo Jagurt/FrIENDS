@@ -9,6 +9,13 @@ public class SaveNameInputField : MonoBehaviour
     internal static SaveNameInputField saveNameInputField;
     internal static TMP_InputField tMP_InputField;
 
+    private void Awake()
+    {
+        saveNameInputField = this;
+        tMP_InputField = GetComponent<TMP_InputField>();
+        tMP_InputField.onValueChanged.AddListener(delegate { UpdatePathToSaveIn(); });
+    }
+
     internal void Initialize()
     {
         saveNameInputField = this;

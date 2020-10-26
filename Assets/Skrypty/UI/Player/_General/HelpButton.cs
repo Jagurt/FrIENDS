@@ -15,17 +15,11 @@ public class HelpButton : MonoBehaviour
 
     private void Start()
     {
+        helpButton = GetComponent<HelpButton>();
         textMesh = transform.Find("Text").GetComponent<TextMeshProUGUI>();
-
         Button = GetComponent<Button>();
         Button.onClick.AddListener(delegate { OnClick(); });
-
         gameObject.SetActive(false);
-    }
-
-    internal static void Initialize()
-    {
-        helpButton = PlayerCanvas.playerCanvas.transform.Find("HelpButton").GetComponent<HelpButton>();
     }
 
     internal static void Activate()

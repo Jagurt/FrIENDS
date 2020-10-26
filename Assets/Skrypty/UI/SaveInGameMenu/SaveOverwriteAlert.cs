@@ -10,6 +10,17 @@ public class SaveOverwriteAlert : MonoBehaviour
     Button overwriteSaveButtonYes;
     Button overwriteSaveButtonNo;
 
+    private void Awake()
+    {
+        saveOverwriteAlert = this;
+
+        overwriteSaveButtonYes = transform.Find("OverwriteSaveButtonYes").GetComponent<Button>();
+        overwriteSaveButtonNo = transform.Find("OverwriteSaveButtonNo").GetComponent<Button>();
+
+        overwriteSaveButtonYes.onClick.AddListener(delegate { AcceptOverwriteOnClick(); });
+        overwriteSaveButtonNo.onClick.AddListener(delegate { DeclineOverwriteOnClick(); });
+    }
+
     internal void Initialize()
     {
         saveOverwriteAlert = this;

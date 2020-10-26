@@ -11,9 +11,13 @@ public class LevelCounter : MonoBehaviour
     static TextMeshProUGUI PlayersLevels;
     static TextMeshProUGUI MonstersLevels;
 
+    LevelCounter()
+    {
+        levelCounter = this;
+    }
+
     internal static void Initialize()
     {
-        levelCounter = PlayerInGame.playerCanvas.transform.Find("LevelCounter").GetComponent<LevelCounter>();
         PlayersLevels = levelCounter.transform.Find("PlayersLevels").GetComponent<TextMeshProUGUI>();
         MonstersLevels = levelCounter.transform.Find("MonstersLevels").GetComponent<TextMeshProUGUI>();
         levelCounter.gameObject.SetActive(false);
