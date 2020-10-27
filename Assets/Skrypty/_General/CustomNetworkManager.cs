@@ -9,10 +9,7 @@ using UnityEngine.SceneManagement;
 
 public class CustomNetworkManager : NetworkManager
 {
-    public class EmptyMessage : MessageBase
-    {
-        // empty?
-    }
+    public class EmptyMessage : MessageBase { }
 
     internal static CustomNetworkManager customNetworkManager;
 
@@ -23,6 +20,7 @@ public class CustomNetworkManager : NetworkManager
     const short ReconnectMsg = MsgType.Highest + 2;
 
     internal static bool gameLoaded = false;
+    internal static bool playerCreated = false;
     internal static int playersToConnect;
 
     [SerializeField] internal static List<CustomNetworkConnection> playingConnections = new List<CustomNetworkConnection>();
@@ -94,10 +92,19 @@ public class CustomNetworkManager : NetworkManager
         if (GlobalVariables.IsHost) StopHost();
         else StopClient();
 
+        playerCreated = false;
         playingConnections.Clear();
         myClient.Shutdown();
         NetworkServer.Shutdown();
         NetworkTransport.Shutdown();
+    }
+
+    internal void AddPlayerOnReconnect()
+    {
+        if (playerCreated)
+            return;
+        playerCreated = true;
+        ClientScene.AddPlayer(0);
     }
 
     public override void OnServerConnect( NetworkConnection conn )
@@ -124,8 +131,8 @@ public class CustomNetworkManager : NetworkManager
 
             if (SceneManager.GetActiveScene().name.Equals("GameScene"))                     // This should only happen in "GameScene", this if is probably unnecesary
             {
-                NetworkServer.SetClientNotReady(conn);
-                NetworkServer.SendToClient(conn.connectionId, AddPlayerMsg, msgEmpty);      // Send message to connected player that he may call ClientScene.AddPlayer(0);
+                //NetworkServer.SetClientNotReady(conn);
+                //NetworkServer.SendToClient(conn.connectionId, AddPlayerMsg, msgEmpty);      // Send message to connected player that he may call ClientScene.AddPlayer(0);
             }
 
             if (conn.lastError != NetworkError.Ok)
@@ -175,6 +182,7 @@ public class CustomNetworkManager : NetworkManager
 
     void OnClientAddPlayerMsg( NetworkMessage networkMessage )
     {
+        playerCreated = true;
         ClientScene.AddPlayer(myClient.connection, 0);
     }
     void OnClientReconnect( NetworkMessage networkMessage )
@@ -182,16 +190,14 @@ public class CustomNetworkManager : NetworkManager
         ClientScene.Ready(myClient.connection);
     }
 
-    public override void OnClientConnect( NetworkConnection conn )
+    public override void OnClientConnect( NetworkConnection conn ) { }
+    public override void OnClientSceneChanged( NetworkConnection conn )
     {
-        //if (this.clientLoadedScene)
-        //    return;
-        //ClientScene.Ready(conn);
+        ClientScene.Ready(conn);
+        Debug.Log("OnClientSceneChanged: Scene Name - " + SceneManager.GetActiveScene().name);
     }
-    public override void OnClientNotReady( NetworkConnection conn )
+    public override void OnClientDisconnect( NetworkConnection conn )
     {
-        base.OnClientNotReady(conn);
-        //ClientScene.Ready(conn);
+        Disconnect();
     }
-    public override void OnClientSceneChanged( NetworkConnection conn ) { ClientScene.Ready(conn); }
 }

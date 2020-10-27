@@ -59,7 +59,7 @@ public class PlayerInGame : NetworkBehaviour
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
-        //ClientInitialize();
+        ClientInitialize();
     }
 
     internal void ClientInitialize()

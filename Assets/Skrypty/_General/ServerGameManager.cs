@@ -57,6 +57,7 @@ public class ServerGameManager : NetworkBehaviour
         serverGameManager = this;
         serverDecksManager =  FindObjectOfType<ServerDecksManager>();
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
+        CustomNetworkManager.AddPlayerOnReconnect();
     }
 
     [Command]
