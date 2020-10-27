@@ -44,14 +44,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e52a6ecc0d92bc4a95855285a7bd2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  opponentInPanel: {fileID: 7197931118514466087, guid: e40b89b6ae51eac42afc76f8ce08eea4,
-    type: 3}
   level: 1
   hasTurn: 0
-  playerCanvas: {fileID: 444659823611501616, guid: 2b0e26e724fe58b4085d7cc36f8f6b53,
+  opponentInPanelPrefab: {fileID: 7197931118514466087, guid: e40b89b6ae51eac42afc76f8ce08eea4,
     type: 3}
+  playerInPanel: {fileID: 0}
+  opponentInPanel: {fileID: 0}
+  handContent: {fileID: 0}
   equippedItems: []
   activeBuffs: []
+  storedObject: {fileID: 0}
 --- !u!114 &4659001160311345598
 MonoBehaviour:
   m_ObjectHideFlags: 0

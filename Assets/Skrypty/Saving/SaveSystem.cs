@@ -63,7 +63,7 @@ public static class SaveSystem
             for (int j = 0; j < loadedSave.playersData[i].cardsInHand.Count; j++)
             {
                 GameObject card = ServerGameManager.GetCardByName(loadedSave.playersData[i].cardsInHand[j]);
-                playerScript.OnLoadReceiveCard(card);
+                playerScript.ServerOnLoadReceiveCard(card);
                 yield return new WaitForEndOfFrame();
             }
 

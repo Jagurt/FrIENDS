@@ -106,7 +106,6 @@ public class CustomNetworkManager : NetworkManager
         playerCreated = true;
         ClientScene.AddPlayer(0);
     }
-
     public override void OnServerConnect( NetworkConnection conn )
     {
         if (!playingConnections.Exists(x => x.address.Equals(conn.address)))                // If player isn't in playing connections, it is new player and has to be added there.
@@ -194,7 +193,6 @@ public class CustomNetworkManager : NetworkManager
     public override void OnClientSceneChanged( NetworkConnection conn )
     {
         ClientScene.Ready(conn);
-        Debug.Log("OnClientSceneChanged: Scene Name - " + SceneManager.GetActiveScene().name);
     }
     public override void OnClientDisconnect( NetworkConnection conn )
     {

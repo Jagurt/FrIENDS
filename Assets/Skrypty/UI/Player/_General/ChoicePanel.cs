@@ -123,7 +123,7 @@ public class ChoicePanel : MonoBehaviour
         foreach (var player in players)
         {
             Debug.Log("player.opponentInPanel - " + player.opponentInPanel);
-            GameObject enemyInPanel = Instantiate(player.opponentInPanel);
+            GameObject enemyInPanel = Instantiate(player.opponentInPanelPrefab);
             enemyInPanel.GetComponent<OpponentInPanel>().InitializeInChoicePanel(player);
             ReceiveObjectToChoose(enemyInPanel);
         }

@@ -29,15 +29,8 @@ public class Card : NetworkBehaviour
     void Start()
     {
         Initialize();
-
         playersConfirmers = new List<GameObject>();
         playersDecliners = new List<GameObject>();
-
-        //deck = cardValues.deck;
-        //transform.Find("CardDescription").GetComponent<TMPro.TextMeshProUGUI>().text = cardValues.description;
-        //transform.Find("CardImage").GetComponent<Image>().sprite = cardValues.sprite;
-        //serverGameManager = ServerGameManager.serverGameManager;
-        //awaitUseConfirmation = AwaitUseConfirmation();
     }
 
     virtual protected void Initialize()
@@ -47,10 +40,8 @@ public class Card : NetworkBehaviour
         transform.Find("CardImage").GetComponent<Image>().sprite = cardValues.sprite;
         serverGameManager = ServerGameManager.serverGameManager;
 
-
         if (isServer)
             awaitUseConfirmation = AwaitUseConfirmation();
-
         StartCoroutine(ClientWaitInstantiateButtons());
     }
 

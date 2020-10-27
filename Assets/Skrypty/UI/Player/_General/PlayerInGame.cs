@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using UnityEditor;
 
 public class PlayerInGame : NetworkBehaviour
 {
@@ -12,7 +13,7 @@ public class PlayerInGame : NetworkBehaviour
     internal ServerGameManager serverGameManager; // Reference to ServerGameManager script for easier use here.
     internal static PlayerInGame localPlayerInGame; // Static reference to PlayerInGame(this) script, it gets set by the object that is meant to be local player.
     IEnumerator initializeEnemiesPanel;
-    [SyncVar] bool initialized = false;
+    [SyncVar] bool started = false;
 
     [SyncVar] internal string NickName; // Nick name of player got from options in title screen.
     internal Sprite Avatar; // Not Implemented Yet
@@ -35,12 +36,14 @@ public class PlayerInGame : NetworkBehaviour
     [SyncVar] [SerializeField] internal bool hasTurn = false; // Certain actions are only available when player has turn.
 
     //      UI      //
-    [SerializeField] internal GameObject opponentInPanel;   // Reference to opponentInPanel Prefab
-    [SerializeField] internal static GameObject playerCanvas;      // Reference to playerCanvas Prefab
+    [SerializeField] internal GameObject opponentInPanelPrefab;     // Reference to opponentInPanel Prefab
+    internal GameObject playerInPanel;             // Reference to playerInPanel 
+    internal GameObject opponentInPanel;           // Reference to opponentInPanel 
+    [SerializeField] internal static GameObject playerCanvas;       // Reference to playerCanvas Prefab
 
-    internal Transform handContent;  // Reference to players "Hand" Transform that stores players owned cards.
-    private static Transform opponentsPanel;   // Reference to panels Transform that stores objects (OpponentInPanel) which show information about enemies
-    internal static Transform equipment;        // Reference to Transform that stores slots for eqipment.
+    internal Transform handContent;                // Reference to players "Hand" Transform that stores players owned cards.
+    private static Transform opponentsPanel;                        // Reference to panels Transform that stores objects (OpponentInPanel) which show information about enemies
+    [SerializeField] internal Transform equipment;                            // Reference to Transform that stores slots for eqipment.
     internal ProgressButton progressButton;
 
     //      Equipment       //
@@ -53,12 +56,23 @@ public class PlayerInGame : NetworkBehaviour
     {
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
         serverGameManager = ServerGameManager.serverGameManager;
+
+        handContent = transform;
+        initializeEnemiesPanel = InitializeEnemiesPanel();
+        StartCoroutine(initializeEnemiesPanel);
+
         ClientInitialize();
     }
 
     public override void OnStartAuthority()
     {
         base.OnStartAuthority();
+        ClientInitialize();
+    }
+
+    public override void OnStopAuthority()
+    {
+        base.OnStopAuthority();
         ClientInitialize();
     }
 
@@ -71,7 +85,8 @@ public class PlayerInGame : NetworkBehaviour
             if (initializeEnemiesPanel != null)
                 StopCoroutine(initializeEnemiesPanel);
 
-            localPlayerInGame = this;
+            if (!localPlayerInGame)
+                localPlayerInGame = this;
 
             CmdStart(NickName);
 
@@ -80,23 +95,19 @@ public class PlayerInGame : NetworkBehaviour
             TradePanel.Initialize();
             LevelCounter.Initialize();
             SaveGameMenu.Initialize();
-            //InGameMenu.Initialize();
             AcceptTradeButton.Initialize();
 
             //      Setting references for UI Objects      //
             progressButton = playerCanvas.transform.Find("ProgressButton").GetComponent<ProgressButton>();
-            opponentInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
-            opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
-            equipment = opponentInPanel.transform.Find("Eq");
-            handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
+            Debug.Log("ClientInitialize() : opponentInPanel - " + opponentInPanel);
+            if (opponentInPanel == null)
+            {
+                playerInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;
+                playerInPanel.GetComponent<OpponentInPanel>().Initialize(this);
+                equipment = playerInPanel.transform.Find("Eq");
+                handContent = playerCanvas.transform.Find("HandPanel").Find("Content");
+            }
         }
-        else          // If player doesn't own this object
-        {
-            handContent = transform;
-            initializeEnemiesPanel = InitializeEnemiesPanel();
-            StartCoroutine(initializeEnemiesPanel);
-        }
-
         serverGameManager = ServerGameManager.serverGameManager;
     }
 
@@ -112,7 +123,8 @@ public class PlayerInGame : NetworkBehaviour
 
         // Initializing enemy panel ui object for local player     
         opponentsPanel = playerCanvas.transform.Find("OpponentsPanel");
-        opponentInPanel = Instantiate(opponentInPanel);
+        if (opponentInPanel != null || playerInPanel != null) yield break;
+        opponentInPanel = Instantiate(opponentInPanelPrefab);
         opponentInPanel.transform.SetParent(opponentsPanel);
         opponentInPanel.GetComponent<OpponentInPanel>().Initialize(this);
         equipment = opponentInPanel.transform.Find("EnemyEq");
@@ -121,10 +133,10 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdStart( string NickName ) // Initializes variables (for this object) on the server that are then set on clients
     {
-        if (initialized)
+        if (started)
             return;
 
-        initialized = true;
+        started = true;
         StartCoroutine(ServerStart(NickName));
     }
 
@@ -152,31 +164,12 @@ public class PlayerInGame : NetworkBehaviour
     internal void ServerOnLoadEquip( GameObject card )
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
-        RpcEquip(cardNetId);
-    }
-
-    [Server]
-    IEnumerator ServerEquip( NetworkInstanceId cardNetId )
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-        CustomNetworkManager.isServerBusy = true;
-
-        GameObject card = ClientScene.FindLocalObject(cardNetId); // Finding card locally via its "NetworkInstanceId"
-
-        Level += card.GetComponent<EquipmentCard>().cardValues.level;  // Modifying players level according to cards level variable
-
-        yield return new WaitForEndOfFrame();
-
-        RpcEquip(cardNetId); // Calling equiping card on all clients
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
+        RpcOnLoadEquip(cardNetId);
     }
 
     internal void ClientEquip( GameObject card )
     {
-        if (hasAuthority)
+        if (hasAuthority && card.GetComponent<Draggable>().Placeholder)
             Destroy(card.GetComponent<Draggable>().Placeholder);
 
         card.GetComponent<Draggable>().enabled = true;
@@ -184,23 +177,31 @@ public class PlayerInGame : NetworkBehaviour
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
 
         //Debug.Log("Equipping " + equipmentCard.cardValues.name + " in the " + equipmentCard.eqPart + " slot");
+        if(!equippedItems.Contains(card))
         equippedItems.Add(card);                                            // player.equippedItems.Add(this.gameObject);                                                   
 
         EquipmentCard eqCardScript = card.GetComponent<EquipmentCard>();    // Setting item in item slot UI for players that don't own this item
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
 
         eqSlot.ReceiveEq(card);
-        ClientUpdateOwnedCards();
-        ClientUpdateLevelUI();
+        StartCoroutine(ClientUpdateOwnedCards());
+        StartCoroutine(ClientUpdateLevelUI());
     }
 
     [ClientRpc]
-    void RpcEquip( NetworkInstanceId cardNetId ) // Calling equiping card on all clients
+    void RpcOnLoadEquip( NetworkInstanceId cardNetId ) // Calling equiping card on all clients
     {
         GameObject eqCard = ClientScene.FindLocalObject(cardNetId); // Finding card locally via its "NetworkInstanceId"
-        equippedItems.Add(eqCard);                                  // adding card to equipped items List
+        StartCoroutine(ClientOnLoadEquip(eqCard));
+    }
+    [Client]
+    IEnumerator ClientOnLoadEquip( GameObject eqCard )
+    {
+        if(!equippedItems.Contains(eqCard))
+        equippedItems.Add(eqCard);
 
         EquipmentCard eqCardScript = eqCard.GetComponent<EquipmentCard>(); // Setting item in item slot UI for players that don't own this item
+        yield return new WaitUntil(() => equipment != null);
         equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>().ReceiveEq(eqCard);
     }
 
@@ -254,8 +255,8 @@ public class PlayerInGame : NetworkBehaviour
         if (!hasAuthority)
             eqSlot.ReturnEnemyEq();
 
-        ClientUpdateOwnedCards();
-        ClientUpdateLevelUI();
+        StartCoroutine(ClientUpdateOwnedCards());
+        StartCoroutine(ClientUpdateLevelUI());
     }
 
     [Client]
@@ -274,7 +275,7 @@ public class PlayerInGame : NetworkBehaviour
             eqSlot.ReturnEq();
 
         ClientEquip(eqCard);
-        ClientUpdateOwnedCards();
+        StartCoroutine(ClientUpdateOwnedCards());
     }
 
     private IEnumerator RequestCardDrawCoroutine( Deck deck, int quantity, bool worksOnDrawingPlayer = false, bool choice = false )
@@ -373,12 +374,11 @@ public class PlayerInGame : NetworkBehaviour
     }
 
     [Server]
-    internal void OnLoadReceiveCard( GameObject card )
+    internal void ServerOnLoadReceiveCard( GameObject card )
     {
         NetworkInstanceId cardNetId = card.GetComponent<Card>().GetNetId();
         StartCoroutine(ServerReceiveCard(cardNetId));
     }
-
     [Server]
     internal IEnumerator ServerReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer = false, bool choice = false )
     {
@@ -391,7 +391,6 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     private void RpcReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer, bool choice )
     {
@@ -403,7 +402,7 @@ public class PlayerInGame : NetworkBehaviour
         serverGameManager.StoredCardUsesToConfirm.Remove(card);
         ClientReceiveCard(card, worksOnDrawingPlayer, choice);
     }
-
+    [Client]
     private void ClientReceiveCard( GameObject card, bool worksOnDrawingPlayer = false, bool choice = false )
     {
         //Debug.Log("Receiving Card - " + card);
@@ -629,7 +628,7 @@ public class PlayerInGame : NetworkBehaviour
                 break;
         }
 
-        ClientUpdateOwnedCards();
+        StartCoroutine(ClientUpdateOwnedCards());
     }
 
     [Server]
@@ -694,7 +693,7 @@ public class PlayerInGame : NetworkBehaviour
         ServerGameManager.serverGameManager.offeringHelpPlayers.Clear();
         LevelCounter.Deactivate();
     }
-
+    [Server]
     IEnumerator ServerUpdateLevelUI()
     {
         if (CustomNetworkManager.isServerBusy)
@@ -715,13 +714,16 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcUpdateLevelUI()
     {
-        ClientUpdateLevelUI();
+        StartCoroutine(ClientUpdateLevelUI());
     }
-
-    void ClientUpdateLevelUI()
+    [Client]
+    IEnumerator ClientUpdateLevelUI()
     {
-        opponentInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
-
+        yield return new WaitUntil(() => opponentInPanel != null || playerInPanel != null);
+        if (opponentInPanel != null)
+            opponentInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
+        else
+            playerInPanel.GetComponent<OpponentInPanel>().UpdateLevel(level);
         // Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
 
         if (serverGameManager.fightInProggres)
@@ -733,7 +735,6 @@ public class PlayerInGame : NetworkBehaviour
     {
         StartCoroutine(ServerUpdateOwnedCards());
     }
-
     [Server]
     internal IEnumerator ServerUpdateOwnedCards()
     {
@@ -746,17 +747,16 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     void RpcUpdateOwnedCards()
     {
-        ClientUpdateOwnedCards();
+        StartCoroutine(ClientUpdateOwnedCards());
     }
-
-    internal void ClientUpdateOwnedCards()
+    [Client]
+    internal IEnumerator ClientUpdateOwnedCards()
     {
         if (hasAuthority)
-            opponentInPanel.GetComponent<OpponentInPanel>().UpdateOwnedCards(handContent.childCount, ownedCardsLimit);
+            playerInPanel.GetComponent<OpponentInPanel>().UpdateOwnedCards(handContent.childCount, ownedCardsLimit);
         else
         {
             short ownedCards = 0;
@@ -764,6 +764,7 @@ public class PlayerInGame : NetworkBehaviour
             for (int i = 0; i < transform.childCount; i++)
                 if (transform.GetChild(i).gameObject.active) ownedCards++;
 
+            yield return new WaitUntil(() => opponentInPanel != null);
             opponentInPanel.GetComponent<OpponentInPanel>().UpdateOwnedCards(ownedCards, ownedCardsLimit);
         }
     }
@@ -1152,13 +1153,13 @@ public class PlayerInGame : NetworkBehaviour
     [ClientRpc]
     void RpcCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
-        ExecuteCancelTrade();
+        ClientExecuteCancelTrade();
 
         PlayerInGame playerWeTradeWith = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
-        playerWeTradeWith.ExecuteCancelTrade(); // Finalizing trade for second player
+        playerWeTradeWith.ClientExecuteCancelTrade(); // Finalizing trade for second player
     }
-
-    void ExecuteCancelTrade()
+    [Client]
+    void ClientExecuteCancelTrade()
     {
         List<GameObject> cardsToReceive = new List<GameObject>();
 
@@ -1273,5 +1274,23 @@ public class PlayerInGame : NetworkBehaviour
         playerData.equippedItems = equippedItems;
 
         return playerData;
+    }
+    [Server]
+    internal void ServerReconnect()
+    {
+        if (!hasAuthority)
+            handContent = transform;
+
+        Debug.Log("ServerReconnect(): handContent - " + handContent);
+        for (int i = 0; i < handContent.childCount; i++)
+        {
+            GameObject card = handContent.GetChild(i).gameObject;
+            ServerOnLoadReceiveCard(card);
+        }
+
+        foreach (var item in equippedItems)
+            ServerOnLoadEquip(item);
+
+        StartCoroutine(ServerUpdateLevelUI());
     }
 }

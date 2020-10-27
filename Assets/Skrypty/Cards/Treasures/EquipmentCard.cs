@@ -29,7 +29,7 @@ public class EquipmentCard : TreasureCard
 
         levelChange += cardValues.level;  // Modifying players level according to cards level variable
 
-        EqItemSlot eqSlot = PlayerInGame.equipment.GetChild((int)(cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
+        EqItemSlot eqSlot = player.equipment.GetChild((int)(cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
 
         if (eqSlot.heldItem != null)
         {

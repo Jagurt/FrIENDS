@@ -105,7 +105,6 @@ public class PlayerManager : NetworkBehaviour
                     x.clientOwnedObjects[0] == NetworkInstanceId.Invalid);      // This is set upon disconnection, if netId paired with this adress is invalid we know that we have reconnected to the game
 
         Debug.Log("FoundPlayingConn - " + playingConn);
-        //Debug.Log("playingConn.clientOwnedObjects[0] - " + playingConn.clientOwnedObjects[0]);
 
         playingConn.clientOwnedObjects[0] = this.netId;
         GameObject GO = ClientScene.FindLocalObject(playingConn.clientOwnedObjects[1]);
@@ -114,6 +113,13 @@ public class PlayerManager : NetworkBehaviour
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
+
+        // TODO : Call to reassign objects transforms?
+        foreach (var player in FindObjectsOfType<PlayerInGame>())
+        {
+            Debug.Log("ServerWaitToAssignPlayerInGame(): player.handContent - " + player.handContent);
+            player.ServerReconnect();
+        }
     }
 
     [Command]
@@ -170,11 +176,5 @@ public class PlayerManager : NetworkBehaviour
     public override void OnNetworkDestroy() // According to OnServerDisconnect() override, this should be called only in "TitleScene", more specifically in Lobby
     {
         LobbyManager.ConnectedPlayersDown();
-        CustomNetworkManager.playingConnections.Remove(
-            CustomNetworkManager.playingConnections
-            .Find(x => x.address.Equals(connectionToClient.address)
-            ));
     }
-
-
 }
