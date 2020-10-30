@@ -78,7 +78,7 @@ public class PlayerInGame : NetworkBehaviour
 
     internal void ClientInitialize()
     {
-        Debug.Log("ClientInitialize(): hasAuthority - " + hasAuthority);
+        //Debug.Log("ClientInitialize(): hasAuthority - " + hasAuthority);
 
         if (hasAuthority) // Check if player "Owns" this object, this is set in "PlayerManager" script.
         {
@@ -99,7 +99,7 @@ public class PlayerInGame : NetworkBehaviour
 
             //      Setting references for UI Objects      //
             progressButton = playerCanvas.transform.Find("ProgressButton").GetComponent<ProgressButton>();
-            Debug.Log("ClientInitialize() : opponentInPanel - " + opponentInPanel);
+            //Debug.Log("ClientInitialize() : opponentInPanel - " + opponentInPanel);
             if (opponentInPanel == null)
             {
                 playerInPanel = playerCanvas.transform.Find("PlayerInPanel").gameObject;

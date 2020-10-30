@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618 // Typ lub składowa jest przestarzała
+﻿#pragma warning disable CS0618 // Type is too old
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +13,9 @@ public enum Entity { Player, Monster, Both };
 public enum TreasureType { Equipment, Buff };
 public enum EqPart { Head, Chest, Hands, Legs, Feet, Ring, Weapon1, Weapon2 };
 
+/// <summary>
+/// Game Manager class containing general game variables and methods
+/// </summary>
 public class ServerGameManager : NetworkBehaviour
 {
     //      Stored References       //
@@ -89,8 +92,8 @@ public class ServerGameManager : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
-        Debug.Log("Players To Connect - " + CustomNetworkManager.playersToConnect);
-        Debug.Log("Connected Players - " + connectedPlayers);
+        //Debug.Log("Players To Connect - " + CustomNetworkManager.playersToConnect);
+        //Debug.Log("Connected Players - " + connectedPlayers);
 
         PlayerManager[] players = FindObjectsOfType<PlayerManager>();
 
