@@ -333,11 +333,14 @@ public class ServerGameManager : NetworkBehaviour
         if (helpingPlayerNetId != NetworkInstanceId.Invalid)
             fightingPlayersLevel += helpingPlayerLevel = ClientScene.FindLocalObject(helpingPlayerNetId).GetComponent<PlayerInGame>().Level;
     }
-
+    /// <summary>
+    /// Method called when fight is ended.
+    /// </summary>
+    /// <param name="isFightSettled"> True if fight ended normal way. False if something was used to end fight without winner.</param>
     [Server]
-    internal void EndFight( bool isFightSettled ) // PowerCheck, Win or Lose -Effect, change bools to non-fight state
+    internal void EndFight( bool isFightSettled )
     {
-        if (isFightSettled) // Fight has a winner, so its settled and correct effect should occur
+        if (isFightSettled)
         {
             if (fightingPlayersLevel > fightingMonstersLevel) FightWon();
             else FightLost();
@@ -345,9 +348,10 @@ public class ServerGameManager : NetworkBehaviour
         }
         else
         {
-            foughtInThisRound = false; // If fight is canceled nobody wins and player can fight again
+            // If fight is canceled nobody wins and player can fight again
+            foughtInThisRound = false; 
         }
-
+        // Reseting variables used in fight.
         readyPlayers = 0;
         fightInProggres = false;
         fightingPlayerNetId = NetworkInstanceId.Invalid;
@@ -355,29 +359,36 @@ public class ServerGameManager : NetworkBehaviour
         PlayerInGame.localPlayerInGame.EndFight();
         StartCoroutine(ServerTurnOwnerReadiness());
     }
-
+    /// <summary>
+    /// Called when players won the fight.
+    /// </summary>
     [Server]
     void FightWon()
     {
         int treasuresToDrawCount = 0;
         short levelsGained = 0;
 
+        // Counting how many treasures and levels slayed monsters grant.
         foreach (var monster in fightingMonsters)
         {
             MonsterValue monVars = (MonsterValue)monster.GetComponent<MonsterCard>().cardValues;
             treasuresToDrawCount += monVars.treasuresCount;
             levelsGained += monVars.levelsToGrant;
         }
+        // Finding fighting players PlayerInGame script.
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
         fightingPlayer.FightWon(treasuresToDrawCount, levelsGained);
         StartCoroutine(ServerAlert(fightingPlayer.NickName + " won the battle!"));
 
-        StartCoroutine(ApplyMonstersTriumphEffects());
+        ApplyMonstersTriumphEffects();
     }
-
+    /// <summary>
+    /// Called when players lost the battle.
+    /// </summary>
     [Server]
     void FightLost()
     {
+        // Finding fighting player PlayerInGame script.
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
         StartCoroutine(ServerAlert(fightingPlayer.NickName + " lost the battle!"));
 
@@ -394,18 +405,11 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
-    IEnumerator ApplyMonstersTriumphEffects()
+    void ApplyMonstersTriumphEffects()
     {
         foreach (var monster in fightingMonsters)
         {
-            if (CustomNetworkManager.isServerBusy)
-                yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-            CustomNetworkManager.isServerBusy = true;
-
             StartCoroutine(ApplyMonsterTriumphEffect(monster));
-
-            yield return new WaitForEndOfFrame();
-            CustomNetworkManager.isServerBusy = false;
         }
     }
 
@@ -437,13 +441,17 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// Ending turn and starting new one
+    /// </summary>
+    [Server]
     internal void EndTurn()
     {
         Debug.Log("ServerGameManager.EndTurn()");
         ServerNewTurnSet();
     }
-
+    /// <summary>Called and run only on server</summary>
+    /// <param name="alertText"> Text for alert to contain. </param>
     [Server]
     IEnumerator ServerAlert( string alertText )
     {
@@ -456,13 +464,15 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>Called only by server, run only on clients</summary>
+    /// <param name="text"> Text for alert to contain. </param>
     [ClientRpc]
     void RpcAlert( string text )
     {
+        //Creates Alert object containing text. Object disappears after a while or when clicked.
         InfoPanel.Alert(text);
     }
-
+    // Function for searching card by its name. Essential when loading game.
     internal static GameObject GetCardByName( string name )
     {
         return serverGameManager.serverDecksManager.GetCardByName(name);

@@ -203,14 +203,14 @@ public class CustomNetworkManager : NetworkManager
             // Finding CustomNetworkConnection with disconnecting players address
             var playingConnection = playingConnections.Find(x => x.address.Equals(address));
 
-            // Finding players main object.
+            // Finding players main object(PlayerManager).
             GameObject GO = ClientScene.FindLocalObject(playingConnection.clientOwnedObjects[0]);
 
             // Players main object has to be destroyed becouse Unity prevents it from being reassigned.
             NetworkServer.Destroy(GO);
 
-            // Setting players destroyed main Objects netId (network reference) to invalid becouse object is destroyed.
-            // I set it to NetworkInstanceId.Invalid, becouse it can't be set to null.
+            // Setting players destroyed main objects netId (network reference) to invalid, becouse said object is destroyed.
+            // I need to set it to NetworkInstanceId.Invalid, becouse it can't be set to null.
             playingConnection.clientOwnedObjects[0] = NetworkInstanceId.Invalid;
 
             // This is PlayerInGame object, the second object for player that handles player functionality when in GameScene

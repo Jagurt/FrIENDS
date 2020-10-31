@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 enum PlayerColors { Green, Blue, Red, Brown, SkyBlue, Black, White, Purple, Orange, Pink }
 
@@ -71,7 +72,7 @@ public class LobbyManager : NetworkBehaviour
         ReadyCheck();
     }
 
-    public static void ConnectedPlayersUpdate()
+    public static void UpdateConnectedPlayers()
     {
         lobbyManager.connectedPlayers = NetworkServer.connections.Count;
         ReadyCheck();
@@ -79,6 +80,8 @@ public class LobbyManager : NetworkBehaviour
 
     public static void ConnectedPlayersDown()
     {
+        if (!SceneManager.GetActiveScene().name.Equals("TitleScene"))
+            return;
         lobbyManager.connectedPlayers -= 1;
         ReadyCheck();
     }
@@ -86,8 +89,7 @@ public class LobbyManager : NetworkBehaviour
     static void ReadyCheck()
     {
         if ((lobbyManager.readyPlayers == lobbyManager.connectedPlayers &&
-            LobbyPlayersCounter.numOfLoadedPlayers == 0)
-            ||
+            LobbyPlayersCounter.numOfLoadedPlayers == 0) ||
             (LobbyPlayersCounter.numOfLoadedPlayers != 0 &&
             lobbyManager.readyPlayers == lobbyManager.connectedPlayers &&
             lobbyManager.readyPlayers == LobbyPlayersCounter.numOfLoadedPlayers))
