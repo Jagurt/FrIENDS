@@ -42,7 +42,7 @@ public class MonsterCard : Card
         serverGameManager.fightInProggres = true;
         serverGameManager.fightingPlayerNetId = fightingPlayer.netId;
         serverGameManager.UpdateFightingPlayersLevel();
-        serverGameManager.SetMonsterLevelTo(((MonsterValue)cardValues).level);
+        serverGameManager.fightingMonstersLevel = ((MonsterValue)cardValues).level;
         serverGameManager.readyPlayers = 0;
 
         yield return new WaitForEndOfFrame();

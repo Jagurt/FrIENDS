@@ -50,9 +50,6 @@ public static class SaveSystem
 
             if (playerScript.hasTurn)
             {
-                serverGameManager.activePlayerNetId = playerScript.netId;
-                yield return new WaitForEndOfFrame();
-
                 serverGameManager.activePlayerIndex = i;
                 yield return new WaitForEndOfFrame();
             }

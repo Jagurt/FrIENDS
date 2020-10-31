@@ -11,6 +11,10 @@ enum ChoicePanelTitle { DrawFirstDoor, ChooseCard, ChooseMonsterToBuff, ChoosePl
 public class ChoicePanel : MonoBehaviour
 {
     internal static ChoicePanel choicePanel;
+    ChoicePanel()
+    {
+        choicePanel = this;
+    }
 
     static Transform objectsContainer;
     static TextMeshProUGUI titleTMP;
@@ -31,7 +35,6 @@ public class ChoicePanel : MonoBehaviour
 
     private void Start()
     {
-        choicePanel = GetComponent<ChoicePanel>();
         objectsContainer = choicePanel.transform.Find("ObjectsContainer");
         titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
     }
@@ -138,8 +141,13 @@ public class ChoicePanel : MonoBehaviour
     {
         choicePanel.gameObject.SetActive(true);
         choicePanel.worksOnPlayer = worksOnPlayer;
-
         choicePanel.panelTitle = panelTitle;
+
+        if (!titleTMP)
+        {
+            objectsContainer = choicePanel.transform.Find("ObjectsContainer");
+            titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
+        }
         titleTMP.text = titles[(int)panelTitle];
     }
 

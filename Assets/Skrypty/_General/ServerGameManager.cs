@@ -24,25 +24,56 @@ public class ServerGameManager : NetworkBehaviour
     private ServerDecksManager serverDecksManager;
     internal ServerDecksManager ServerDecksManager { get => serverDecksManager; }
 
-    //      Turn and Players Vars       //
-    [SerializeField] [SyncVar] internal TurnPhase turnPhase;
+    // Variables defining phase of game and turn.
     [SerializeField] GamePhase GamePhase = GamePhase.PreStart;
+    /// <summary>
+    /// [SyncVar] - decorator for variables that have to be synchronized on all clients by server.
+    /// Those variables are automatically updated for clients when any change is made to them on server.
+    /// </summary>
+    [SerializeField] [SyncVar] internal TurnPhase turnPhase;
 
+    /// <summary>
+    /// List of players PlayerInGame objects
+    /// </summary>
     [SerializeField] internal List<GameObject> playersObjects = new List<GameObject>();
+    /// <summary>
+    /// Index of PlayerInGame object from list above. 
+    /// PlayerInGame object under this index is object of player that currently has a turn.
+    /// It is being set once game begin.
+    /// </summary>
     [SerializeField] [SyncVar] internal int activePlayerIndex = -1;
-
+    /// <summary>
+    /// Number of players who were in lobby when game started.
+    /// </summary>
     [SerializeField] [SyncVar] internal int connectedPlayers = 0;
+    /// <summary>
+    /// Number of players ready to progress turn.
+    /// </summary>
     [SerializeField] [SyncVar] internal int readyPlayers = 0;
-
+    /// <summary>
+    /// Players can use cards without waiting for previous ones take an effect.
+    /// This list is a queue which this mechanic uses to play cards in correct order.
+    /// </summary>
     [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
 
     //      Fighting        //
-    [SyncVar] internal NetworkInstanceId activePlayerNetId = NetworkInstanceId.Invalid;
+    /// <summary>
+    /// NetworkInstanceId of currently fighting player.
+    /// Normally such variable would have "null" value, since no players are fighting at the very begging.
+    /// Unfotunately we have to use "NetworkInstanceId.Invalid" instead to avoid unintended behaviour.
+    /// </summary>
     [SyncVar] internal NetworkInstanceId fightingPlayerNetId = NetworkInstanceId.Invalid;
-
+    /// <summary>
+    /// List of players PlayerInGame scripts that are offering help to fighting player.
+    /// </summary>
     [SerializeField] internal List<PlayerInGame> offeringHelpPlayers = new List<PlayerInGame>();
+    /// <summary>
+    /// NetworkInstanceId of help-offering player which fighting player has chosen to help him.
+    /// </summary>
     [SerializeField] [SyncVar] internal NetworkInstanceId helpingPlayerNetId = NetworkInstanceId.Invalid;
-
+    /// <summary>
+    /// Describes if fight takes place at this time.
+    /// </summary>
     [SerializeField] [SyncVar] internal bool fightInProggres;
 
     internal List<GameObject> fightingMonsters = new List<GameObject>();
@@ -55,20 +86,27 @@ public class ServerGameManager : NetworkBehaviour
 
     [SyncVar] internal bool foughtInThisRound;
 
+    // Method that is run when this object is enabled in scene for first time.
     private void Start()
     {
         serverGameManager = this;
-        serverDecksManager =  FindObjectOfType<ServerDecksManager>();
+        serverDecksManager = FindObjectOfType<ServerDecksManager>();
         CustomNetworkManager = CustomNetworkManager.customNetworkManager;
+        /// This is method that is essential for reconnection.
+        /// I needed some way to wait for synchronization, to avoid errors when adding player BEFORE synchronization occurs.
+        /// Unfortunately Unity built-in network events happen before synchronization, so they are not good for adding player.
+        /// This method is called here becouse, upon reconnection, this object will be enabled on client AFTER synchronization with server,
+        /// so we can add player without causing errors. 
         CustomNetworkManager.AddPlayerOnReconnect();
     }
 
-    [Command]
-    internal void CmdChangeMonsterLevelBy( int value )
-    {
-        fightingMonstersLevel += value;
-    }
-
+    /// <summary>
+    /// [Server] decorator - tells Unity that this method should be run only on server.
+    /// Method called on server to increase number of players that have connected after changing From TitleScene to GameScene.
+    /// When all players have changed scene, we assign them to players list in same order as they were arranged in lobby.
+    /// Check "isServerBusy" variable in "CustomNetworkManager" for more information.
+    /// </summary>
+    /// <returns></returns>
     [Server]
     internal IEnumerator ReportPresence()
     {
@@ -84,7 +122,10 @@ public class ServerGameManager : NetworkBehaviour
         if (connectedPlayers == CustomNetworkManager.playersToConnect)
             StartCoroutine(ServerArrangePlayersList());
     }
-
+    /// <summary>
+    /// Assigning players to list in same order as they were arranged in lobby.
+    /// </summary>
+    /// <returns></returns>
     [Server]
     IEnumerator ServerArrangePlayersList()
     {
@@ -113,25 +154,33 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// [ClientRpc] - decorator for methods that are called exculisvely BY SERVER and ran only ON CLIENTS.
+    /// </summary>
+    /// <param name="connectedPlayersNetId"> NetworkInstanceId of player that has to be added to list next. </param>
     [ClientRpc]
     void RpcAddToPlayersList( NetworkInstanceId connectedPlayersNetId )
     {
         playersObjects.Add(ClientScene.FindLocalObject(connectedPlayersNetId));
     }
-
-    [Server]
-    internal void SetMonsterLevelTo( int value )
-    {
-        fightingMonstersLevel = value;
-    }
-
+    /// <summary>
+    /// [Command] - decorator for methods that are CALLED exclusively BY CLIENTS, and RUN only ON SERVER.
+    /// Only objects over which players have authority can call [Command] methods.
+    /// 
+    /// ADDITIONAL INFO: 
+    /// So in this case, since no client will ever have authority over ServerGameManager(this) object,
+    /// the CmdShuffleDecks() method will never work. 
+    /// ( Unless called on host which is client AND server. Server has authority over any object without authority by default. )
+    /// </summary>
     [Command]
     public void CmdShuffleDecks()
     {
         serverDecksManager.ShuffleDecks();
     }
-
+    /// <summary>
+    /// Called when player presses "ProgressButton".
+    /// If all players are ready game progresses to next phase.
+    /// </summary>
     [Server]
     internal void ReadyPlayersUp()
     {
@@ -155,7 +204,10 @@ public class ServerGameManager : NetworkBehaviour
             }
         }
     }
-
+    /// <summary>
+    /// Method called when all players are ready for first time.
+    /// Synchronizes objects with loaded game or starts new game - sends new set of cards to all players, and starts turn for first player.
+    /// </summary>
     [Server] // Called on server
     void BeginGame()
     {
@@ -175,8 +227,13 @@ public class ServerGameManager : NetworkBehaviour
             ServerNewTurnSet();
         }
     }
-
-    [Server] // Called on server
+    /// <summary>
+    /// Sets variables on server for new turn.
+    /// Tells players that new turn has started.
+    /// Tells player with turn that his turn has started and enables his functionality for having turn.
+    /// AutoSaves game.
+    /// </summary>
+    [Server] 
     void ServerNewTurnSet() // Setting vars for new turn
     {
         if (activePlayerIndex >= 0)
@@ -187,14 +244,18 @@ public class ServerGameManager : NetworkBehaviour
         playerWithTurn.hasTurn = true;
         StartCoroutine(playerWithTurn.ServerPersonalAlertCoroutine("Your Turn Now!"));
 
-        activePlayerNetId = playersObjects[activePlayerIndex].GetComponent<NetworkIdentity>().netId;
-
         StartCoroutine(ServerTurnOwnerReadiness());
         playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().StartTurn();
         StartCoroutine(ServerAlert("New Turn Starts!"));
         SaveSystem.AutoSaveGame();
     }
-
+    /// <summary>
+    /// Called in ReadyPlayersUp() when GamePhase is InProgress.
+    /// Ends fight and switches turnPhase.
+    /// Ends Turns Beginning Phase, switches to Turns Search Phase and makes active player draw 3 doors to choose.
+    /// 
+    /// TODO: Doesn't look so good and requires remake.
+    /// </summary>
     [Server]
     internal void ProgressTurn()
     {
@@ -204,19 +265,24 @@ public class ServerGameManager : NetworkBehaviour
             return;
         }
 
-        switch (turnPhase)
+        if (turnPhase == TurnPhase.Beginning)
         {
-            case TurnPhase.Beginning: // Player draws and chooses Doors
-                Debug.Log("Progressing turn phase - Beginning => Search!");
-                ServerAlert("Turn phase: Search");
-                StartCoroutine(playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().ServerSendCardsCoroutine(Deck.Doors, 3, true, true));
-                turnPhase = TurnPhase.Search;
-                break;
-            default:
-                break;
+            Debug.Log("Progressing turn phase - Beginning => Search!");
+            ServerAlert("Turn phase: Search");
+            StartCoroutine(playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().ServerSendCardsCoroutine(Deck.Doors, 3, true, true));
+            turnPhase = TurnPhase.Search;
+            return;
         }
     }
-
+    /// <summary>
+    /// Method that makes server wait only for turn owner to be ready.
+    /// It accomplishes that by setting readyPlayers to be 1 value less than number of players and then enables "ProgressButton" only for turn owner.
+    /// 
+    /// readyPlayers is [SyncVar] and RpcTurnOwnerReadiness() is [ClientRpc] method.
+    /// To keep intended network behaviour I wait 1 frame in between calling them, so that they are called in separate frames.
+    /// For more information check isServerBusy variable in CustomNetworkManager class.
+    /// </summary>
+    /// <returns></returns>
     [Server]
     internal IEnumerator ServerTurnOwnerReadiness()
     {
@@ -232,7 +298,12 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// Method that makes server wait all players to be ready.
+    /// Sets readyPlayers to 0 and enables "ProgressButton" for all players.
+    /// 
+    /// </summary>
+    /// <returns></returns>
     [Server]
     internal IEnumerator ServerAllPlayersReadiness()
     {
@@ -248,7 +319,9 @@ public class ServerGameManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// Updates levels of fighting players.
+    /// </summary>
     [Server]
     internal void UpdateFightingPlayersLevel()
     {

@@ -43,8 +43,13 @@ public class CustomNetworkManager : NetworkManager
     /// </summary>
     internal static List<CustomNetworkConnection> playingConnections = new List<CustomNetworkConnection>();
     /// <summary>
+    /// [ClientRpc] - decorator for Rpc methods. These methods are called exclusively BY server and are executed ONLY ON clients (in our case host is server AND client).
     /// Only 1 Rpc method can be called per frame. Engine doesn't warn you if more of them are called in a single frame and becouse of this I had problems for over a month.
-    /// [ClientRpc] is a decoration for Rpc methods. These methods are called exclusively BY server and are executed ONLY ON clients (in our case host is server AND client).
+    /// 
+    /// [SyncVar]   - decorator for variables that have to be synchronized on all clients by server.
+    /// Those variables are automatically updated for clients when any change is made to them on server.
+    /// Sometimes making changes to [SyncVar] variables also can occur once per frame, so they too use following mechanic.
+    /// 
     /// To bypass "1 Rpc method per frame limitation" I made "isServerBusy" bool variable and each Rpc method is called from inside a Coroutine method.
     /// Those Coroutine methods function as follows:
     ///     1. check if isServerBusy is true 
