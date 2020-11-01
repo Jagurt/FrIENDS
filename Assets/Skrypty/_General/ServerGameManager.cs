@@ -245,7 +245,6 @@ public class ServerGameManager : NetworkBehaviour
         StartCoroutine(playerWithTurn.ServerPersonalAlertCoroutine("Your Turn Now!"));
 
         StartCoroutine(ServerTurnOwnerReadiness());
-        playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().StartTurn();
         StartCoroutine(ServerAlert("New Turn Starts!"));
         SaveSystem.AutoSaveGame();
     }
@@ -269,7 +268,7 @@ public class ServerGameManager : NetworkBehaviour
         {
             Debug.Log("Progressing turn phase - Beginning => Search!");
             ServerAlert("Turn phase: Search");
-            StartCoroutine(playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().ServerSendCardsCoroutine(Deck.Doors, 3, true, true));
+            StartCoroutine(playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().ServerSendCards(Deck.Doors, 3, true, true));
             turnPhase = TurnPhase.Search;
             return;
         }

@@ -85,7 +85,7 @@ public class ChoicePanel : MonoBehaviour
         if (worksOnPlayer)
         {
             // Debug.Log("ChoicePanel:ChooseDoors - worksOnPlayer - " + worksOnPlayer);
-            PlayerInGame.localPlayerInGame.UseCardOnTarget(PlayerInGame.localPlayerInGame.gameObject); // if chosen card works on local player, use it on them.
+            PlayerInGame.localPlayerInGame.ChooseObject(PlayerInGame.localPlayerInGame.gameObject); // if chosen card works on local player, use it on them.
             PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
         }
         else
@@ -109,7 +109,7 @@ public class ChoicePanel : MonoBehaviour
 
     void ChoosePlayer( OpponentInPanel enemyInPanel )
     {
-        PlayerInGame.localPlayerInGame.UseCardOnTarget(enemyInPanel.storedPlayer.gameObject);
+        PlayerInGame.localPlayerInGame.ChooseObject(enemyInPanel.storedPlayer.gameObject);
     }
 
     internal static void ReceiveObjectToChoose( GameObject receivedObject )
@@ -125,8 +125,8 @@ public class ChoicePanel : MonoBehaviour
     {
         foreach (var player in players)
         {
-            Debug.Log("player.opponentInPanel - " + player.opponentInPanel);
-            GameObject enemyInPanel = Instantiate(player.opponentInPanelPrefab);
+            Debug.Log("player.opponentInPanel - " + player.opponentStatsUI);
+            GameObject enemyInPanel = Instantiate(player.opponentStatsUIPrefab);
             enemyInPanel.GetComponent<OpponentInPanel>().InitializeInChoicePanel(player);
             ReceiveObjectToChoose(enemyInPanel);
         }

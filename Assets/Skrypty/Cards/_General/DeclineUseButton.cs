@@ -15,7 +15,7 @@ public class DeclineUseButton : MonoBehaviour
 
     void OnClick()
     {
-        PlayerInGame.localPlayerInGame.ConfirmUseCard(false);
+        PlayerInGame.localPlayerInGame.ConfirmCardUsage(false);
     }
 
 }

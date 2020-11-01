@@ -15,7 +15,7 @@ public class InterruptUseButton : MonoBehaviour
 
     void OnClick()
     {
-        PlayerInGame.localPlayerInGame.InterruptUseCard();
+        PlayerInGame.localPlayerInGame.InterruptCardUsage();
     }
 
 }

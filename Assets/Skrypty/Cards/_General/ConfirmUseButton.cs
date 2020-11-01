@@ -15,7 +15,7 @@ public class ConfirmUseButton : MonoBehaviour
 
     void OnClick()
     {
-        PlayerInGame.localPlayerInGame.ConfirmUseCard(true);
+        PlayerInGame.localPlayerInGame.ConfirmCardUsage(true);
     }
 
 }

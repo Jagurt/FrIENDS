@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0618 // Type too old lul
+﻿#pragma warning disable CS0618 // Type is too old
 
 using System;
 using System.Collections;

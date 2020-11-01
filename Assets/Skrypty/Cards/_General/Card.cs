@@ -138,7 +138,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void ConfirmUseCard( bool confirm, GameObject player )
+    internal void ConfirmCardUsage( bool confirm, GameObject player )
     {
         if (confirm && !playersConfirmers.Contains(player))
         {
@@ -155,7 +155,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void InterruptUseCard()
+    internal void InterruptCardUsage()
     {
         interruptTimer -= 50;
     }
