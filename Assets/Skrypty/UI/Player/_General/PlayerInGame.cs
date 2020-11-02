@@ -59,7 +59,7 @@ public class PlayerInGame : NetworkBehaviour
 
     //      Equipment       //
     [SerializeField] internal List<GameObject> equippedItems = new List<GameObject>();
-    [SerializeField] List<GameObject> activeBuffs = new List<GameObject>(); 
+    [SerializeField] List<GameObject> activeBuffs = new List<GameObject>();
 
     [SerializeField] internal GameObject storedObject = null;           // Reference to selected card, to choose target for it.
 
@@ -91,7 +91,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         //Debug.Log("ClientInitialize(): hasAuthority - " + hasAuthority);
         // Check if player "Owns" this object, this is set in "PlayerManager" script by "SpawnWithClientAuthority" method.
-        if (hasAuthority) 
+        if (hasAuthority)
         {
             if (initializeInEnemiesPanel != null)
                 StopCoroutine(initializeInEnemiesPanel);
@@ -131,7 +131,7 @@ public class PlayerInGame : NetworkBehaviour
     IEnumerator InitializeOpponentStatsUI()
     {
         // Waiting until required references are set by the local player.
-        while (!localPlayerInGame || !playerCanvas) 
+        while (!localPlayerInGame || !playerCanvas)
         {
             Debug.Log("Waiting for localPlayerInGame");
             yield return new WaitForSeconds(0.25f);
@@ -150,7 +150,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Initializes variables (for this object) on the server that are then set on clients
     /// </summary>
     [Command]
-    void CmdStart( string NickName ) 
+    void CmdStart( string NickName )
     {
         if (started)
             return;
@@ -163,7 +163,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Initializes variables (for this object) on the server that are then set on clients
     /// </summary>
     [Server]
-    IEnumerator ServerStart( string NickName ) 
+    IEnumerator ServerStart( string NickName )
     {
         bigItemsLimit = 1;
         ownedCardsLimit = 5;
@@ -225,12 +225,12 @@ public class PlayerInGame : NetworkBehaviour
             Destroy(card.GetComponent<Draggable>().Placeholder);
 
         card.GetComponent<Draggable>().enabled = true;
-        card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
-        serverGameManager.StoredCardUsesToConfirm.Remove(card);
+        card.GetComponent<Card>().ClientSetActiveCardButtons(false);
+        serverGameManager.cardsUsageQueue.Remove(card);
 
         //Debug.Log("Equipping " + equipmentCard.cardValues.name + " in the " + equipmentCard.eqPart + " slot");
-        if(!equippedItems.Contains(card))
-        equippedItems.Add(card);                                            // player.equippedItems.Add(this.gameObject);                                                   
+        if (!equippedItems.Contains(card))
+            equippedItems.Add(card);                                            // player.equippedItems.Add(this.gameObject);                                                   
 
         EquipmentCard eqCardScript = card.GetComponent<EquipmentCard>();    // Setting item in item slot UI for players that don't own this item
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
@@ -258,11 +258,11 @@ public class PlayerInGame : NetworkBehaviour
     {
         // I use this upon reconnection too, so I need a check to prevent player having equipped duplicate of same item.
         // Players can't have equipped identical items by design anyway.
-        if(!equippedItems.Contains(eqCard))
-        equippedItems.Add(eqCard);
+        if (!equippedItems.Contains(eqCard))
+            equippedItems.Add(eqCard);
 
         // Setting item in item UI slot 
-        EquipmentCard eqCardScript = eqCard.GetComponent<EquipmentCard>(); 
+        EquipmentCard eqCardScript = eqCard.GetComponent<EquipmentCard>();
         // Upon reconnection, this Coroutine can be called before sync, so I need wait for required variable to be assigned.
         yield return new WaitUntil(() => equipment != null);
         equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>().ReceiveEq(eqCard);
@@ -449,7 +449,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Sending 4 Doors Cards and 4 Treasures Cards to player 
     /// </summary>
     [Server]
-    internal void SendStartingHand() 
+    internal void SendStartingHand()
     {
         StartCoroutine(ServerSendCards(Deck.Doors, 4));
         StartCoroutine(ServerSendCards(Deck.Treasures, 4));
@@ -486,11 +486,11 @@ public class PlayerInGame : NetworkBehaviour
     private void RpcReceiveCard( NetworkInstanceId cardsNetId, bool worksOnDrawingPlayer, bool choice )
     {
         GameObject card = ClientScene.FindLocalObject(cardsNetId);
-        card.GetComponent<Card>().ClientSetActiveCardUseButtons(false);
+        card.GetComponent<Card>().ClientSetActiveCardButtons(false);
         card.GetComponent<Draggable>().enabled = true;
         if (!serverGameManager)
             serverGameManager = ServerGameManager.serverGameManager;
-        serverGameManager.StoredCardUsesToConfirm.Remove(card);
+        serverGameManager.cardsUsageQueue.Remove(card);
         ClientReceiveCard(card, worksOnDrawingPlayer, choice);
     }
     /// <summary>
@@ -530,7 +530,7 @@ public class PlayerInGame : NetworkBehaviour
     }
     /// <summary> Activates Proggress button for turn owner only. </summary>
     [ClientRpc]
-    internal void RpcTurnOwnerReadiness() 
+    internal void RpcTurnOwnerReadiness()
     {
         if (hasAuthority)
             progressButton.ActivateButton();
@@ -599,7 +599,7 @@ public class PlayerInGame : NetworkBehaviour
     internal void ChooseObject( GameObject chosenObject )
     {
         // Before every selection of cards target, card for which we choose target has to be stored in "storedObject"
-        if (storedObject != null) 
+        if (storedObject != null)
         {
             CmdUseCard(storedObject.GetComponent<Card>().netId, chosenObject.GetComponent<NetworkBehaviour>().netId);
             storedObject = null;
@@ -624,7 +624,7 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdConfirmCardUsage( bool confirm )
     {
-        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().ConfirmCardUsage(confirm, gameObject);
+        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().ConfirmCardUsage(confirm, gameObject);
     }
 
     internal void InterruptCardUsage()
@@ -634,7 +634,7 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdInterruptCardUsage()
     {
-        serverGameManager.StoredCardUsesToConfirm[0].GetComponent<Card>().InterruptCardUsage();
+        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().InterruptCardUsage();
     }
 
     internal IEnumerator DiscardCard( List<GameObject> cardsToDiscard )
@@ -700,8 +700,8 @@ public class PlayerInGame : NetworkBehaviour
         Card cardScript = card.GetComponent<Card>();
         Debug.Log("Rpc discarding card : " + card);
 
-        cardScript.ClientSetActiveCardUseButtons(false);
-        serverGameManager.StoredCardUsesToConfirm.Remove(card);
+        cardScript.ClientSetActiveCardButtons(false);
+        serverGameManager.cardsUsageQueue.Remove(card);
         card.GetComponent<Draggable>().enabled = true;
 
         switch (cardScript.cardValues.deck)
@@ -951,7 +951,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         if (serverGameManager.offeringHelpPlayers.Contains(this))
             serverGameManager.offeringHelpPlayers.Remove(this);
-        
+
         if (localPlayerInGame.netId == serverGameManager.fightingPlayerNetId)
             HelpButton.UpdateHelpers(false);
     }
@@ -1051,7 +1051,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Finding asking player and telling them that asked player has accepted trade.
     /// </summary>
     [Command]
-    void CmdAcceptTradeRequest( NetworkInstanceId requestingTradePIGNetId ) 
+    void CmdAcceptTradeRequest( NetworkInstanceId requestingTradePIGNetId )
     {
         StartCoroutine(
             ClientScene.FindLocalObject(requestingTradePIGNetId)
@@ -1076,7 +1076,7 @@ public class PlayerInGame : NetworkBehaviour
     /// </summary>
     /// <param name="requestedTradePIGNetId"></param>
     [ClientRpc]
-    void RpcReceiveTradeAcceptance( NetworkInstanceId requestedTradePIGNetId ) 
+    void RpcReceiveTradeAcceptance( NetworkInstanceId requestedTradePIGNetId )
     {
         if (hasAuthority)
         {
@@ -1115,28 +1115,32 @@ public class PlayerInGame : NetworkBehaviour
             InfoPanel.ReceiveTradeReqDenial(requestedTradePIG);
     }
     /// <summary>
-    /// LEFT HERE
+    /// Called when placing a card in trade panel.
     /// </summary>
-    /// <param name="tradingCard"></param>
-    /// <param name="playerWeTradeWith"></param>
-    internal void ReceiveTradingCard( GameObject tradingCard, PlayerInGame playerWeTradeWith ) // Called on player object which has authority, becouse [Command] methods may be called only from such objects.
+    internal void SendTradingCard( GameObject tradingCard)
     {
         Card cardScript = tradingCard.GetComponent<Card>();
         if (!cardScript)
             return;
 
+        // To prevent accidental trade accepting with wrong cards in panels trade acceptance is reset.
         TradePanel.ResetAcceptance();
-        CmdReceiveTradingCard(cardScript.netId, playerWeTradeWith.netId);
+        CmdSendTradingCard(cardScript.netId, TradePanel.playerWeTradeWith.netId);
     }
-
+    /// <summary>
+    /// Finding player we trade with and calling receive method.
+    /// </summary>
+    /// <param name="tradingCardNetId"> NetId of traded card. </param>
+    /// <param name="playerWeTradeWithNetId"> Player who receives trading card </param>
     [Command]
-    internal void CmdReceiveTradingCard( NetworkInstanceId tradingCardNetId, NetworkInstanceId playerWeTradeWithNetId ) // Player object that receives card calls
+    internal void CmdSendTradingCard( NetworkInstanceId tradingCardNetId, NetworkInstanceId playerWeTradeWithNetId )
     {
         Debug.Log("CmdReceiveTradingCard()");
         PlayerInGame playerReceivingCard = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
         StartCoroutine(playerReceivingCard.ServerReceiveTradingCard(tradingCardNetId));
     }
-
+    /// <summary> Calling Receive card for card receiving clients player object. </summary>
+    /// <param name="tradingCardNetId"> NetId of traded card. </param>
     [Server]
     IEnumerator ServerReceiveTradingCard( NetworkInstanceId tradingCardNetId )
     {
@@ -1149,71 +1153,69 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary> Receiving traded card on client. </summary>
+    /// <param name="tradingCardNetId"> NetId of traded card. </param>
     [ClientRpc]
-    internal void RpcReceiveTradingCard( NetworkInstanceId tradingCardNetId ) // This is called on player object which receives card
+    internal void RpcReceiveTradingCard( NetworkInstanceId tradingCardNetId )
     {
         Debug.Log("RpcReceiveTradingCard()");
         if (hasAuthority)
         {
-            GameObject enemysCard = ClientScene.FindLocalObject(tradingCardNetId);
-            TradePanel.ReceiveEnemysCard(enemysCard);
+            GameObject opponentsCard = ClientScene.FindLocalObject(tradingCardNetId);
+            TradePanel.ReceiveOpponentsCard(opponentsCard);
         }
     }
-
-    internal void RemoveTradingCard( GameObject tradingCard ) // This is called on player which receives card
+    /// <summary> Called when removing card from Trade Panel, on removing client. </summary>
+    internal void RemoveTradingCard( GameObject removedCard )
     {
         TradePanel.ResetAcceptance();
 
-        Card cardScript = tradingCard.GetComponent<Card>();
+        Card cardScript = removedCard.GetComponent<Card>();
         CmdRemoveTradingCard(cardScript.netId);
     }
-
+    /// <summary> Informing server that card has been removed. </summary>
     [Command]
-    void CmdRemoveTradingCard( NetworkInstanceId tradingCardNetId ) // This is called on player which receives card
+    void CmdRemoveTradingCard( NetworkInstanceId removedCardNetId )
     {
         Debug.Log("CmdRemoveTradingCard()");
-        StartCoroutine(ServerRemoveTradingCard(tradingCardNetId));
+        StartCoroutine(ServerRemoveTradingCard(removedCardNetId));
     }
-
+    /// <summary> Calling removing traded card for other client. </summary>
     [Server]
-    IEnumerator ServerRemoveTradingCard( NetworkInstanceId tradingCardNetId )
+    IEnumerator ServerRemoveTradingCard( NetworkInstanceId removedCardNetId )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
         CustomNetworkManager.isServerBusy = true;
 
-        RpcRemoveTradingCard(tradingCardNetId);
+        RpcRemoveTradingCard(removedCardNetId);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary> Removing card from Trade Panel on other client. </summary>
     [ClientRpc]
-    void RpcRemoveTradingCard( NetworkInstanceId tradingCardNetId ) // This is called on player which receives card
+    void RpcRemoveTradingCard( NetworkInstanceId removedCardNetId )
     {
         if (!hasAuthority)
         {
-            GameObject opponentsCard = ClientScene.FindLocalObject(tradingCardNetId);
+            GameObject opponentsCard = ClientScene.FindLocalObject(removedCardNetId);
             Debug.Log("RpcRemoveTradingCard(): opponentsCard - " + opponentsCard);
-            //tradePanel.RemoveEnemysCard(enemysCard);
             TradePanel.ResetAcceptance();
             ClientReceiveCard(opponentsCard);
         }
     }
-
+    /// <summary> Called when Accept Trade Button is pressed. </summary>
     internal void AcceptTrade( PlayerInGame playerWeTradeWith )
     {
         CmdAcceptTrade(playerWeTradeWith.netId);
     }
-
     [Command]
     void CmdAcceptTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
         PlayerInGame playerWeTradeWith = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
         StartCoroutine(playerWeTradeWith.ServerAcceptTrade());
     }
-
     [Server]
     IEnumerator ServerAcceptTrade()
     {
@@ -1226,7 +1228,6 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     void RpcAcceptTrade()
     {
@@ -1235,18 +1236,16 @@ public class PlayerInGame : NetworkBehaviour
             TradePanel.TradeAcceptance();
         }
     }
-
+    /// <summary> Called when cancel trade button is pressed. </summary>
     internal void CancelTrade( PlayerInGame playerWeTradeWith )
     {
         CmdCancelTrade(playerWeTradeWith.netId);
     }
-
     [Command]
     internal void CmdCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
         StartCoroutine(ServerCancelTrade(playerWeTradeWithNetId)); // Finalizing trade for first player
     }
-
     [Server]
     IEnumerator ServerCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
@@ -1259,7 +1258,6 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     void RpcCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
@@ -1268,13 +1266,13 @@ public class PlayerInGame : NetworkBehaviour
         PlayerInGame playerWeTradeWith = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
         playerWeTradeWith.ClientExecuteCancelTrade(); // Finalizing trade for second player
     }
+    /// <summary> Return cards from panels to cards owners and deactivate Trade Panel. </summary>
     [Client]
     void ClientExecuteCancelTrade()
     {
         List<GameObject> cardsToReceive = new List<GameObject>();
 
-        if (hasAuthority) // If player object is local Player  || player object matches the on we traded with
-            // Receive cards from tradePanels playersCardsPanel
+        if (hasAuthority)
             foreach (Transform card in TradePanel.playersCardsPanel)
                 cardsToReceive.Add(card.gameObject);
         else
@@ -1286,19 +1284,17 @@ public class PlayerInGame : NetworkBehaviour
 
         TradePanel.Deactivate();
     }
-
+    /// <summary> Called when both trading players have accepted trade. </summary>
     internal void FinalizeTrade( PlayerInGame playerWeTradeWith )
     {
         CmdFinalizeTrade(playerWeTradeWith.netId);
     }
-
     [Command]
     void CmdFinalizeTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
         Debug.Log("CmdFinalizeTrade()");
         StartCoroutine(ServerFinalizeTrade(playerWeTradeWithNetId)); // Finalizing trade for first player
     }
-
     [Server]
     IEnumerator ServerFinalizeTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
@@ -1311,7 +1307,8 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary> Locally calling trade finalization for both trading players. </summary>
+    /// <param name="playerWeTradeWithNetId"></param>
     [ClientRpc]
     void RpcFinalizeTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
@@ -1321,15 +1318,14 @@ public class PlayerInGame : NetworkBehaviour
         PlayerInGame playerWeTradeWith = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
         playerWeTradeWith.ClientFinalizeTrade(); // Finalizing trade for second player
     }
-
+    /// <summary> Moving cards from Trade Panel to their new owners. </summary>
     [Client]
     void ClientFinalizeTrade()
     {
         Debug.Log("ExecuteFinalizeTrade()");
         List<GameObject> cardsToReceive = new List<GameObject>();
 
-        if (hasAuthority) // If player object is local Player
-            // Receive cards from tradePanels 
+        if (hasAuthority)
             foreach (Transform card in TradePanel.opponentsCardsPanel)
                 cardsToReceive.Add(card.gameObject);
         else
@@ -1354,14 +1350,15 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-
+    /// <summary> Executing alert for 1 player only. </summary>
     [ClientRpc]
     void RpcPersonalAlert( string text )
     {
         if (hasAuthority)
             InfoPanel.Alert(text);
     }
-
+    /// <summary> Called when saving game. </summary>
+    /// <returns> Returns certain player stats. </returns>
     internal PlayerSaveData GetPlayerData()
     {
         PlayerSaveData playerData = new PlayerSaveData();
@@ -1385,6 +1382,7 @@ public class PlayerInGame : NetworkBehaviour
 
         return playerData;
     }
+    /// <summary> Resyncing UI and hierarchy objects on reconnected player. </summary>
     [Server]
     internal void ServerReconnect()
     {

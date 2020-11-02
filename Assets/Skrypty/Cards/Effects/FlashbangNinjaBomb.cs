@@ -13,11 +13,13 @@ public class FlashbangNinjaBomb : Effect
         PlayerInGame.localPlayerInGame.UseCardOnLocalPlayer(this.netId);
     }
 
+    /// <summary>
+    /// Effect of this card forcefully stops a fight.
+    /// All monsters and effects in use are discarded, and player can fight again.
+    /// </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
-        //throw new NotImplementedException();
-
         if (serverGameManager.fightInProggres)
             serverGameManager.EndFight(false);
 

@@ -29,6 +29,7 @@ public class ServerGameManager : NetworkBehaviour
     /// <summary>
     /// [SyncVar] - decorator for variables that have to be synchronized on all clients by server.
     /// Those variables are automatically updated for clients when any change is made to them on server.
+    /// Cannot be static.
     /// </summary>
     [SerializeField] [SyncVar] internal TurnPhase turnPhase;
 
@@ -54,7 +55,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Players can use cards without waiting for previous ones take an effect.
     /// This list is a queue which this mechanic uses to play cards in correct order.
     /// </summary>
-    [SerializeField] internal List<GameObject> StoredCardUsesToConfirm = new List<GameObject>();
+    [SerializeField] internal List<GameObject> cardsUsageQueue = new List<GameObject>();
 
     //      Fighting        //
     /// <summary>

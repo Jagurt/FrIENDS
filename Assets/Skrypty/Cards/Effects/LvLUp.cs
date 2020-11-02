@@ -18,6 +18,9 @@ public class LvLUp : Effect
         PlayerInGame.localPlayerInGame.UseCardOnLocalPlayer(this.netId);
     }
 
+    /// <summary>
+    /// Increases level of player who uses this card.
+    /// </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {

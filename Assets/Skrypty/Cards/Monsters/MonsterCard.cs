@@ -15,6 +15,7 @@ public class MonsterCard : Card
         serverGameManager = ServerGameManager.serverGameManager;
     }
 
+    /// <summary> Checking if player can start a fight. </summary>
     internal override void UseCard()
     {
         PlayerInGame localPlayer = PlayerInGame.localPlayerInGame;
@@ -29,6 +30,9 @@ public class MonsterCard : Card
         localPlayer.UseCardOnLocalPlayer(this.netId);
     }
 
+    /// <summary>
+    /// Starting a fight with a monster.
+    /// </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
@@ -53,16 +57,17 @@ public class MonsterCard : Card
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
+    /// <summary> Informing clients about started fight. </summary>
     [ClientRpc]
     void RpcInitiateFight()
     {
         //Debug.Log("RpcInititating fight with: " + this.gameObject);
         transform.SetParent(TableDropZone.tableDropZone.transform);
         serverGameManager.fightingMonsters.Add(this.gameObject);
+        ClientSetActiveCardButtons(false);
         PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
-        HelpButton.ActivateButton();
-        LevelCounter.StartFight();
-        ClientSetActiveCardUseButtons(false);
+        HelpButton.Activate();
+        LevelCounter.OnStartFight();
         InfoPanel.Alert("Fight with " + cardValues.name + " starts!");
     }
 

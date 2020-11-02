@@ -22,17 +22,9 @@ public class HelpButton : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    internal static void Activate()
-    {
-        helpers = 0;
-
-        helpButton.gameObject.SetActive(true);
-        if (ServerGameManager.serverGameManager.fightingPlayerNetId == PlayerInGame.localPlayerInGame.netId)
-            textMesh.text = "Request Help (0)";
-        else
-            textMesh.text = "Offer Help";
-    }
-
+    /// <summary>
+    /// Called fighting player when helping player have clicked HelpButton.
+    /// </summary>
     internal static void UpdateHelpers( bool helping )
     {
         Debug.Log("Updating Helpers");
@@ -40,6 +32,7 @@ public class HelpButton : MonoBehaviour
         helpers += helping ? 1 : -1;
         textMesh.text = "Request Help (" + helpers + ")";
     }
+
 
     void OnClick()
     {
@@ -62,11 +55,17 @@ public class HelpButton : MonoBehaviour
         }
     }
 
-    internal static void ActivateButton()
+    internal static void Activate()
     {
+        helpers = 0;
         helpButton.gameObject.SetActive(true);
+
+        if (ServerGameManager.serverGameManager.fightingPlayerNetId == PlayerInGame.localPlayerInGame.netId)
+            textMesh.text = "Request Help (0)";
+        else
+            textMesh.text = "Offer Help";
+
         helpButton.GetComponent<Image>().raycastTarget = true;
-        Activate();
         helping = false;
     }
 

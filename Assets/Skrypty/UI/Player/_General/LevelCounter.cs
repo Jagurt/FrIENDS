@@ -23,7 +23,7 @@ public class LevelCounter : MonoBehaviour
         //levelCounter.gameObject.SetActive(false);
     }
 
-    internal static void StartFight()
+    internal static void OnStartFight()
     {
         levelCounter.gameObject.SetActive(true);
         UpdateLevels();

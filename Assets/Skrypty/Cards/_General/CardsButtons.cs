@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary> 
+/// Class for holding static references to card buttons prefabs
+/// I created these buttons after making several cards and in order to skip adding them
+/// to each card manually I do it programatically in main card class using following prefabs.
+/// </summary>
 public class CardsButtons : MonoBehaviour
 {
     [SerializeField] private GameObject ConfirmUseButton;

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
+/// <summary> Blueprint card script for creating scripts for specific cards. </summary>
 public class Card : NetworkBehaviour
 {
     [SerializeField] internal CardValues cardValues;
@@ -45,6 +46,7 @@ public class Card : NetworkBehaviour
         StartCoroutine(ClientWaitInstantiateButtons());
     }
 
+    /// <summary> Creating card buttons programatically to avoid doing it manually for each card. </summary>
     IEnumerator ClientWaitInstantiateButtons()
     {
         yield return new WaitUntil(() => CardsButtons.confirmUseButton);
@@ -54,14 +56,21 @@ public class Card : NetworkBehaviour
         interruptUseTimer = Instantiate(CardsButtons.interruptUseTimer, transform);
         declineUseButton = Instantiate(CardsButtons.declineUseButton, transform);
 
-        ClientSetActiveCardUseButtons(false);
+        ClientSetActiveCardButtons(false);
     }
 
+    /// <summary> Method called locally when card is used. </summary>
     internal virtual void UseCard()
     {
         throw new NotImplementedException();
     }
-
+    /// <summary>
+    /// Called when card is placed on board.
+    /// Cards target and owner is stored, clients are informed that card has entered usage queue.
+    /// </summary>
+    /// <param name="targetNetId"></param>
+    /// <param name="ownerNetId"></param>
+    /// <returns></returns>
     [Server]
     internal virtual IEnumerator StartAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
     {
@@ -81,24 +90,26 @@ public class Card : NetworkBehaviour
 
         StartCoroutine(awaitUseConfirmation);
     }
-
     [ClientRpc]
     internal virtual void RpcStartAwaitUseConfirmation()
     {
         Debug.Log("RpcStartAwaitUseConfirmation() in - " + this.gameObject);
 
-        serverGameManager.StoredCardUsesToConfirm.Add(this.gameObject);
+        serverGameManager.cardsUsageQueue.Add(this.gameObject);
         PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
 
         GetComponent<Draggable>().enabled = false;
     }
-
+    /// <summary>
+    /// Card starts waiting until it is atop of usage queue.
+    /// When atop of queue, card waits for a duration and then is atomatically accepted.
+    /// </summary>
     [Server]
     internal virtual IEnumerator AwaitUseConfirmation()
     {
         Debug.Log("AwaitUseConfirmation() in - " + this.gameObject);
 
-        while (serverGameManager.StoredCardUsesToConfirm[0] != this.gameObject)
+        while (serverGameManager.cardsUsageQueue[0] != this.gameObject)
             yield return new WaitForSecondsRealtime(0.10f);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
@@ -111,7 +122,6 @@ public class Card : NetworkBehaviour
         for (interruptTimer = 0; interruptTimer < 30; interruptTimer++)
         {
             //Debug.Log("Time for \"" + gameObject + "\" to be auto-used: " + Math.Abs(interruptTimer - 30) / 10f);
-
             yield return new WaitForSecondsRealtime(0.10f);
         }
 
@@ -121,13 +131,13 @@ public class Card : NetworkBehaviour
     [ClientRpc]
     void RpcAwaitUseConfirmation()
     {
-        ClientSetActiveCardUseButtons(true);
+        ClientSetActiveCardButtons(true);
         PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
-        StartCoroutine(ClientInterruptUseTimerUI());
+        StartCoroutine(ClientInitInterruptTimer());
     }
-
+    /// <summary> Updating interrupt timer UI object for clients. </summary>
     [Client]
-    IEnumerator ClientInterruptUseTimerUI()
+    IEnumerator ClientInitInterruptTimer()
     {
         while (interruptTimer < 30 && interruptUseTimer.activeInHierarchy)
         {
@@ -160,6 +170,11 @@ public class Card : NetworkBehaviour
         interruptTimer -= 50;
     }
 
+    /// <summary> 
+    /// Check if player confirmers or decliners have reached a treshhold or if the time has run out.
+    /// If yes, stop waiting for card acceptance, use card or return to owner, and reset waiting values.
+    /// </summary>
+    /// <param name="endOfTime"></param>
     [Server]
     internal void ConfirmationCheck( bool endOfTime )
     {
@@ -171,9 +186,11 @@ public class Card : NetworkBehaviour
             StopCoroutine(awaitUseConfirmation);
             PlayerInGame cardOwner = ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>();
             StartCoroutine(cardOwner.ServerReceiveCard(this.netId, false, false));
-            awaitUseConfirmation = AwaitUseConfirmation(); // Reassigning Coroutine to make it work next time
+            // Reassigning Coroutine to make it work next time
+            awaitUseConfirmation = AwaitUseConfirmation();
 
-            playersConfirmers.Clear(); // Reseting values
+            // Reseting values
+            playersConfirmers.Clear(); 
             playersDecliners.Clear();
         }
         else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.5f)
@@ -193,8 +210,10 @@ public class Card : NetworkBehaviour
         throw new NotImplementedException();
     }
 
+    /// <summary> Activation of card buttons UI. </summary>
+    /// <param name="active"></param>
     [Client]
-    internal void ClientSetActiveCardUseButtons( bool active )
+    internal void ClientSetActiveCardButtons( bool active )
     {
         if (active)
         {
@@ -216,7 +235,7 @@ public class Card : NetworkBehaviour
     {
         return this.netId;
     }
-
+    /// <summary> Used in saving game. </summary>
     internal string GetCardData()
     {
         return cardValues.name;

@@ -22,6 +22,9 @@ public static class SaveSystem
         Debug.Log("Saving in: " + path);
     }
 
+    /// <summary>
+    /// Setting players stats and objects in hierarchy based on Saved Data.
+    /// </summary>
     // [Server]
     public static IEnumerator LoadGame()
     {

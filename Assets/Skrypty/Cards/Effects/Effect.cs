@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 enum Target { Player, Monster, All };
-
+/// <summary> Base effect class for all effect cards.  </summary>
 public class Effect : Card
 {
     [SerializeField]internal Target target;
@@ -18,12 +18,13 @@ public class Effect : Card
     internal override void UseCard()
     {
         PlayerInGame localPlayer = PlayerInGame.localPlayerInGame;
-
-        if (choosable) // If card is an Effect and target is choosable
+        // If target can be chosen
+        if (choosable) 
         {
             //Debug.Log("Putting choosable card on table");
             localPlayer.PutCardOnTable(this.netId);
-            localPlayer.storedObject = gameObject; // Used Card is selected object
+            // Storing card to use it upon choosing target
+            localPlayer.storedObject = gameObject; 
 
             switch (target)
             {
@@ -32,9 +33,10 @@ public class Effect : Card
                     ChoicePanel.ReceivePlayersToChoose(FindObjectsOfType<PlayerInGame>());
                     break;
                 case Target.Monster:
+                    // Not Implemented yet
                     break;
                 case Target.All:
-                    ChoicePanel.SetWhichToChoose(); // Not Implemented yet
+                    // Not Implemented yet
                     break;
                 default:
                     break;

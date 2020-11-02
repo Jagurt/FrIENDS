@@ -17,6 +17,10 @@ public class EquipmentCard : TreasureCard
         PlayerInGame.localPlayerInGame.UseCardOnLocalPlayer(this.netId);
     }
 
+    /// <summary>
+    /// Equip or switch( take off equipped item and wear unequipped ) item.
+    /// Modify level accordingly.
+    /// </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
@@ -58,7 +62,7 @@ public class EquipmentCard : TreasureCard
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();    // Finding player locally via its "NetworkInstanceId"
         player.ClientEquip(this.gameObject);
-        serverGameManager.StoredCardUsesToConfirm.Remove(gameObject);
+        serverGameManager.cardsUsageQueue.Remove(gameObject);
     }
 
     [ClientRpc]

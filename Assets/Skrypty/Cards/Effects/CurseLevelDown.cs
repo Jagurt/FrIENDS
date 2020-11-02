@@ -13,7 +13,7 @@ public class CurseLevelDown : Effect
         choosable = true;
         Initialize();
     }
-
+    /// <summary> Applying curse effect ( -1 level ) to tergeted or default player. </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
@@ -26,12 +26,13 @@ public class CurseLevelDown : Effect
         PlayerInGame player = null;
 
         if (targetNetId != NetworkInstanceId.Invalid) // If player to curse is not chosen
-            player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>(); // Player which currently has turn is chosen, this should only ocurr when curse is drawn as turns first door.
+            player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>(); 
 
         if (!player)
         {
+            // Player which currently has turn is chosen, this should only ocurr when curse is drawn as turns first door.
             if (serverGameManager.activePlayerIndex >= 0)
-                player = serverGameManager.playersObjects[serverGameManager.activePlayerIndex].GetComponent<PlayerInGame>();
+                player = serverGameManager.playersObjects[serverGameManager.activePlayerIndex].GetComponent<PlayerInGame>(); 
             else
                 player = serverGameManager.playersObjects[0].GetComponent<PlayerInGame>();
         }

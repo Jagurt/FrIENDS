@@ -12,6 +12,9 @@ public class Collector : MonsterCard
         Initialize();
     }
 
+    /// <summary>
+    /// Increase power of a monster for each "Glass" object that player is wearing.
+    /// </summary>
     [Server]
     override internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {

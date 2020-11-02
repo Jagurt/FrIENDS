@@ -7,7 +7,7 @@ public class TradePanel : MonoBehaviour
 {
     internal static TradePanel tradePanel;
 
-    static PlayerInGame playerWeTradeWith;
+    internal static PlayerInGame playerWeTradeWith;
     internal static Transform opponentsCardsPanel;
     internal static Transform playersCardsPanel;
     static TextMeshProUGUI tradePanelTitle;
@@ -27,25 +27,16 @@ public class TradePanel : MonoBehaviour
         tradePanelTitle = tradePanel.transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
     }
 
-    //private void Start()
-    //{
-    //    tradePanel = this;
-    //    opponentsCardsPanel = tradePanel.transform.Find("EnemysCardsPanel");
-    //    playersCardsPanel = tradePanel.transform.Find("PlayersCardsPanel");
-    //    tradePanelTitle = tradePanel.transform.Find("TradePanelTitle").GetComponent<TextMeshProUGUI>();
-    //}
-
     internal static void PrepareForTrade( PlayerInGame playerWeTradeWith )
     {
         tradePanel.gameObject.SetActive(true);
         TradePanel.playerWeTradeWith = playerWeTradeWith;
-        tradePanel.GetComponentInChildren<TradeDropZone>().playerWeTradeWith = playerWeTradeWith;
         ResetAcceptance();
     }
 
-    internal static void ReceiveEnemysCard( GameObject enemysCard )
+    internal static void ReceiveOpponentsCard( GameObject opponentsCard )
     {
-        enemysCard.transform.SetParent(opponentsCardsPanel);
+        opponentsCard.transform.SetParent(opponentsCardsPanel);
         ResetAcceptance();
     }
 
@@ -70,8 +61,14 @@ public class TradePanel : MonoBehaviour
     {
         PlayerInGame.localPlayerInGame.CancelTrade(playerWeTradeWith);
     }
-
-    internal static void TradeAcceptance() // Changing opponents trade acceptance state
+    /// <summary>
+    /// Advances state of acceptance to next stage.
+    /// Accepting trade has 3 states: unaccepted, accepted and confirmed.
+    /// Unaccepted is default state, set at the beginning and after adding or removing cards to trade.
+    /// Accepted is first state of acceptance, it is achieved by pressing the Accept Button for first time.
+    /// Confirmed is second state of acceptance, it is achieved by pressing the Accept Button for second time.
+    /// </summary>
+    internal static void TradeAcceptance()
     {
         if (enemyAcceptedTrade)
         {
@@ -86,7 +83,7 @@ public class TradePanel : MonoBehaviour
             enemyAcceptedTrade = true;
         }
     }
-
+    /// <summary> Resetting acceptance state to unaccepted. </summary>
     internal static void ResetAcceptance()
     {
         tradePanelTitle.text = "Trading...";

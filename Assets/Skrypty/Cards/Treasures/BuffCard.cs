@@ -6,6 +6,10 @@ public class BuffCard : TreasureCard
 {
     public Entity entityToApplyOn;
 
+    /// <summary>
+    /// If fight is in progress apply buff on monster.
+    /// If there are more monsters choose monster to apply the buff on.
+    /// </summary>
     internal override void UseCard()
     {
         PlayerInGame localPlayer = PlayerInGame.localPlayerInGame;
@@ -42,8 +46,11 @@ public class BuffCard : TreasureCard
         }
     }
 
+    /// <summary>
+    /// Called when buff is removed from a monster.
+    /// </summary>
     virtual internal void DispellEffect()
     {
-
+        
     }
 }

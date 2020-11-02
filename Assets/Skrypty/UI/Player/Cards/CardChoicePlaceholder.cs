@@ -5,12 +5,11 @@ using UnityEngine.EventSystems;
 
 public class CardChoicePlaceholder : MonoBehaviour, IPointerClickHandler
 {
-    ChoicePanel choicePanel;
     [SerializeField] internal GameObject heldObject;
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        choicePanel.Choose(heldObject);
+        ChoicePanel.Choose(heldObject);
     }
 
     internal void Initialize( ChoicePanel choicePanel, GameObject objectToHold, Transform heldObjectContainer)
@@ -22,7 +21,6 @@ public class CardChoicePlaceholder : MonoBehaviour, IPointerClickHandler
         else
             objectToHold.GetComponent<OpponentInPanel>().animating = false; // Prevent EnemyPanel from being animated
 
-        this.choicePanel = choicePanel;
         this.transform.SetParent(heldObjectContainer);
         heldObject = objectToHold;
         objectToHold.transform.SetParent(this.transform);

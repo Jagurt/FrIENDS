@@ -8,7 +8,7 @@ public class PlebArmorSetBonus : PassiveEffect
     {
         if (this.transform.parent.parent.GetChild((int)EqPart.Head).GetChild(0).name == "Bucket")
         {
-            //  Bonus + 1 do Levela
+            //  Bonus + 1 to Level
         }
     }
 }

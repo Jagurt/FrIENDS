@@ -18,10 +18,10 @@ public class ChoicePanel : MonoBehaviour
 
     static Transform objectsContainer;
     static TextMeshProUGUI titleTMP;
-    ChoicePanelTitle panelTitle;
+    static ChoicePanelTitle panelTitle;
 
     [SerializeField] GameObject cardChoicePlaceholder;
-    [SerializeField] bool worksOnPlayer;
+    [SerializeField] static bool worksOnPlayer;
 
     static List<GameObject> placeholders = new List<GameObject>();
 
@@ -39,7 +39,44 @@ public class ChoicePanel : MonoBehaviour
         titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
     }
 
-    internal void Choose( GameObject chosenObject )
+    internal static void PrepareToReceiveObjects( ChoicePanelTitle panelTitle, bool worksOnPlayer = false )
+    {
+        choicePanel.gameObject.SetActive(true);
+        ChoicePanel.worksOnPlayer = worksOnPlayer;
+        ChoicePanel.panelTitle = panelTitle;
+
+        if (!titleTMP)
+        {
+            objectsContainer = choicePanel.transform.Find("ObjectsContainer");
+            titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
+        }
+        titleTMP.text = titles[(int)panelTitle];
+    }
+    /// <summary> Creating placeholder for object to choose and initializing it in ChoicePanel </summary>
+    internal static void ReceiveObjectToChoose( GameObject receivedObject )
+    {
+        GameObject placeholder = Instantiate(choicePanel.cardChoicePlaceholder);
+
+        placeholders.Add(placeholder);
+        placeholder.GetComponent<CardChoicePlaceholder>().Initialize(choicePanel, receivedObject, objectsContainer);
+    }
+    /// <summary>
+    /// Creating player stats UI ubjects for all players in ChoicePanel.
+    /// And copying stats for corresponding UI object.
+    /// </summary>
+    internal static void ReceivePlayersToChoose( PlayerInGame[] players )
+    {
+        foreach (var player in players)
+        {
+            Debug.Log("player.opponentInPanel - " + player.opponentStatsUI);
+            GameObject enemyInPanel = Instantiate(player.opponentStatsUIPrefab);
+            enemyInPanel.GetComponent<OpponentInPanel>().InitializeInChoicePanel(player);
+            ReceiveObjectToChoose(enemyInPanel);
+        }
+    }
+    /// <summary> Performing certain action for chosen object based on panel title. </summary>
+    /// <param name="chosenObject"></param>
+    internal static void Choose( GameObject chosenObject )
     {
         switch (panelTitle)
         {
@@ -63,109 +100,65 @@ public class ChoicePanel : MonoBehaviour
 
         Rest();
     }
-
-    void ChooseDoors( GameObject chosenDoors )
+    /// <summary> When choosing first doors in turn. </summary>
+    static void ChooseDoors( GameObject chosenDoors )
     {
         List<GameObject> cardsToDiscard = new List<GameObject>();
-
-        foreach (var placeholderScript in this.GetComponentsInChildren<CardChoicePlaceholder>())
+        // Finding cards to discard, all except chosen.
+        foreach (var placeholderScript in choicePanel.GetComponentsInChildren<CardChoicePlaceholder>())
         {
-            placeholderScript.heldObject.transform.SetParent(PlayerInGame.localPlayerInGame.transform); // Throwing cards of choice panel to avoid unintended behaviour
-            placeholderScript.heldObject.GetComponent<Draggable>().enabled = true; // Enabling dragging of cards after chosing
-
-            if (placeholderScript.heldObject != chosenDoors) // Setting unselected cards to discard
+            // Throwing cards out of choice panel to avoid unintended behaviour
+            placeholderScript.heldObject.transform.SetParent(PlayerInGame.localPlayerInGame.transform);
+            // Enabling dragging of cards after chosing
+            placeholderScript.heldObject.GetComponent<Draggable>().enabled = true;
+            // Setting unselected cards to discard
+            if (placeholderScript.heldObject != chosenDoors)
                 cardsToDiscard.Add(placeholderScript.heldObject);
-
-            Destroy(placeholderScript.gameObject); // Destroying placeholders
+            // Destroying placeholders
+            Destroy(placeholderScript.gameObject);
         }
-
-        StartCoroutine(PlayerInGame.localPlayerInGame.DiscardCard(cardsToDiscard)); // Executing discarding cards
+        // Executing discarding cards
+        choicePanel.StartCoroutine(PlayerInGame.localPlayerInGame.DiscardCard(cardsToDiscard));
         PlayerInGame.localPlayerInGame.storedObject = chosenDoors;
 
+        // If chosen card works on local player, use it on them.
         if (worksOnPlayer)
         {
             // Debug.Log("ChoicePanel:ChooseDoors - worksOnPlayer - " + worksOnPlayer);
-            PlayerInGame.localPlayerInGame.ChooseObject(PlayerInGame.localPlayerInGame.gameObject); // if chosen card works on local player, use it on them.
+            PlayerInGame.localPlayerInGame.ChooseObject(PlayerInGame.localPlayerInGame.gameObject);
             PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
         }
-        else
-            chosenDoors.GetComponent<Card>().UseCard(); // if not choose target for chosen card.
+        else // If not choose target for chosen card.
+            chosenDoors.GetComponent<Card>().UseCard();
     }
 
-    void ChooseMonster( GameObject chosenMonster )
+    static void ChooseMonster( GameObject chosenMonster )
     {
         TableDropZone.tableDropZone.ReturnBorrowedCards();
         //ServerGameManager.serverGameManager.targetForCardToUseNetId = chosenMonster.GetComponent<NetworkIdentity>().netId;
-        // TODO: Dokończyć wybieranie potworów
+        // TODO: Complete choosing monsters
 
         // PlayerInGame.localPlayerInGame.ApplyBuff(chosenMonster.GetComponent<Card>().netId);
     }
-
-    void ChoosePlayerToTrade( OpponentInPanel enemyInPanel )
+    static void ChoosePlayerToTrade( OpponentInPanel enemyInPanel )
     {
         Debug.Log("ChoosePlayerToTrade: enemyInPanel - " + enemyInPanel);
         PlayerInGame.localPlayerInGame.RequestTrade(enemyInPanel.storedPlayer);
     }
-
-    void ChoosePlayer( OpponentInPanel enemyInPanel )
+    static void ChoosePlayer( OpponentInPanel enemyInPanel )
     {
         PlayerInGame.localPlayerInGame.ChooseObject(enemyInPanel.storedPlayer.gameObject);
     }
-
-    internal static void ReceiveObjectToChoose( GameObject receivedObject )
-    {
-        GameObject placeholder = Instantiate(choicePanel.cardChoicePlaceholder);
-
-        placeholders.Add(placeholder);
-        
-        placeholder.GetComponent<CardChoicePlaceholder>().Initialize(choicePanel, receivedObject, objectsContainer);
-    }
-
-    internal static void ReceivePlayersToChoose( PlayerInGame[] players )
-    {
-        foreach (var player in players)
-        {
-            Debug.Log("player.opponentInPanel - " + player.opponentStatsUI);
-            GameObject enemyInPanel = Instantiate(player.opponentStatsUIPrefab);
-            enemyInPanel.GetComponent<OpponentInPanel>().InitializeInChoicePanel(player);
-            ReceiveObjectToChoose(enemyInPanel);
-        }
-    }
-
-    internal static void SetWhichToChoose()
-    {
-        throw new NotImplementedException();
-    }
-
-    internal static void PrepareToReceiveObjects( ChoicePanelTitle panelTitle, bool worksOnPlayer = false )
-    {
-        choicePanel.gameObject.SetActive(true);
-        choicePanel.worksOnPlayer = worksOnPlayer;
-        choicePanel.panelTitle = panelTitle;
-
-        if (!titleTMP)
-        {
-            objectsContainer = choicePanel.transform.Find("ObjectsContainer");
-            titleTMP = choicePanel.transform.Find("TitleText").GetComponent<TextMeshProUGUI>();
-        }
-        titleTMP.text = titles[(int)panelTitle];
-    }
-
-    void DestroyPlaceholders()
+    static void DestroyPlaceholders()
     {
         foreach (var placeholder in placeholders)
-        {
-            Debug.Log("Destroying placeholder - " + placeholder);
             Destroy(placeholder.gameObject);
-        }
-
-        //StartCoroutine(ClearPlaceholders());
     }
-
-    void Rest()
+    /// <summary> Destroying placeholders and setting variables when completing choosing. </summary>
+    static void Rest()
     {
         DestroyPlaceholders();
-        this.worksOnPlayer = false;
-        this.gameObject.SetActive(false);
+        worksOnPlayer = false;
+        choicePanel.gameObject.SetActive(false);
     }
 }

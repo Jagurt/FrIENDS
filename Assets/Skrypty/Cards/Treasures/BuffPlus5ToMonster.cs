@@ -14,6 +14,9 @@ public class BuffPlus5ToMonster : BuffCard
         Initialize();
     }
 
+    /// <summary>
+    /// Buffing monster with +5 to level.
+    /// </summary>
     [Server]
     internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
     {
@@ -24,14 +27,14 @@ public class BuffPlus5ToMonster : BuffCard
         Debug.Log("Buffing Monster with +5 to level!");
         serverGameManager.fightingMonstersLevel += 5;
 
-        // TODO: Inform Players about Effect
-
         RpcApplyBuff(targetNetId);
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// Applying buff on clients.
+    /// </summary>
     [ClientRpc]
     internal void RpcApplyBuff( NetworkInstanceId monsterNetId)
     {

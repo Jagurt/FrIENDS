@@ -8,14 +8,15 @@ using UnityEngine.UI;
 
 public class ServerDecksManager : NetworkBehaviour
 {
+    //      Lists of cards in each deck     //
     [SerializeField] private List<GameObject> doors = new List<GameObject>();
     [SerializeField] private List<GameObject> treasures = new List<GameObject>();
     [SerializeField] private List<GameObject> helpHands = new List<GameObject>();
     [SerializeField] private List<GameObject> spells = new List<GameObject>();
 
+    //      References to UI transforms     //
     [SerializeField] Transform serverCanvas;
     [SerializeField] Transform table;
-
     [SerializeField] Transform doorsDeck;
     [SerializeField] Transform treasuresDeck;
     [SerializeField] Transform helpHandsDeck;
@@ -25,13 +26,12 @@ public class ServerDecksManager : NetworkBehaviour
     [SerializeField] Transform discardedHelpHandsDeck;
     [SerializeField] Transform discardedSpellsDeck;
 
+    ////        Poperties       ////
     public List<GameObject> Doors { get => doors; }
     public List<GameObject> Treasures { get => treasures; }
     public List<GameObject> HelpHands { get => helpHands; }
     public List<GameObject> Spells { get => spells; }
 
-    public Transform ServerCanvas { get => serverCanvas; }
-    public Transform Table { get => table; }
 
     public Transform DoorsDeck { get => doorsDeck; }
     public Transform TreasuresDeck { get => treasuresDeck; }
@@ -44,7 +44,7 @@ public class ServerDecksManager : NetworkBehaviour
 
     void Start()
     {
-        // Ustawiam referencje do poszczególnych decków i stołu
+        // Setting UI references.
         doorsDeck = serverCanvas.Find("DoorsDeck");
         treasuresDeck = serverCanvas.Find("TreasuresDeck");
         helpHandsDeck = serverCanvas.Find("HelpHandDeck");
@@ -55,6 +55,7 @@ public class ServerDecksManager : NetworkBehaviour
         discardedSpellsDeck = serverCanvas.Find("DiscardedSpellsDeck");
         table = serverCanvas.Find("Table");
 
+        // Shuffling decks and spawning cards on server.
         if (isServer)
         {
             ShuffleDecks();
@@ -62,6 +63,7 @@ public class ServerDecksManager : NetworkBehaviour
         }
     }
 
+    [Server]
     public void ShuffleDecks()
     {
         ShuffleDeck(doors);
@@ -73,25 +75,18 @@ public class ServerDecksManager : NetworkBehaviour
     [Server]
     void ShuffleDeck( List<GameObject> deck )
     {
-        if (isServer == false)
-        {
-            Debug.Log("Funkcja ShuffleDeck() wywołana na kliencie, to nie powinno się dziać!");
-            // return;
-        }
-
-        //Debug.Log("Filling inexes");
+        //Debug.Log("Filling indexes");
 
         List<int> indexes = new List<int>();
-        // Robię poukładaną listę indeksów
+        // List of decks indexes
         for (int i = 0; i < deck.Count; i++)
         {
             indexes.Add(i);
         }
 
         // Debug.Log("Shuffling");
-        // Losuję 2 liczby z listy indeksów i zamieniam miejscami obiekty z listy pod tymi indeksami
-        // potem kasuję wylosowane indeksy z ich listy by nie użyć ich drugi raz
-        // wylosowania już zmienionych kart
+        // Getting 2 random indexes from indexes list and swapping objects under those indexes in deck list.
+        // After that used indexes are deleted from their list to prevent swapping already swapped cards
         for (int i = 0; i < deck.Count / 2; i++)
         {
             int random1 = Random.Range(0, indexes.Count);
@@ -101,10 +96,11 @@ public class ServerDecksManager : NetworkBehaviour
             //Debug.Log("Numbers [" + random1 + "] = " + numbers[random1]);
             //Debug.Log("Numbers [" + random2 + "] = " + numbers[random2]);
 
-            // Sprawdzenie czy w liście numerów nie został tylko 1 rekord
+            // Check if index list has >=1 value left
             if (indexes[random1] == indexes[random2])
             {
-                if (indexes[random1] != null)
+                // This checks appears to be useless but it prevents accesing indexes[0] when its already been destroyed.
+                if (indexes[random1] != null) 
                 {
                     indexes.RemoveAt(random1);
                     continue;
@@ -113,10 +109,12 @@ public class ServerDecksManager : NetworkBehaviour
                     break;
             }
 
+            // Swapping cards under randomized indexes.
             GameObject temp = deck[indexes[random1]];
             deck[indexes[random1]] = deck[indexes[random2]];
             deck[indexes[random2]] = temp;
 
+            // Removing first higher and then lower index.
             if (random1 > random2)
             {
                 indexes.RemoveAt(random1);
@@ -130,18 +128,11 @@ public class ServerDecksManager : NetworkBehaviour
         }
     }
 
-    // Przełożenie kart z odrzuconych do dobrania i przetasowanie
+    [Server]
     void ReshuffleDeck( List<GameObject> deck, List<GameObject> discardedDeck )
     {
-        if (isServer == false)
-        {
-            Debug.LogError("Funkcja ReshuffleDeck() wywołana na kliencie, to nie powinno się dziać!");
-            return;
-        }
-
-        deck = discardedDeck;
+        deck = new List<GameObject>(discardedDeck);
         discardedDeck.Clear();
-
         ShuffleDeck(deck);
     }
 
@@ -149,75 +140,68 @@ public class ServerDecksManager : NetworkBehaviour
     void SpawnCards()
     {
         for (int i = 0; i < doors.Capacity; i++)
-        {
             NetworkServer.Spawn(Instantiate(doors[i]));
-        }
         for (int i = 0; i < treasures.Count; i++)
-        {
             NetworkServer.Spawn(Instantiate(treasures[i]));
-        }
         for (int i = 0; i < helpHands.Count; i++)
-        {
             NetworkServer.Spawn(Instantiate(helpHands[i]));
-        }
         for (int i = 0; i < spells.Count; i++)
-        {
             NetworkServer.Spawn(Instantiate(spells[i]));
-        }
     }
-
+    /// <summary>
+    /// Used when loading game.
+    /// Searching for card with specified name.
+    /// </summary>
+    /// <returns> Found card. </returns>
     [Server]
-    public GameObject GetCardByName( string name )
+    public GameObject GetCardByName( string cardName )
     {
 
         for (int i = 0; i < doorsDeck.childCount; i++)
         {
             GameObject card = doorsDeck.GetChild(i).gameObject;
 
-            if (card.GetComponent<Card>().cardValues.name == name)
-                if (card.GetComponent<Card>().cardValues.name == name)
+            if (card.GetComponent<Card>().cardValues.name == cardName)
+                if (card.GetComponent<Card>().cardValues.name == cardName)
                 {
                     card.transform.SetAsLastSibling();
                     return card;
                 }
         }
-
         for (int i = 0; i < treasuresDeck.childCount; i++)
         {
             GameObject card = treasuresDeck.GetChild(i).gameObject;
 
-            if (card.GetComponent<Card>().cardValues.name == name)
-                if (card.GetComponent<Card>().cardValues.name == name)
+            if (card.GetComponent<Card>().cardValues.name == cardName)
+                if (card.GetComponent<Card>().cardValues.name == cardName)
                 {
                     card.transform.SetAsLastSibling();
                     return card;
                 }
         }
-
         for (int i = 0; i < spellsDeck.childCount; i++)
         {
             GameObject card = spellsDeck.GetChild(i).gameObject;
 
-            if (card.GetComponent<Card>().cardValues.name == name)
+            if (card.GetComponent<Card>().cardValues.name == cardName)
             {
                 card.transform.SetAsLastSibling();
                 return card;
             }
         }
-
         for (int i = 0; i < helpHandsDeck.childCount; i++)
         {
             GameObject card = helpHandsDeck.GetChild(i).gameObject;
 
-            if (card.GetComponent<Card>().cardValues.name == name)
-                if (card.GetComponent<Card>().cardValues.name == name)
+            if (card.GetComponent<Card>().cardValues.name == cardName)
+                if (card.GetComponent<Card>().cardValues.name == cardName)
                 {
                     card.transform.SetAsLastSibling();
                     return card;
                 }
         }
 
-        Debug.LogError("CardToSpawnNotFound");
+        Debug.LogError("CardNotFound");
         return null;
     }
 }
