@@ -15,17 +15,21 @@ public class SaveGameButton : MonoBehaviour
         button.onClick.AddListener(delegate { OnClick(); });
     }
 
+    /// <summary> Saving game under specified file name. </summary>
     void OnClick()
     {
-        // TODO: Players can't save when there are cards on board
-        // TODO: Players can't save during fights
+        // Players currently can't save when cards are waiting in queue to be used or during fights.
+        if (ServerGameManager.serverGameManager.cardsUsageQueue.Count > 0 || ServerGameManager.serverGameManager.fightInProggres)
+        {
+            InfoPanel.Alert("Can't save right now!");
+            return;
+        }
 
         string path = SaveGameMenu.pathToSaveIn;
-        string fileName = Path.GetFileNameWithoutExtension(path);
 
+        // Ask if Player wants to overwrite the save.
         if (File.Exists(path))
         {
-            // Ask if Player wants to overwrite the File
             SaveOverwriteAlert.Alert();
             return;
         }

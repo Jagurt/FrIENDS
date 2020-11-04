@@ -14,6 +14,9 @@ public class ProgressButton : MonoBehaviour
         button.onClick.AddListener(() => OnClick());
     }
 
+    /// <summary>
+    /// Report Readiness, and disable button or end turn.
+    /// </summary>
     public void OnClick()
     {
         if(!ServerGameManager.serverGameManager.fightInProggres && ServerGameManager.serverGameManager.turnPhase == TurnPhase.Search)
@@ -22,7 +25,7 @@ public class ProgressButton : MonoBehaviour
             return;
         }
 
-        PlayerInGame.localPlayerInGame.CmdReadyPlayersUp(); // Report Readiness, and disable button
+        PlayerInGame.localPlayerInGame.CmdReadyPlayersUp(); 
         button.interactable = false;
     }
 

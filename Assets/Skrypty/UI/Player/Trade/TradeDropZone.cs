@@ -5,15 +5,11 @@ using UnityEngine.EventSystems;
 
 public class TradeDropZone : DropZone
 {
-    private void Start()
-    {
-        localPlayerInGame = PlayerInGame.localPlayerInGame;
-    }
     // Card is being picked up from playersCardsPanel
     public void OnBeginDrag(GameObject draggedCard) 
     {
         // Remove card from opponent's tradePanel
-        localPlayerInGame.RemoveTradingCard(draggedCard);
+        PlayerInGame.localPlayerInGame.RemoveTradingCard(draggedCard);
     }
     // Card is being dropped to playersCardsPanel
     public override void OnDrop( PointerEventData eventData )
@@ -21,6 +17,6 @@ public class TradeDropZone : DropZone
         base.OnDrop(eventData);
         // Add card to enemy's tradePanel
         TradePanel.ResetAcceptance();
-        localPlayerInGame.SendTradingCard(eventData.pointerDrag);
+        PlayerInGame.localPlayerInGame.SendTradingCard(eventData.pointerDrag);
     }
 }

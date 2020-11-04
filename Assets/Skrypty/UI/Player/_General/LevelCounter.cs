@@ -20,7 +20,6 @@ public class LevelCounter : MonoBehaviour
     {
         PlayersLevels = levelCounter.transform.Find("PlayersLevels").GetComponent<TextMeshProUGUI>();
         MonstersLevels = levelCounter.transform.Find("MonstersLevels").GetComponent<TextMeshProUGUI>();
-        //levelCounter.gameObject.SetActive(false);
     }
 
     internal static void OnStartFight()

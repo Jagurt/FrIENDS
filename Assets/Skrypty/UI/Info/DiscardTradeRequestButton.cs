@@ -15,6 +15,6 @@ public class DiscardTradeRequestButton : MonoBehaviour
 
     void OnClick()
     {
-        transform.parent.GetComponent<InfoTradeRequest>().DiscardTradeRequest();
+        transform.parent.GetComponent<InfoTradeRequest>().DeclineTradeRequest();
     }
 }

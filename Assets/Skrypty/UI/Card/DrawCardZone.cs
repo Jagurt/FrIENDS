@@ -4,53 +4,24 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 
-public class DrawCardZone : MonoBehaviour, IPointerClickHandler, IPointerExitHandler
+public class DrawCardZone : MonoBehaviour
 {
     public Deck deckType;
 
-    public void OnPointerClick( PointerEventData eventData )
-    {
-        // TODO Dobieranie na klik
-        switch (deckType)
-        {
-            case Deck.Doors:
-                //gameManager.UseCard(this.transform.GetChild(transform.childCount - 1).GetComponent<Card>());
-                //ActivateLastChild();
-                break;
-            case Deck.Spells:
-                break;
-            case Deck.Treasures:
-                break;
-            case Deck.HelpingHand:
-                break;
-        }
-    }
-
-    public void OnPointerExit( PointerEventData eventData )
-    {
-        if (eventData.pointerDrag == null)
-        {
-            return;
-        }
-
-        Draggable draggable = eventData.pointerDrag.GetComponent<Draggable>();
-        if (draggable != null && draggable.placeholderParent == this.transform)
-        {
-            draggable.placeholderParent = draggable.parentToReturnTo;
-        }
-    }
-
+    /// <summary> Put card under this object in hierarchy. </summary>
+    /// <param name="card"></param>
     public void ReceiveCard( Transform card )
     {
         card.SetParent(this.transform, true);
         card.transform.position = Vector3.zero;
     }
 
-    // Sets cards parent to player who draws it
+    /// <summary> Called on server when drawing card </summary>
+    /// <returns> Return last card from deck. </returns>
     public GameObject DrawCard()
     {
         if (this.transform.childCount <= 0)
-            Debug.LogError("You draw card from empty deck!");
+            Debug.Log("You draw card from empty deck!");
 
         Card drawnCard = this.transform.GetChild(this.transform.childCount - 1).GetComponent<Card>();
         drawnCard.gameObject.SetActive(true);

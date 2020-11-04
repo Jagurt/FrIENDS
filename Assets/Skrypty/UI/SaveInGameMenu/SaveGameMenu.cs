@@ -19,7 +19,6 @@ public class SaveGameMenu : MonoBehaviour
 
     internal static void Initialize()
     {
-        //saveGameMenu = PlayerInGame.playerCanvas.transform.Find("SaveGameMenu").GetComponent<SaveGameMenu>();
         content = saveGameMenu.transform.Find("Scroll View").Find("Viewport").Find("Content");
 
         SaveNameInputField saveNameInputField = saveGameMenu.transform.Find("SaveName - InputField").GetComponent<SaveNameInputField>();

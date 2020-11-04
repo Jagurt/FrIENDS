@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class for showing players in lobby.
+/// </summary>
 public class LobbyPlayersCounter : MonoBehaviour
 {
     internal static LobbyPlayersCounter lobbyPlayersCounter;

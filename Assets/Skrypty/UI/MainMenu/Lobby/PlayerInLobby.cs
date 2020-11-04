@@ -7,6 +7,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
+/// <summary>
+/// Class for PlayerInLobby objects.
+/// Handling player readiness and Toggle object.
+/// </summary>
 public class PlayerInLobby : NetworkBehaviour
 {
     private LobbyManager lobby;
@@ -42,8 +46,9 @@ public class PlayerInLobby : NetworkBehaviour
         this.nickName.text = nickName;
         this.playerManager = playerManager;
 
-        if (GlobalVariables.IsHost) // Each Spawned PlayerInLobby object calls following coroutine setting its correct positioning and color
-            StartCoroutine(ServerUpdateAllPILSiblingIndexes());
+        // Each Spawned PlayerInLobby object calls following coroutine setting its correct positioning and color
+        if (GlobalVariables.IsHost) 
+            StartCoroutine(ServerUpdateAllPILPositions());
     }
 
     public override void OnStartAuthority()
@@ -65,7 +70,7 @@ public class PlayerInLobby : NetworkBehaviour
     {
         StartCoroutine(ServerSwitchReadindess(isOn));        
     }
-
+    [Server]
     IEnumerator ServerSwitchReadindess(bool isOn)
     {
         if (CustomNetworkManager.customNetworkManager.isServerBusy)
@@ -92,7 +97,7 @@ public class PlayerInLobby : NetworkBehaviour
     }
 
     [Server]
-    static internal IEnumerator ServerUpdateAllPILSiblingIndexes()
+    static internal IEnumerator ServerUpdateAllPILPositions()
     {
         int playerCount = 0;
         int limit = LobbyManager.lobbyManager.connectedPlayers;

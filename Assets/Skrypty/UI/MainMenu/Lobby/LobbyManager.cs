@@ -7,7 +7,9 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 enum PlayerColors { Green, Blue, Red, Brown, SkyBlue, Black, White, Purple, Orange, Pink }
-
+/// <summary>
+/// Class for managing player connection in Lobby.
+/// </summary>
 public class LobbyManager : NetworkBehaviour
 {
     static internal LobbyManager lobbyManager;
@@ -16,8 +18,9 @@ public class LobbyManager : NetworkBehaviour
     [SerializeField] [SyncVar] private int readyPlayers = 0;
     [SerializeField] [SyncVar] internal int connectedPlayers = 0;
 
-    static List<string> playerNames = new List<string>();
+    static List<string> loadedPlayersNames = new List<string>();
 
+    // Colors of players based on their position in lobby.
     static internal Color[] Colors =
     {
         new Color(0, 255, 0, 255),
@@ -59,25 +62,21 @@ public class LobbyManager : NetworkBehaviour
         lobbyManager.readyPlayers = 0;
         lobbyManager.connectedPlayers = 0;
     }
-
     public static void ReadyPlayer()
     {
         lobbyManager.readyPlayers += 1;
         ReadyCheck();
     }
-
     public static void UnreadyPlayer()
     {
         lobbyManager.readyPlayers -= 1;
         ReadyCheck();
     }
-
     public static void UpdateConnectedPlayers()
     {
         lobbyManager.connectedPlayers = NetworkServer.connections.Count;
         ReadyCheck();
     }
-
     public static void ConnectedPlayersDown()
     {
         if (!SceneManager.GetActiveScene().name.Equals("TitleScene"))
@@ -85,7 +84,10 @@ public class LobbyManager : NetworkBehaviour
         lobbyManager.connectedPlayers -= 1;
         ReadyCheck();
     }
-
+    /// <summary>
+    /// Enable Start Game Button if all connected players are ready to play OR if all players needed to load game are connected and ready.
+    /// Otherwise disable button.
+    /// </summary>
     static void ReadyCheck()
     {
         if ((lobbyManager.readyPlayers == lobbyManager.connectedPlayers &&
@@ -99,7 +101,9 @@ public class LobbyManager : NetworkBehaviour
         else
             lobbyManager.startGameButton.DisableStartGameButton();
     }
-
+    /// <summary>
+    /// Calling updating Players Counter UI on server.
+    /// </summary>
     [Server]
     internal static IEnumerator ServerUpdatePlayersCounter()
     {
@@ -112,14 +116,18 @@ public class LobbyManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
-
+    /// <summary>
+    /// Updating Players Counter  UI on Clients.
+    /// </summary>
     [ClientRpc]
     internal void RpcUpdatePlayersCounter( int numOfLoadedPlayers )
     {
         LobbyPlayersCounter.numOfLoadedPlayers = numOfLoadedPlayers;
         LobbyPlayersCounter.UpdatePlayersCounter(readyPlayers, connectedPlayers);
     }
-
+    /// <summary>
+    /// Activating headers of loaded players.
+    /// </summary>
     [Server]
     internal static IEnumerator ServerActivateLoadHeaders()
     {
@@ -136,40 +144,32 @@ public class LobbyManager : NetworkBehaviour
             lobbyManager.RpcGetPlayerName(SaveSystem.loadedSave.playersData[i].nickName);
             yield return new WaitForEndOfFrame();
         }
-
         lobbyManager.RpcUpdatePlayersNamesInHeaders();
 
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     void RpcInitGetPlayerNames()
     {
         //Debug.Log("RpcInitGetPlayerNames()");
-        playerNames.Clear();
+        loadedPlayersNames.Clear();
     }
-
     [ClientRpc]
     void RpcGetPlayerName( string name )
     {
         //Debug.Log("RpcGetPlayerName().name - " + name);
-        playerNames.Add(name);
+        loadedPlayersNames.Add(name);
     }
-
     [ClientRpc]
     void RpcUpdatePlayersNamesInHeaders()
     {
         int limit = LobbyPlayersCounter.numOfLoadedPlayers;
 
         //Debug.Log("RpcUpdatePlayersNamesInHeaders().limit - " + limit);
-
         for (int i = 0; i < limit; i++)
-        {
-            PILLoadHeaders[i].Initialize(playerNames[i]);
-        }
+            PILLoadHeaders[i].Initialize(loadedPlayersNames[i]);
     }
-
     [Server]
     internal static IEnumerator ServerDeactivateLoadHeaders()
     {
@@ -182,19 +182,15 @@ public class LobbyManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
-
     [ClientRpc]
     void RpcDeactivateLoadHeaders()
     {
         ClientDeactivateLoadHeaders();
     }
-
     [Client]
     void ClientDeactivateLoadHeaders()
     {
         foreach (var pILLoadHeader in FindObjectsOfType<PILLoadHeader>())
-        {
             pILLoadHeader.gameObject.SetActive(false);
-        }
     }
 }

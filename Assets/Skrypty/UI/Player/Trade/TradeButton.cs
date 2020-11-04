@@ -17,13 +17,16 @@ public class TradeButton : MonoBehaviour
         button.onClick.AddListener(delegate { OnClick(); });
     }
 
+    /// <summary> Finding which players can trade right now and starting choosing. </summary>
     private void OnClick()
     {
         List<PlayerInGame> playersFreeToTrade = new List<PlayerInGame>();
 
+        // In all player objects.
         foreach (var player in ServerGameManager.serverGameManager.playersObjects)
         {
             NetworkInstanceId playerNetId = player.GetComponent<PlayerInGame>().netId;
+            // If player is not fighting, helping with fight or isn't same player who clicked this button.
             if (playerNetId != ServerGameManager.serverGameManager.fightingPlayerNetId &&
                 playerNetId != ServerGameManager.serverGameManager.helpingPlayerNetId &&
                 playerNetId != PlayerInGame.localPlayerInGame.netId)
@@ -33,7 +36,7 @@ public class TradeButton : MonoBehaviour
 
         if (playersFreeToTrade.Count > 0)
             PlayerInGame.localPlayerInGame.ChoosePlayerToTradeWith(playersFreeToTrade.ToArray());
-        //else
-        // TODO: inform "There is noone to trade with right now!"
+        else
+            InfoPanel.Alert("Zero potential traders found!");
     }
 }

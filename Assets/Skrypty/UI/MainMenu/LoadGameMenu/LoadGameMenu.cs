@@ -19,23 +19,25 @@ public class LoadGameMenu : MonoBehaviour
         content = loadGameMenu.transform.Find("Scroll View").Find("Viewport").Find("Content");
     }
 
+    /// <summary>
+    /// Destroying Panels with already searched saves.
+    /// Searching for saves under default path.
+    /// Creating new panels with newly searched saves. 
+    /// </summary>
     internal static void SearchForSaves( Transform content = null)
     {
         selectedSavePath = null;
-
-
         SaveFilePanel[] existingSaveFilePanels = FindObjectsOfType<SaveFilePanel>();
 
         foreach (var item in existingSaveFilePanels)
-        {
             Destroy(item.gameObject);
-        }
 
-
+        // If content isn't set in parameter, it is set to defaul LoadGameMenu value.
         if (!content)
             content = LoadGameMenu.content;
 
         GameObject SaveFilePanel;
+        // This is true only in TitleScene.
         if (loadGameMenu)
             SaveFilePanel = loadGameMenu.SaveFilePanel;
         else
@@ -48,7 +50,6 @@ public class LoadGameMenu : MonoBehaviour
             GameObject saveFilePanel = Instantiate(SaveFilePanel, content);
 
             string saveFileName = Path.GetFileNameWithoutExtension(savePath);
-
             string saveFileDate = File.GetLastWriteTime(savePath).ToString();
             saveFileDate.Replace(' ', '\n');
 

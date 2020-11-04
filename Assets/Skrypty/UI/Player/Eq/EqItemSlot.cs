@@ -15,32 +15,35 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
     private void Start()
     {
         eqImage = GetComponent<Image>();
-        localPlayerInGame = PlayerInGame.localPlayerInGame;
     }
-
+    /// <summary>
+    /// When heldItem has begun being dragged from item slot.
+    /// </summary>
+    /// <param name="eventData"></param>
     public void OnBeginDrag( PointerEventData eventData )
     {
         if (!heldItem)
-        {
             return;
-        }
 
-        localPlayerInGame.Unequip(heldItem);
+        PlayerInGame.localPlayerInGame.Unequip(heldItem);
 
+        // Call OnBeginDrag for held item card.
         eventData.pointerDrag = heldItem;
         heldItem.GetComponent<Draggable>().OnBeginDrag(eventData);
 
+        // Set held item to be null.
         heldItem = null;
     }
 
-    override
-    public void OnDrop( PointerEventData eventData )
+    override public void OnDrop( PointerEventData eventData )
     {
         GameObject card = eventData.pointerDrag;
         EquipmentCard eqCard = card.GetComponent<EquipmentCard>();
 
+        // If dropped card is in fact an item ( has EquipmentCard script )
         if (eqCard != null)
         {
+            // If item slot matches eq slot then use card, if not return card.
             if ((eqCard.cardValues as EquipmentValue).eqPart == eqPart)
                 eqCard.UseCard();
             else
@@ -49,32 +52,26 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
             Destroy(card.GetComponent<Draggable>().Placeholder);
         }            
     }
-
-    override
-    public void OnPointerEnter( PointerEventData eventData )
+    override public void OnPointerEnter( PointerEventData eventData )
     {
         //Debug.Log("EqItemSlot.OnPointerEnter(): eventData.pointerDrag - " + eventData.pointerDrag);
 
         if (eventData.pointerDrag == null)
-        {
             return;
-        }
 
         Draggable draggable = eventData.pointerDrag.GetComponent<Draggable>();
 
         if (!draggable) return;
 
         EquipmentCard equipmentCard = draggable.GetComponent<EquipmentCard>();
-
+        // TODO: fix setting item icon in eq slot.
         if (draggable != null && equipmentCard != null && 
             (equipmentCard.cardValues as EquipmentValue).eqPart == eqPart)
         {
             eqImage.sprite = equipmentCard.GetComponentInChildren<Image>().sprite;
         }
     }
-
-    override
-    public void OnPointerExit( PointerEventData eventData )
+    override public void OnPointerExit( PointerEventData eventData )
     {
         if (eventData.pointerDrag == null)
             return;
@@ -91,6 +88,7 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
             eqImage.sprite = placeholderImage;
         }
     }
+    public void OnDrag( PointerEventData eventData ) { }
 
     internal void ReceiveEq( GameObject card )
     {
@@ -101,7 +99,6 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         card.transform.position = new Vector3(-100, 0, 0);
         eqImage.sprite = card.GetComponentInChildren<Image>().sprite;
     }
-
     internal void ReturnEq()
     {
         Debug.Log("ReturnEq()");
@@ -113,7 +110,6 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
 
         eqImage.sprite = placeholderImage;
     }
-
     internal void ReturnEnemyEq()
     {
         Debug.Log("ReturnEnemyEq()");
@@ -122,6 +118,4 @@ public class EqItemSlot : DropZone, IDropHandler, IPointerEnterHandler, IPointer
         heldItem = null;
         eqImage.sprite = placeholderImage;
     }
-
-    public void OnDrag( PointerEventData eventData ) { }
 }

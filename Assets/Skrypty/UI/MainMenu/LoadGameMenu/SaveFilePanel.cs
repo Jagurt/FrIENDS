@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class SaveFilePanel : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
+    // HardCoded colors values.
     internal static Color NormalColor = new Color(.05098039f, .345098f, .572549f, 1);
     internal static Color HighlightedColor = new Color(.08048778f, .5414634f, .9f, 1);
     internal static Color PressedColor = new Color(.02817072f, .1895122f, .315f, 1);
@@ -15,7 +16,7 @@ public class SaveFilePanel : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
     TextMeshProUGUI saveFileName;
     TextMeshProUGUI saveFileDate;
-    Image image;
+    Image background;
 
     string saveFilePath;
 
@@ -28,9 +29,12 @@ public class SaveFilePanel : MonoBehaviour, IPointerClickHandler, IPointerEnterH
         this.saveFileName.text = saveFileName;
         this.saveFileDate.text = saveFileDate;
 
-        image = GetComponent<Image>();
+        background = GetComponent<Image>();
     }
 
+    /// <summary>
+    /// Select this panel on click and animate changing color.
+    /// </summary>
     public void OnPointerClick( PointerEventData eventData )
     {
         if (!clicked)
@@ -45,11 +49,11 @@ public class SaveFilePanel : MonoBehaviour, IPointerClickHandler, IPointerEnterH
                     SaveNameInputField.UpdateInputFieldText();
                     break;
             }
-            UnclickAll();
+            UnClickAll();
             clicked = true;
             LeanTween.value(gameObject, HighlightedColor, PressedColor, .1f).setOnUpdate(( Color val ) =>
             {
-                image.color = val;
+                background.color = val;
             });
         }
         else
@@ -65,47 +69,49 @@ public class SaveFilePanel : MonoBehaviour, IPointerClickHandler, IPointerEnterH
                     break;
             }
             clicked = false;
-            LeanTween.value(gameObject, image.color, HighlightedColor, .1f).setOnUpdate(( Color val ) =>
+            LeanTween.value(gameObject, background.color, HighlightedColor, .1f).setOnUpdate(( Color val ) =>
             {
-                image.color = val;
+                background.color = val;
             });
         }
     }
-
+    /// <summary>
+    /// Animate highlighting when cursor enters panel.
+    /// </summary>
     public void OnPointerEnter( PointerEventData eventData )
     {
         if (!clicked)
-            LeanTween.value(this.gameObject, image.color, HighlightedColor, .1f).setOnUpdate(( Color val ) =>
+            LeanTween.value(this.gameObject, background.color, HighlightedColor, .1f).setOnUpdate(( Color val ) =>
             {
-                image.color = val;
+                background.color = val;
             });
     }
-
+    /// <summary>
+    /// Animate ending highlighting when cursor exits panel.
+    /// </summary>
     public void OnPointerExit( PointerEventData eventData )
     {
         if (!clicked)
-            LeanTween.value(this.gameObject, image.color, NormalColor, .1f).setOnUpdate(( Color val ) =>
+            LeanTween.value(this.gameObject, background.color, NormalColor, .1f).setOnUpdate(( Color val ) =>
             {
-                image.color = val;
+                background.color = val;
             });
     }
 
     void UnClick()
     {
         clicked = false;
-        LeanTween.value(this.gameObject, image.color, NormalColor, .1f).setOnUpdate(( Color val ) =>
+        LeanTween.value(this.gameObject, background.color, NormalColor, .1f).setOnUpdate(( Color val ) =>
         {
-            image.color = val;
+            background.color = val;
         });
     }
 
-    static void UnclickAll()
+    static void UnClickAll()
     {
         SaveFilePanel[] saveFilePanels = FindObjectsOfType<SaveFilePanel>();
 
         foreach (var item in saveFilePanels)
-        {
             item.UnClick();
-        }
     }
 }

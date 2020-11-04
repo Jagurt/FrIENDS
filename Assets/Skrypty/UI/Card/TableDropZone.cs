@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary> Script for handling player interaction with table. </summary>
 public class TableDropZone : DropZone
 {
     List<GameObject> borrowedCardPlaceholders = new List<GameObject>();
@@ -14,9 +15,8 @@ public class TableDropZone : DropZone
     private void Start()
     {
         tableDropZone = this;
-        localPlayerInGame = PlayerInGame.localPlayerInGame;
     }
-
+    /// <summary> Call cards "UseCard" method when card is dropped on table. </summary>
     override
     public void OnDrop(PointerEventData eventData)
     {
@@ -24,42 +24,32 @@ public class TableDropZone : DropZone
 
         if (!draggable) return;
 
-        if (!localPlayerInGame)
-            localPlayerInGame = PlayerInGame.localPlayerInGame;
-
         draggable.GetComponent<Card>().UseCard();
     }
-
-    override
-    public void OnPointerEnter(PointerEventData eventData)
+    /// <summary> Changing cards placeholder parent to be table when cursor enters. </summary>
+    override public void OnPointerEnter(PointerEventData eventData)
     {
         if (eventData.pointerDrag == null)
-        {
             return;
-        }
 
         Draggable draggable = eventData.pointerDrag.GetComponent<Draggable>();
         if (draggable != null)
-        {
             draggable.placeholderParent = this.transform;
-        }
     }
-
-    override
-    public void OnPointerExit(PointerEventData eventData)
+    /// <summary> Returning cards placeholder parent to its former parent on cursor exit. </summary>
+    override public void OnPointerExit(PointerEventData eventData)
     {
         if (eventData.pointerDrag == null)
-        {
             return;
-        }
 
         Draggable draggable = eventData.pointerDrag.GetComponent<Draggable>();
         if (draggable != null && draggable.placeholderParent == this.transform)
-        {
             draggable.placeholderParent = draggable.parentToReturnTo;
-        }
     }
-
+    /// <summary> 
+    /// Finding all monsters on table and returning them. 
+    /// Saving them to list to be able to get their back to the table.
+    /// </summary>
     internal IEnumerable<GameObject> BorrowMonsterCards()
     {
         var monsters = this.GetComponentsInChildren<MonsterCard>();

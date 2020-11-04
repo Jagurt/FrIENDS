@@ -43,7 +43,7 @@ public class BuffPlus5ToMonster : BuffCard
         transform.SetParent(TableDropZone.tableDropZone.transform);    // Putting Buff Card on Table
         LevelCounter.UpdateLevels();
     }
-
+    /// <summary> Called when removing buff due to some cards effect. </summary>
     internal override void DispellEffect()
     {
         Debug.Log("Buffing Monster with +5 to level!");

@@ -1,11 +1,12 @@
 ﻿#pragma warning disable CS0618 // Typ lub składowa jest przestarzała
 
-using System.Collections;
-using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
 
+/// <summary>
+/// Class for Loaded Players Headers objects
+/// </summary>
 public class PILLoadHeader : NetworkBehaviour
 {
     TextMeshProUGUI TMPro;

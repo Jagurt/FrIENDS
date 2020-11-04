@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Class for alerting player when they try to overwrite existing file.
+/// </summary>
 public class SaveOverwriteAlert : MonoBehaviour
 {
     internal static SaveOverwriteAlert saveOverwriteAlert;

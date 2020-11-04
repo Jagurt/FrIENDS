@@ -1033,7 +1033,7 @@ public class PlayerInGame : NetworkBehaviour
         if (hasAuthority)
         {
             PlayerInGame requestingPIG = ClientScene.FindLocalObject(requestingPlayerNetId).GetComponent<PlayerInGame>(); // PIG - PlayerInGame script
-            InfoPanel.ReceiveTradeReqInfo(requestingPIG);
+            InfoPanel.ReceiveTradeRequestInfo(requestingPIG);
         }
     }
     /// <summary>

@@ -253,8 +253,6 @@ public class ServerGameManager : NetworkBehaviour
     /// Called in ReadyPlayersUp() when GamePhase is InProgress.
     /// Ends fight and switches turnPhase.
     /// Ends Turns Beginning Phase, switches to Turns Search Phase and makes active player draw 3 doors to choose.
-    /// 
-    /// TODO: Doesn't look so good and requires remake.
     /// </summary>
     [Server]
     internal void ProgressTurn()
@@ -271,7 +269,6 @@ public class ServerGameManager : NetworkBehaviour
             ServerAlert("Turn phase: Search");
             StartCoroutine(playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().ServerSendCards(Deck.Doors, 3, true, true));
             turnPhase = TurnPhase.Search;
-            return;
         }
     }
     /// <summary>

@@ -26,10 +26,11 @@ public class AcceptTradeButton : MonoBehaviour
 
     internal static void Initialize()
     {
-        //acceptTradeButton = TradePanel.tradePanel.GetComponentInChildren<AcceptTradeButton>();
         textMeshPro = acceptTradeButton.GetComponentInChildren<TextMeshProUGUI>();
     }
-
+    /// <summary>
+    /// Changin appearance of button based on acceptance state.
+    /// </summary>
     void OnClick()
     {
         GetComponentInParent<TradePanel>().AcceptTrade(accepted);
@@ -46,12 +47,11 @@ public class AcceptTradeButton : MonoBehaviour
             textMeshPro.color = Color.green;
         }
     }
-
-    internal static void ResetButton() // To be called when players add/remove cards for trading or at start of new trade
+    /// <summary>
+    /// Called when players add/remove cards for trading or at start of new trade
+    /// </summary>
+    internal static void ResetButton() 
     {
-        //if(!textMeshPro)
-        //    textMeshPro = GetComponentInChildren<TextMeshProUGUI>();
-
         accepted = false;
         textMeshPro.text = "Accept";
         textMeshPro.color = Color.white;

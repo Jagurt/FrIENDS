@@ -41,24 +41,23 @@ public class OpponentInPanel : MonoBehaviour, IPointerEnterHandler, IPointerExit
             info.Find("Avatar").GetComponent<Image>().sprite = storedPlayer.Avatar;
 
         Transform stats = info.Find("Stats");
-
         NickName = stats.Find("NickName").GetComponentInChildren<TextMeshProUGUI>(true);
         Level = stats.Find("Level").GetComponentInChildren<TextMeshProUGUI>(true);
         OwnedCards = stats.Find("OwnedCards").GetComponentInChildren<TextMeshProUGUI>(true);
 
         NickName.text = storedPlayer.NickName;
     }
-
+    /// <summary>
+    /// Initializing this object in choice panel.
+    /// </summary>
     internal void InitializeInChoicePanel( PlayerInGame playerScript )
     {
+        // Regular initialization.
         Initialize(playerScript);
 
+        // Finding Eq if this object and stopping its animation.
         Transform EqTransform = transform.Find("Eq");
         if(!EqTransform) EqTransform = transform.Find("EnemyEq");
-
-        GridLayoutGroup grid = EqTransform.GetComponent<GridLayoutGroup>();
-
-        Debug.Log("grid - " + grid);
 
         EqTransform.GetComponent<Image>().raycastTarget = false;
     }

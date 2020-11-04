@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// Script for dragging PlayerInLobby object.
+/// </summary>
 public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [SerializeField] private GameObject placeholder = null;
@@ -24,7 +27,6 @@ public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
         this.transform.position = eventData.position;
 
         int newSiblingIndex = placeholder.transform.parent.childCount;
-
         for (int i = 0; i < placeholder.transform.parent.childCount; i++)
         {
             if (this.transform.position.y > placeholder.transform.parent.GetChild(i).position.y)
@@ -37,7 +39,6 @@ public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
                 break;
             }
         }
-
         placeholder.transform.SetSiblingIndex(newSiblingIndex);
     }
 
@@ -50,7 +51,7 @@ public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
         this.transform.SetSiblingIndex(placeholder.transform.GetSiblingIndex());
         Destroy(placeholder);
 
-        StartCoroutine(PlayerInLobby.ServerUpdateAllPILSiblingIndexes());
+        StartCoroutine(PlayerInLobby.ServerUpdateAllPILPositions());
     }
 
     void CreatePlaceholder()
@@ -65,11 +66,5 @@ public class PlayerInLobbyDraggable : MonoBehaviour, IBeginDragHandler, IDragHan
         LayoutElement layoutElement = placeholder.AddComponent<LayoutElement>();
         layoutElement.preferredWidth = this.GetComponent<LayoutElement>().preferredWidth;
         layoutElement.preferredHeight = this.GetComponent<LayoutElement>().preferredHeight;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }
