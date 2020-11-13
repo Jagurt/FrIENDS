@@ -22,7 +22,7 @@ public class EquipmentCard : TreasureCard
     /// Modify level accordingly.
     /// </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse( )
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>(); // Finding player locally via theirs "NetworkInstanceId"
         short levelChange = 0;

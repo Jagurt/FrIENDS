@@ -76,6 +76,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Describes if fight takes place at this time.
     /// </summary>
     [SerializeField] [SyncVar] internal bool fightInProggres;
+    [SyncVar] internal bool foughtInThisRound;
 
     internal List<GameObject> fightingMonsters = new List<GameObject>();
 
@@ -84,8 +85,6 @@ public class ServerGameManager : NetworkBehaviour
     [SerializeField] [SyncVar] internal short fightingPlayerLevel;
     [SerializeField] [SyncVar] internal short helpingPlayerLevel;
     [SerializeField] [SyncVar] internal short fightingPlayersLevel;
-
-    [SyncVar] internal bool foughtInThisRound;
 
     // Method that is run when this object is enabled in scene for first time.
     private void Start()
@@ -194,7 +193,7 @@ public class ServerGameManager : NetworkBehaviour
             {
                 case GamePhase.PreStart:
                     Debug.Log("Beginning game!");
-                    BeginGame();
+                    ServerBeginGame();
                     break;
                 case GamePhase.InProgress:
                     Debug.Log("Game In Progress!");
@@ -210,7 +209,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Synchronizes objects with loaded game or starts new game - sends new set of cards to all players, and starts turn for first player.
     /// </summary>
     [Server] // Called on server
-    void BeginGame()
+    void ServerBeginGame()
     {
         Debug.Log("Game Begins!");
         GamePhase = GamePhase.InProgress;
@@ -240,6 +239,7 @@ public class ServerGameManager : NetworkBehaviour
         if (activePlayerIndex >= 0)
             playersObjects[activePlayerIndex].GetComponent<PlayerInGame>().hasTurn = false;
 
+        turnPhase = TurnPhase.Beginning;
         activePlayerIndex = (activePlayerIndex + 1) % playersObjects.Count;
         PlayerInGame playerWithTurn = playersObjects[activePlayerIndex].GetComponent<PlayerInGame>();
         playerWithTurn.hasTurn = true;
@@ -259,7 +259,7 @@ public class ServerGameManager : NetworkBehaviour
     {
         if (fightInProggres)
         {
-            EndFight(true);
+            ServerEndFight(true);
             return;
         }
 
@@ -320,7 +320,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Updates levels of fighting players.
     /// </summary>
     [Server]
-    internal void UpdateFightingPlayersLevel()
+    internal void ServerUpdateFightingPlayersLevel()
     {
         if (!fightInProggres)
             return;
@@ -335,12 +335,12 @@ public class ServerGameManager : NetworkBehaviour
     /// </summary>
     /// <param name="isFightSettled"> True if fight ended normal way. False if something was used to end fight without winner.</param>
     [Server]
-    internal void EndFight( bool isFightSettled )
+    internal void ServerEndFight( bool isFightSettled )
     {
         if (isFightSettled)
         {
-            if (fightingPlayersLevel > fightingMonstersLevel) FightWon();
-            else FightLost();
+            if (fightingPlayersLevel > fightingMonstersLevel) ServerFightWon();
+            else ServerFightLost();
             foughtInThisRound = true;
         }
         else
@@ -360,7 +360,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Called when players won the fight.
     /// </summary>
     [Server]
-    void FightWon()
+    void ServerFightWon()
     {
         int treasuresToDrawCount = 0;
         short levelsGained = 0;
@@ -377,41 +377,41 @@ public class ServerGameManager : NetworkBehaviour
         fightingPlayer.FightWon(treasuresToDrawCount, levelsGained);
         StartCoroutine(ServerAlert(fightingPlayer.NickName + " won the battle!"));
 
-        ApplyMonstersTriumphEffects();
+        ServerApplyMonstersTriumphEffects();
     }
     /// <summary>
     /// Called when players lost the battle.
     /// </summary>
     [Server]
-    void FightLost()
+    void ServerFightLost()
     {
         // Finding fighting player PlayerInGame script.
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
         StartCoroutine(ServerAlert(fightingPlayer.NickName + " lost the battle!"));
 
-        ApplyMonstersDefeatEffects();
+        ServerApplyMonstersDefeatEffects();
     }
 
     [Server]
-    void ApplyMonstersDefeatEffects()
+    void ServerApplyMonstersDefeatEffects()
     {
         foreach (var monster in fightingMonsters)
         {
-            StartCoroutine(ApplyMonsterDefeatEffect(monster));
+            StartCoroutine(ServerApplyMonsterDefeatEffect(monster));
         }
     }
 
     [Server]
-    void ApplyMonstersTriumphEffects()
+    void ServerApplyMonstersTriumphEffects()
     {
         foreach (var monster in fightingMonsters)
         {
-            StartCoroutine(ApplyMonsterTriumphEffect(monster));
+            StartCoroutine(ServerApplyMonsterTriumphEffect(monster));
         }
     }
 
     [Server]
-    IEnumerator ApplyMonsterDefeatEffect( GameObject monster )
+    IEnumerator ServerApplyMonsterDefeatEffect( GameObject monster )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -427,7 +427,7 @@ public class ServerGameManager : NetworkBehaviour
     }
 
     [Server]
-    IEnumerator ApplyMonsterTriumphEffect( GameObject monster )
+    IEnumerator ServerApplyMonsterTriumphEffect( GameObject monster )
     {
         if (CustomNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
@@ -442,7 +442,7 @@ public class ServerGameManager : NetworkBehaviour
     /// Ending turn and starting new one
     /// </summary>
     [Server]
-    internal void EndTurn()
+    internal void ServerEndTurn()
     {
         Debug.Log("ServerGameManager.EndTurn()");
         ServerNewTurnSet();

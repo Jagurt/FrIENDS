@@ -34,7 +34,7 @@ public class MonsterCard : Card
     /// Starting a fight with a monster.
     /// </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse()
     {
         PlayerInGame fightingPlayer = serverGameManager.playersObjects[serverGameManager.activePlayerIndex].GetComponent<PlayerInGame>();
         //Debug.Log("Monster in fight: " + this.gameObject);
@@ -45,7 +45,7 @@ public class MonsterCard : Card
 
         serverGameManager.fightInProggres = true;
         serverGameManager.fightingPlayerNetId = fightingPlayer.netId;
-        serverGameManager.UpdateFightingPlayersLevel();
+        serverGameManager.ServerUpdateFightingPlayersLevel();
         serverGameManager.fightingMonstersLevel = ((MonsterValue)cardValues).level;
         serverGameManager.readyPlayers = 0;
 
@@ -81,7 +81,7 @@ public class MonsterCard : Card
         FightEndEffect();
     }
 
-    virtual internal void FightEndEffect()
+    virtual protected void FightEndEffect()
     {
         
     }

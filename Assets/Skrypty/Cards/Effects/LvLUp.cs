@@ -22,7 +22,7 @@ public class LvLUp : Effect
     /// Increases level of player who uses this card.
     /// </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse( )
     {
     if (CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);

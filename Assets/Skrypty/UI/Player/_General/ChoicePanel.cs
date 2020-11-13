@@ -81,7 +81,7 @@ public class ChoicePanel : MonoBehaviour
         switch (panelTitle)
         {
             case ChoicePanelTitle.DrawFirstDoor:
-                ChooseDoors(chosenObject);
+                ChooseFirstDoors(chosenObject);
                 break;
             case ChoicePanelTitle.ChooseCard:
                 break;
@@ -101,7 +101,7 @@ public class ChoicePanel : MonoBehaviour
         Rest();
     }
     /// <summary> When choosing first doors in turn. </summary>
-    static void ChooseDoors( GameObject chosenDoors )
+    static void ChooseFirstDoors( GameObject chosenDoors )
     {
         List<GameObject> cardsToDiscard = new List<GameObject>();
         // Finding cards to discard, all except chosen.
@@ -119,17 +119,9 @@ public class ChoicePanel : MonoBehaviour
         }
         // Executing discarding cards
         choicePanel.StartCoroutine(PlayerInGame.localPlayerInGame.DiscardCard(cardsToDiscard));
-        PlayerInGame.localPlayerInGame.storedObject = chosenDoors;
 
-        // If chosen card works on local player, use it on them.
-        if (worksOnPlayer)
-        {
-            // Debug.Log("ChoicePanel:ChooseDoors - worksOnPlayer - " + worksOnPlayer);
-            PlayerInGame.localPlayerInGame.ChooseObject(PlayerInGame.localPlayerInGame.gameObject);
-            PlayerInGame.localPlayerInGame.progressButton.ActivateButton();
-        }
-        else // If not choose target for chosen card.
-            chosenDoors.GetComponent<Card>().UseCard();
+        // Debug.Log("ChoicePanel:ChooseFirstDoors - worksOnPlayer - " + worksOnPlayer);
+        PlayerInGame.localPlayerInGame.ChooseFirstDoors(chosenDoors);
     }
 
     static void ChooseMonster( GameObject chosenMonster )

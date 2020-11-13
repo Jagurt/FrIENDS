@@ -18,7 +18,7 @@ public class BuffPlus5ToMonster : BuffCard
     /// Buffing monster with +5 to level.
     /// </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse( )
     {
         if (CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);

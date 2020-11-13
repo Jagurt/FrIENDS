@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 public class CustomNetworkManager : NetworkManager
 {
     /// <summary>
-    /// Class deriving from built in interface "MessageBase". Essential when sending network messages to connected players (servers clients)
+    /// Declaration of class deriving from built-in interface "MessageBase". Essential when sending network messages to connected players (servers clients)
     /// It is empty becouse I don't actaully need to send any variable IN the message but I use it to call functions on clients
     /// </summary>
     public class EmptyMessage : MessageBase { }

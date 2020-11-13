@@ -26,7 +26,7 @@ public class ServerDecksManager : NetworkBehaviour
     [SerializeField] Transform discardedHelpHandsDeck;
     [SerializeField] Transform discardedSpellsDeck;
 
-    ////        Poperties       ////
+    //      Poperties       //
     public List<GameObject> Doors { get => doors; }
     public List<GameObject> Treasures { get => treasures; }
     public List<GameObject> HelpHands { get => helpHands; }

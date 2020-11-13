@@ -16,7 +16,7 @@ public class Collector : MonsterCard
     /// Increase power of a monster for each "Glass" object that player is wearing.
     /// </summary>
     [Server]
-    override internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    override internal IEnumerator EffectOnUse()
     {
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();
 
@@ -29,10 +29,10 @@ public class Collector : MonsterCard
             }
         }
 
-        return base.EffectOnUse(targetNetId);
+        return base.EffectOnUse();
     }
 
-    internal override void FightEndEffect()
+    protected override void FightEndEffect()
     {
         (cardValues as MonsterValue).treasuresCount = 1;
         cardValues.level = 5;

@@ -9,9 +9,8 @@ using UnityEditor;
 public class PlayerInGame : NetworkBehaviour
 {
     static CustomNetworkManager CustomNetworkManager;
-
     // Reference to ServerGameManager script for easier use in this script.
-    internal ServerGameManager serverGameManager;
+    private ServerGameManager serverGameManager;
     // Static reference to PlayerInGame(this) script, it gets set by the object that is meant to be localPlayer with authority.
     internal static PlayerInGame localPlayerInGame;
     // For checking if initial variables were set for this object on server.
@@ -87,7 +86,7 @@ public class PlayerInGame : NetworkBehaviour
         ClientInitialize();
     }
 
-    internal void ClientInitialize()
+    private void ClientInitialize()
     {
         //Debug.Log("ClientInitialize(): hasAuthority - " + hasAuthority);
         // Check if player "Owns" this object, this is set in "PlayerManager" script by "SpawnWithClientAuthority" method.
@@ -562,29 +561,8 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdPutCardOnTable( NetworkInstanceId cardNetId )
     {
-        StartCoroutine(ServerPutCardOnTable(cardNetId));
-    }
-    [Server]
-    internal IEnumerator ServerPutCardOnTable( NetworkInstanceId cardNetId )
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-        CustomNetworkManager.isServerBusy = true;
-
-        RpcPutCardOnTable(cardNetId);
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
-    }
-    [ClientRpc]
-    internal void RpcPutCardOnTable( NetworkInstanceId cardNetId )
-    {
-        ClientPutCardOnTable(cardNetId);
-    }
-    [Client]
-    internal void ClientPutCardOnTable( NetworkInstanceId cardNetId )
-    {
-        ClientScene.FindLocalObject(cardNetId).transform.SetParent(TableDropZone.tableDropZone.transform);
+        Card card = ClientScene.FindLocalObject(cardNetId).GetComponent<Card>();
+        card.ServerPutCardOnTable();
     }
     /// <summary> 
     /// Choosing target for card and choosing player to help when fighting happens under very similar circumstances.
@@ -608,13 +586,28 @@ public class PlayerInGame : NetworkBehaviour
         else
             CmdChoosePlayerToHelp(chosenObject.GetComponent<PlayerInGame>().netId);
     }
+    
+    internal void ChooseFirstDoors( GameObject chosenDoors )
+    {
+        progressButton.ActivateButton();
+
+        NetworkInstanceId doorsNetId = chosenDoors.GetComponent<Card>().GetNetId();
+        CmdChooseFirstDoors(doorsNetId);
+    }
+
+    [Command]
+    internal void CmdChooseFirstDoors( NetworkInstanceId doorsNetId )
+    {
+        Card card = ClientScene.FindLocalObject(doorsNetId).GetComponent<Card>();
+        card.ServerUseCardImmediately(this.netId); 
+    }
 
     [Command]
     void CmdUseCard( NetworkInstanceId cardNetId, NetworkInstanceId targetNetId )
     {
         Card card = ClientScene.FindLocalObject(cardNetId).GetComponent<Card>();
         //Debug.Log("CmdUseCard: Card to use: " + card.GetComponent<Card>().cardValues.name);
-        StartCoroutine(card.StartAwaitUseConfirmation(targetNetId, this.netId));
+        StartCoroutine(card.ServerStartAwaitUseConfirmation(targetNetId, this.netId));
     }
 
     internal void ConfirmCardUsage( bool confirm )
@@ -624,7 +617,7 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdConfirmCardUsage( bool confirm )
     {
-        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().ConfirmCardUsage(confirm, gameObject);
+        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().ServerConfirmCardUsage(confirm, gameObject);
     }
 
     internal void InterruptCardUsage()
@@ -634,7 +627,7 @@ public class PlayerInGame : NetworkBehaviour
     [Command]
     void CmdInterruptCardUsage()
     {
-        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().InterruptCardUsage();
+        serverGameManager.cardsUsageQueue[0].GetComponent<Card>().ServerInterruptCardUsage();
     }
 
     internal IEnumerator DiscardCard( List<GameObject> cardsToDiscard )
@@ -739,29 +732,7 @@ public class PlayerInGame : NetworkBehaviour
         StartCoroutine(RequestCardsDrawCoroutine(Deck.Treasures, treasuresToDrawCount));
         level += levelsGained;
     }
-    /// <summary>
-    /// End turn if player can carry cards they're hold to the next round.
-    /// If not Alert them.
-    /// </summary>
-    internal void EndTurn()
-    {
-        if (ownedCardsLimit >= handContent.GetComponentsInChildren<Card>().Length)
-        {
-            progressButton.DeactivateButton();
-            CmdEndTurn();
-        }
-        else
-        {
-            //Debug.Log("You have too many cards on hand! Discard some!");
-            InfoPanel.Alert("You have too many cards on hand!\n Discard some!");
-        }
-    }
 
-    [Command]
-    void CmdEndTurn()
-    {
-        serverGameManager.EndTurn();
-    }
     /// <summary> Discarding all cards from table. </summary>
     [Server]
     internal void EndFight()
@@ -806,7 +777,7 @@ public class PlayerInGame : NetworkBehaviour
 
         CustomNetworkManager.isServerBusy = true;
 
-        serverGameManager.UpdateFightingPlayersLevel();
+        serverGameManager.ServerUpdateFightingPlayersLevel();
 
         yield return new WaitForEndOfFrame();
 
@@ -892,7 +863,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdOfferHelp();
     }
     [Command]
-    internal void CmdOfferHelp()
+    void CmdOfferHelp()
     {
         StartCoroutine(ServerOfferHelp());
     }
@@ -909,7 +880,7 @@ public class PlayerInGame : NetworkBehaviour
         CustomNetworkManager.isServerBusy = false;
     }
     [ClientRpc]
-    internal void RpcOfferHelp()
+    void RpcOfferHelp()
     {
         // Preventing 1 player to offer help more than once.
         if (serverGameManager.offeringHelpPlayers.Contains(this))
@@ -927,7 +898,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdCancelHelp();
     }
     [Command]
-    internal void CmdCancelHelp()
+    void CmdCancelHelp()
     {
         StartCoroutine(ServerCancelHelp());
     }
@@ -947,7 +918,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Cancelling previously offered help and updating HelpButton text for fighting player
     /// </summary>
     [ClientRpc]
-    internal void RpcCancelHelp()
+    void RpcCancelHelp()
     {
         if (serverGameManager.offeringHelpPlayers.Contains(this))
             serverGameManager.offeringHelpPlayers.Remove(this);
@@ -1007,7 +978,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdRequestTrade(requestedPlayer.netId);
     }
     [Command]
-    internal void CmdRequestTrade( NetworkInstanceId requestedPlayerNetId )
+    void CmdRequestTrade( NetworkInstanceId requestedPlayerNetId )
     {
         GameObject requestedPlayer = ClientScene.FindLocalObject(requestedPlayerNetId);
         StartCoroutine(requestedPlayer.GetComponent<PlayerInGame>().ServerRequestTrade(this.netId));
@@ -1028,7 +999,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Player asked for trade gets trade notification.
     /// </summary>
     [ClientRpc]
-    internal void RpcReveiveTradeRequest( NetworkInstanceId requestingPlayerNetId )
+    void RpcReveiveTradeRequest( NetworkInstanceId requestingPlayerNetId )
     {
         if (hasAuthority)
         {
@@ -1133,7 +1104,7 @@ public class PlayerInGame : NetworkBehaviour
     /// <param name="tradingCardNetId"> NetId of traded card. </param>
     /// <param name="playerWeTradeWithNetId"> Player who receives trading card </param>
     [Command]
-    internal void CmdSendTradingCard( NetworkInstanceId tradingCardNetId, NetworkInstanceId playerWeTradeWithNetId )
+    void CmdSendTradingCard( NetworkInstanceId tradingCardNetId, NetworkInstanceId playerWeTradeWithNetId )
     {
         Debug.Log("CmdReceiveTradingCard()");
         PlayerInGame playerReceivingCard = ClientScene.FindLocalObject(playerWeTradeWithNetId).GetComponent<PlayerInGame>();
@@ -1156,7 +1127,7 @@ public class PlayerInGame : NetworkBehaviour
     /// <summary> Receiving traded card on client. </summary>
     /// <param name="tradingCardNetId"> NetId of traded card. </param>
     [ClientRpc]
-    internal void RpcReceiveTradingCard( NetworkInstanceId tradingCardNetId )
+    void RpcReceiveTradingCard( NetworkInstanceId tradingCardNetId )
     {
         Debug.Log("RpcReceiveTradingCard()");
         if (hasAuthority)
@@ -1242,7 +1213,7 @@ public class PlayerInGame : NetworkBehaviour
         CmdCancelTrade(playerWeTradeWith.netId);
     }
     [Command]
-    internal void CmdCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
+    void CmdCancelTrade( NetworkInstanceId playerWeTradeWithNetId )
     {
         StartCoroutine(ServerCancelTrade(playerWeTradeWithNetId)); // Finalizing trade for first player
     }
@@ -1337,7 +1308,29 @@ public class PlayerInGame : NetworkBehaviour
 
         TradePanel.Deactivate();
     }
+    /// <summary>
+    /// End turn if player can carry cards they're hold to the next round.
+    /// If not Alert them.
+    /// </summary>
+    internal void EndTurn()
+    {
+        if (ownedCardsLimit >= handContent.GetComponentsInChildren<Card>().Length)
+        {
+            progressButton.DeactivateButton();
+            CmdEndTurn();
+        }
+        else
+        {
+            //Debug.Log("You have too many cards on hand! Discard some!");
+            InfoPanel.Alert("You have too many cards on hand!\n Discard some!");
+        }
+    }
 
+    [Command]
+    void CmdEndTurn()
+    {
+        serverGameManager.ServerEndTurn();
+    }
     [Server]
     internal IEnumerator ServerPersonalAlertCoroutine( string text )
     {

@@ -15,7 +15,7 @@ public class CurseLevelDown : Effect
     }
     /// <summary> Applying curse effect ( -1 level ) to tergeted or default player. </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse( )
     {
         Debug.Log("CurseLevelDown: EffectOnUse");
 

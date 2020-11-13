@@ -9,8 +9,8 @@ public class TreasureCard : Card
 {
     public TreasureType treasureType;
 
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
-    {
-        return base.EffectOnUse(targetNetId);
-    }
+    //internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    //{
+    //    return base.EffectOnUse(targetNetId);
+    //}
 }

@@ -14,8 +14,8 @@ public class Card : NetworkBehaviour
     internal Deck deck;
     protected ServerGameManager serverGameManager;
 
-    NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
-    NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
+    protected NetworkInstanceId ownerNetId = NetworkInstanceId.Invalid;
+    protected NetworkInstanceId targetNetId = NetworkInstanceId.Invalid;
 
     GameObject confirmUseButton;
     GameObject interruptUseButton;
@@ -25,7 +25,7 @@ public class Card : NetworkBehaviour
     [SerializeField] List<GameObject> playersConfirmers;
     [SerializeField] List<GameObject> playersDecliners;
     [SerializeField] [SyncVar] int interruptTimer = 0;
-    [SerializeField] IEnumerator awaitUseConfirmation;
+    [SerializeField] IEnumerator serverAwaitUseConfirmation;
 
     void Start()
     {
@@ -42,7 +42,7 @@ public class Card : NetworkBehaviour
         serverGameManager = ServerGameManager.serverGameManager;
 
         if (isServer)
-            awaitUseConfirmation = AwaitUseConfirmation();
+            serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
         StartCoroutine(ClientWaitInstantiateButtons());
     }
 
@@ -64,6 +64,38 @@ public class Card : NetworkBehaviour
     {
         throw new NotImplementedException();
     }
+
+    [Server]
+    internal void ServerUseCardImmediately( NetworkInstanceId targetNetId)
+    {
+        this.targetNetId = targetNetId;
+        StartCoroutine(ServerPutCardOnTable());
+        StartCoroutine(EffectOnUse());
+    }
+
+    [Server]
+    internal IEnumerator ServerPutCardOnTable()
+    {
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+        RpcPutCardOnTable();
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
+    }
+    [ClientRpc]
+    internal void RpcPutCardOnTable()
+    {
+        ClientPutCardOnTable();
+    }
+    [Client]
+    internal void ClientPutCardOnTable()
+    {
+        transform.SetParent(TableDropZone.tableDropZone.transform);
+    }
+
     /// <summary>
     /// Called when card is placed on board.
     /// Cards target and owner is stored, clients are informed that card has entered usage queue.
@@ -72,7 +104,7 @@ public class Card : NetworkBehaviour
     /// <param name="ownerNetId"></param>
     /// <returns></returns>
     [Server]
-    internal virtual IEnumerator StartAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
+    internal virtual IEnumerator ServerStartAwaitUseConfirmation( NetworkInstanceId targetNetId, NetworkInstanceId ownerNetId )
     {
         Debug.Log("StartAwaitUseConfirmation() in - " + this.gameObject);
 
@@ -88,24 +120,26 @@ public class Card : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
 
-        StartCoroutine(awaitUseConfirmation);
+        StartCoroutine(serverAwaitUseConfirmation);
     }
+
     [ClientRpc]
     internal virtual void RpcStartAwaitUseConfirmation()
     {
         Debug.Log("RpcStartAwaitUseConfirmation() in - " + this.gameObject);
 
         serverGameManager.cardsUsageQueue.Add(this.gameObject);
-        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
+        ClientPutCardOnTable();
 
         GetComponent<Draggable>().enabled = false;
     }
+    
     /// <summary>
     /// Card starts waiting until it is atop of usage queue.
     /// When atop of queue, card waits for a duration and then is atomatically accepted.
     /// </summary>
     [Server]
-    internal virtual IEnumerator AwaitUseConfirmation()
+    internal virtual IEnumerator ServerAwaitUseConfirmation()
     {
         Debug.Log("AwaitUseConfirmation() in - " + this.gameObject);
 
@@ -125,16 +159,17 @@ public class Card : NetworkBehaviour
             yield return new WaitForSecondsRealtime(0.10f);
         }
 
-        ConfirmationCheck(true);
+        ServerConfirmationCheck(true);
     }
 
     [ClientRpc]
     void RpcAwaitUseConfirmation()
     {
         ClientSetActiveCardButtons(true);
-        PlayerInGame.localPlayerInGame.ClientPutCardOnTable(this.netId);
+        ClientPutCardOnTable();
         StartCoroutine(ClientInitInterruptTimer());
     }
+    
     /// <summary> Updating interrupt timer UI object for clients. </summary>
     [Client]
     IEnumerator ClientInitInterruptTimer()
@@ -148,7 +183,7 @@ public class Card : NetworkBehaviour
     }
 
     [Server]
-    internal void ConfirmCardUsage( bool confirm, GameObject player )
+    internal void ServerConfirmCardUsage( bool confirm, GameObject player )
     {
         if (confirm && !playersConfirmers.Contains(player))
         {
@@ -161,11 +196,11 @@ public class Card : NetworkBehaviour
             playersConfirmers.Remove(player);
         }
 
-        ConfirmationCheck(false);
+        ServerConfirmationCheck(false);
     }
 
     [Server]
-    internal void InterruptCardUsage()
+    internal void ServerInterruptCardUsage()
     {
         interruptTimer -= 50;
     }
@@ -176,36 +211,40 @@ public class Card : NetworkBehaviour
     /// </summary>
     /// <param name="endOfTime"></param>
     [Server]
-    internal void ConfirmationCheck( bool endOfTime )
+    internal void ServerConfirmationCheck( bool endOfTime )
     {
         Debug.Log("Players To Decline Needed > " + serverGameManager.playersObjects.Count * 0.51f);
         Debug.Log("Players To Confirm Needed >= " + serverGameManager.playersObjects.Count * 0.5f);
 
         if (playersDecliners.Count > serverGameManager.playersObjects.Count * 0.51f)
         {
-            StopCoroutine(awaitUseConfirmation);
+            StopCoroutine(serverAwaitUseConfirmation);
             PlayerInGame cardOwner = ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>();
             StartCoroutine(cardOwner.ServerReceiveCard(this.netId, false, false));
             // Reassigning Coroutine to make it work next time
-            awaitUseConfirmation = AwaitUseConfirmation();
+            serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
 
             // Reseting values
             playersConfirmers.Clear(); 
             playersDecliners.Clear();
+
+            serverGameManager.cardsUsageQueue.Remove(this.gameObject);
         }
         else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.5f)
         {
-            StopCoroutine(awaitUseConfirmation);
-            StartCoroutine(EffectOnUse(targetNetId));
-            awaitUseConfirmation = AwaitUseConfirmation();
+            StopCoroutine(serverAwaitUseConfirmation);
+            StartCoroutine(EffectOnUse());
+            serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
 
             playersConfirmers.Clear();
             playersDecliners.Clear();
+
+            serverGameManager.cardsUsageQueue.Remove(this.gameObject);
         }
     }
 
     [Server]
-    virtual internal IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    virtual internal IEnumerator EffectOnUse()
     {
         throw new NotImplementedException();
     }

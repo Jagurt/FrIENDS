@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public class PlayerInLobby : NetworkBehaviour
 {
     private LobbyManager lobby;
-    internal PlayerManager playerManager;
+    private PlayerManager playerManager;
 
     [SerializeField] [SyncVar] private bool readyToStart = false;
     [SerializeField] private Toggle toggle;
@@ -112,7 +112,7 @@ public class PlayerInLobby : NetworkBehaviour
                 CustomNetworkManager.customNetworkManager.isServerBusy = true;
 
                 player.playerManager.playerIndex = playerCount;
-                player.RpcUpdatePILSiblingIndex(playerCount);
+                player.RpcUpdatePILPosition(playerCount);
 
                 yield return new WaitForEndOfFrame();
                 CustomNetworkManager.customNetworkManager.isServerBusy = false;
@@ -123,13 +123,13 @@ public class PlayerInLobby : NetworkBehaviour
     }
 
     [ClientRpc]
-    internal void RpcUpdatePILSiblingIndex( int newSiblingIndex )
+    internal void RpcUpdatePILPosition( int newSiblingIndex )
     {
-        ClientUpdatePILSiblingIndex(newSiblingIndex);
+        ClientUpdatePILPosition(newSiblingIndex);
     }
 
     [Client]
-    internal void ClientUpdatePILSiblingIndex( int newSiblingIndex )
+    internal void ClientUpdatePILPosition( int newSiblingIndex )
     {
         //Debug.Log("newSiblingIndex - " + newSiblingIndex);
         transform.SetSiblingIndex(newSiblingIndex * 2 + 1);

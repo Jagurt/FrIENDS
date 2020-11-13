@@ -18,10 +18,10 @@ public class FlashbangNinjaBomb : Effect
     /// All monsters and effects in use are discarded, and player can fight again.
     /// </summary>
     [Server]
-    internal override IEnumerator EffectOnUse( NetworkInstanceId targetNetId )
+    internal override IEnumerator EffectOnUse()
     {
         if (serverGameManager.fightInProggres)
-            serverGameManager.EndFight(false);
+            serverGameManager.ServerEndFight(false);
 
         yield return null;
     }
