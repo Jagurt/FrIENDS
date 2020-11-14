@@ -24,10 +24,11 @@ public class LvLUp : Effect
     [Server]
     internal override IEnumerator EffectOnUse( )
     {
-    if (CustomNetworkManager.customNetworkManager.isServerBusy)
+        yield return new WaitForSecondsRealtime(1f);
+
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
-
 
         PlayerInGame player;
         player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();

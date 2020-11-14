@@ -20,6 +20,8 @@ public class FlashbangNinjaBomb : Effect
     [Server]
     internal override IEnumerator EffectOnUse()
     {
+        yield return new WaitForSecondsRealtime(1f);
+
         if (serverGameManager.fightInProggres)
             serverGameManager.ServerEndFight(false);
 

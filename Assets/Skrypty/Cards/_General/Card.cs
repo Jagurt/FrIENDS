@@ -124,7 +124,7 @@ public class Card : NetworkBehaviour
     }
 
     [ClientRpc]
-    internal virtual void RpcStartAwaitUseConfirmation()
+    protected virtual void RpcStartAwaitUseConfirmation()
     {
         Debug.Log("RpcStartAwaitUseConfirmation() in - " + this.gameObject);
 
@@ -139,13 +139,16 @@ public class Card : NetworkBehaviour
     /// When atop of queue, card waits for a duration and then is atomatically accepted.
     /// </summary>
     [Server]
-    internal virtual IEnumerator ServerAwaitUseConfirmation()
+    protected virtual IEnumerator ServerAwaitUseConfirmation()
     {
         Debug.Log("AwaitUseConfirmation() in - " + this.gameObject);
 
-        while (serverGameManager.cardsUsageQueue[0] != this.gameObject)
+        while (serverGameManager.cardsUsageQueue[0] != this.gameObject || CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitForSecondsRealtime(0.10f);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+        yield return new WaitForEndOfFrame();
+        interruptTimer = 0;
 
         yield return new WaitForEndOfFrame();
         RpcAwaitUseConfirmation();
@@ -153,7 +156,7 @@ public class Card : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.customNetworkManager.isServerBusy = false;
 
-        for (interruptTimer = 0; interruptTimer < 30; interruptTimer++)
+        for (; interruptTimer < 30; interruptTimer++)
         {
             //Debug.Log("Time for \"" + gameObject + "\" to be auto-used: " + Math.Abs(interruptTimer - 30) / 10f);
             yield return new WaitForSecondsRealtime(0.10f);
@@ -211,36 +214,47 @@ public class Card : NetworkBehaviour
     /// </summary>
     /// <param name="endOfTime"></param>
     [Server]
-    internal void ServerConfirmationCheck( bool endOfTime )
+    void ServerConfirmationCheck( bool endOfTime )
     {
         Debug.Log("Players To Decline Needed > " + serverGameManager.playersObjects.Count * 0.51f);
         Debug.Log("Players To Confirm Needed >= " + serverGameManager.playersObjects.Count * 0.5f);
 
         if (playersDecliners.Count > serverGameManager.playersObjects.Count * 0.51f)
         {
-            StopCoroutine(serverAwaitUseConfirmation);
+            StartCoroutine(ServerOnConfirm());
+
             PlayerInGame cardOwner = ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>();
             StartCoroutine(cardOwner.ServerReceiveCard(this.netId, false, false));
-            // Reassigning Coroutine to make it work next time
-            serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
-
-            // Reseting values
-            playersConfirmers.Clear(); 
-            playersDecliners.Clear();
-
-            serverGameManager.cardsUsageQueue.Remove(this.gameObject);
         }
         else if (endOfTime || playersConfirmers.Count >= serverGameManager.playersObjects.Count * 0.5f)
         {
-            StopCoroutine(serverAwaitUseConfirmation);
+            StartCoroutine(ServerOnConfirm());
             StartCoroutine(EffectOnUse());
-            serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
-
-            playersConfirmers.Clear();
-            playersDecliners.Clear();
-
-            serverGameManager.cardsUsageQueue.Remove(this.gameObject);
         }
+    }
+
+    [Server]
+    IEnumerator ServerOnConfirm()
+    {
+        // Stopping waiting to confirm.
+        StopCoroutine(serverAwaitUseConfirmation);
+        // Reassigning Coroutine to make it work next time.
+        serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
+        // Reseting confirmation values.
+        playersConfirmers.Clear();
+        playersDecliners.Clear();
+        // Removing confirmed card from queue.
+        serverGameManager.cardsUsageQueue.Remove(this.gameObject);
+
+
+        if (CustomNetworkManager.customNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
+        CustomNetworkManager.customNetworkManager.isServerBusy = true;
+
+        RpcSetActiveCardButtons(false);
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.customNetworkManager.isServerBusy = false;
     }
 
     [Server]
@@ -248,13 +262,18 @@ public class Card : NetworkBehaviour
     {
         throw new NotImplementedException();
     }
-
+    
+    [ClientRpc]
+    void RpcSetActiveCardButtons( bool active )
+    {
+        ClientSetActiveCardButtons(active);
+    }
     /// <summary> Activation of card buttons UI. </summary>
     /// <param name="active"></param>
     [Client]
     internal void ClientSetActiveCardButtons( bool active )
     {
-        if (active)
+        if (active) 
         {
             confirmUseButton.SetActive(true);
             interruptUseButton.SetActive(true);
@@ -268,6 +287,12 @@ public class Card : NetworkBehaviour
             declineUseButton.SetActive(false);
             interruptUseTimer.SetActive(false);
         }
+    }
+
+    [ClientRpc]
+    virtual protected void RpcPlayAnimation()
+    {
+        throw new NotImplementedException();
     }
 
     internal NetworkInstanceId GetNetId()

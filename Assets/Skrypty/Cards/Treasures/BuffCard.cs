@@ -29,7 +29,7 @@ public class BuffCard : TreasureCard
                 if (TableDropZone.tableDropZone.transform.GetComponentsInChildren<MonsterCard>().Length > 1) // If there are multiple monsters in battle
                 {
                     ChoicePanel.PrepareToReceiveObjects(ChoicePanelTitle.ChooseMonsterToBuff);
-
+                    PlayerInGame.localPlayerInGame.storedObject = this.gameObject;
                     foreach (var monster in TableDropZone.tableDropZone.transform.GetComponent<TableDropZone>().BorrowMonsterCards())
                         ChoicePanel.ReceiveObjectToChoose(monster); // Create placeholders of monsters on table and send monsters to choice panel
                 }

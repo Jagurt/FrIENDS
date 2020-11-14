@@ -19,6 +19,8 @@ public class CurseLevelDown : Effect
     {
         Debug.Log("CurseLevelDown: EffectOnUse");
 
+        yield return new WaitForSecondsRealtime(1f);
+
         if (CustomNetworkManager.customNetworkManager.isServerBusy)
             yield return new WaitUntil(() => !CustomNetworkManager.customNetworkManager.isServerBusy);
         CustomNetworkManager.customNetworkManager.isServerBusy = true;

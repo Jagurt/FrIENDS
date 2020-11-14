@@ -546,6 +546,11 @@ public class PlayerInGame : NetworkBehaviour
     {
         CmdUseCard(cardNetId, this.netId);
     }
+    internal void UseStoredCardOnTarget( NetworkInstanceId targetNetId )
+    {
+        Card storedCard = storedObject.GetComponent<Card>();
+        CmdUseCard(storedCard.GetNetId(), targetNetId);
+    }
     /// <summary> Uses card on set target. </summary>
     /// <param name="cardNetId"> NetId of card to use. </param>
     /// <param name="targetNetId"> NetId of cards terget. </param>
@@ -564,27 +569,10 @@ public class PlayerInGame : NetworkBehaviour
         Card card = ClientScene.FindLocalObject(cardNetId).GetComponent<Card>();
         card.ServerPutCardOnTable();
     }
-    /// <summary> 
-    /// Choosing target for card and choosing player to help when fighting happens under very similar circumstances.
-    /// When chosing target for card:
-    ///     We get objects that could be its targets in Choice Panel and on click our target this function is called with clicked object as parameter.
-    ///     In this case my storedObject variable holds card which I choose target for.
-    /// When choosing player to help in fight:
-    ///     We get opponentInPanel objects for players that offered help in Choice Panel
-    ///     In this case stored object is null becouse we do not have card to choose target for.
-    /// </summary>
-    /// <param name="chosenObject"></param>
-    internal void ChooseObject( GameObject chosenObject )
+
+    internal void ChoosePlayerToHelp( GameObject chosenObject )
     {
-        // Before every selection of cards target, card for which we choose target has to be stored in "storedObject"
-        if (storedObject != null)
-        {
-            CmdUseCard(storedObject.GetComponent<Card>().netId, chosenObject.GetComponent<NetworkBehaviour>().netId);
-            storedObject = null;
-        }
-        // If we don't have anything stored in "storedObject" we don't choose target for card, instead we choose player to help.
-        else
-            CmdChoosePlayerToHelp(chosenObject.GetComponent<PlayerInGame>().netId);
+        CmdChoosePlayerToHelp(chosenObject.GetComponent<PlayerInGame>().netId);
     }
     
     internal void ChooseFirstDoors( GameObject chosenDoors )

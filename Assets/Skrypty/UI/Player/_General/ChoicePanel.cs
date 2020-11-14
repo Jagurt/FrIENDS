@@ -124,13 +124,12 @@ public class ChoicePanel : MonoBehaviour
         PlayerInGame.localPlayerInGame.ChooseFirstDoors(chosenDoors);
     }
 
-    static void ChooseMonster( GameObject chosenMonster )
-    {
+    static void ChooseMonster( GameObject chosenMonster ) 
+    { 
         TableDropZone.tableDropZone.ReturnBorrowedCards();
-        //ServerGameManager.serverGameManager.targetForCardToUseNetId = chosenMonster.GetComponent<NetworkIdentity>().netId;
-        // TODO: Complete choosing monsters
+        MonsterCard monsterCard = chosenMonster.GetComponent<MonsterCard>();
 
-        // PlayerInGame.localPlayerInGame.ApplyBuff(chosenMonster.GetComponent<Card>().netId);
+        PlayerInGame.localPlayerInGame.UseStoredCardOnTarget(monsterCard.GetNetId());
     }
     static void ChoosePlayerToTrade( OpponentInPanel enemyInPanel )
     {
@@ -139,7 +138,7 @@ public class ChoicePanel : MonoBehaviour
     }
     static void ChoosePlayer( OpponentInPanel enemyInPanel )
     {
-        PlayerInGame.localPlayerInGame.ChooseObject(enemyInPanel.storedPlayer.gameObject);
+        PlayerInGame.localPlayerInGame.ChoosePlayerToHelp(enemyInPanel.storedPlayer.gameObject);
     }
     static void DestroyPlaceholders()
     {

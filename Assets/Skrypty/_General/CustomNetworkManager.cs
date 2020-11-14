@@ -224,7 +224,7 @@ public class CustomNetworkManager : NetworkManager
             NetworkServer.DestroyPlayersForConnection(conn);
 
             // TODO : check which player got disconnected?  
-            // Wait for players to reconnect, allow to disconnect in meantime
+            // Wait for players to reconnect, allow others to disconnect in meantime
         }
         // Code for printing network errors in network events
         if (conn.lastError != NetworkError.Ok)
