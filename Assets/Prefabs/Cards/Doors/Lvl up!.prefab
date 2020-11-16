@@ -128,7 +128,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parentToReturnTo: {fileID: 0}
   placeholderParent: {fileID: 0}
-  deckToReturnTo: {fileID: 0}
   placeholder: {fileID: 0}
   serverDecksManager: {fileID: 0}
   serverGameManager: {fileID: 0}
@@ -145,7 +144,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardValues: {fileID: 11400000, guid: a926a66eeca7c344bbb74f21c2172d5d, type: 2}
-  deck: 0
+  playersConfirmers: []
+  playersDecliners: []
+  interruptTimer: 0
   target: 0
 --- !u!114 &1761870337058919623
 MonoBehaviour:

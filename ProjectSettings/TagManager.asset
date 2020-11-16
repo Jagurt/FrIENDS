@@ -43,3 +43,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: DropZones
+    uniqueID: 3035046485
+    locked: 0
+  - name: FloatingObjects
+    uniqueID: 2403328727
+    locked: 0

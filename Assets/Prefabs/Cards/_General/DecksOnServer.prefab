@@ -117,6 +117,8 @@ MonoBehaviour:
     type: 3}
   DeclineUseButton: {fileID: 6492028141064598257, guid: 63a3541f8b807004a8daddfdd0685cfd,
     type: 3}
+  CardLight: {fileID: 2363554261067336766, guid: 0910ce48264693845ad18fd70bac6363,
+    type: 3}
 --- !u!114 &5394087250291003360
 MonoBehaviour:
   m_ObjectHideFlags: 0

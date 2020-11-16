@@ -128,7 +128,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parentToReturnTo: {fileID: 0}
   placeholderParent: {fileID: 0}
-  deckToReturnTo: {fileID: 0}
   placeholder: {fileID: 0}
   serverDecksManager: {fileID: 0}
   serverGameManager: {fileID: 0}
@@ -145,9 +144,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardValues: {fileID: 11400000, guid: 7a8ac5e4889f04347b02117f070eb204, type: 2}
-  deck: 0
-  winEffect: {fileID: 0}
-  defeatEffect: {fileID: 0}
+  playersConfirmers: []
+  playersDecliners: []
+  interruptTimer: 0
   appliedBuffs: []
 --- !u!114 &3026971523183640375
 MonoBehaviour:
@@ -436,14 +435,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
-      propertyPath: m_havePropertiesChanged
-      value: 0
+      propertyPath: m_firstOverflowCharacterIndex
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
-      propertyPath: m_isInputParsingRequired
-      value: 0
-      objectReference: {fileID: 0}
+      propertyPath: m_textInfo.textComponent
+      value: 
+      objectReference: {fileID: 6048997721072029865}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_textInfo.characterCount
@@ -464,26 +463,6 @@ PrefabInstance:
       propertyPath: m_textInfo.lineCount
       value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_textInfo.pageCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_firstOverflowCharacterIndex
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4054596978169734409, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_havePropertiesChanged
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4054596978169734409, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_isInputParsingRequired
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 375da6ebea1613344bd2935986f21534, type: 3}
 --- !u!224 &4881321194541442071 stripped
@@ -492,6 +471,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 2332891266958198405}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6048997721072029865 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
+    type: 3}
+  m_PrefabInstance: {fileID: 2332891266958198405}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6387908510856316303
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -36,6 +36,8 @@ public class Card : NetworkBehaviour
 
     virtual protected void Initialize()
     {
+        (transform as RectTransform).Translate(new Vector3(0, 0, -2));
+
         deck = cardValues.deck;
         transform.Find("CardDescription").Find("Text").GetComponent<TMPro.TextMeshProUGUI>().text = cardValues.description;
         transform.Find("CardImage").GetComponent<Image>().sprite = cardValues.sprite;
@@ -43,18 +45,19 @@ public class Card : NetworkBehaviour
 
         if (isServer)
             serverAwaitUseConfirmation = ServerAwaitUseConfirmation();
-        StartCoroutine(ClientWaitInstantiateButtons());
+        StartCoroutine(ClientWaitInstantiateAddons());
     }
 
     /// <summary> Creating card buttons programatically to avoid doing it manually for each card. </summary>
-    IEnumerator ClientWaitInstantiateButtons()
+    IEnumerator ClientWaitInstantiateAddons()
     {
-        yield return new WaitUntil(() => CardsButtons.confirmUseButton);
+        yield return new WaitUntil(() => CardsAddons.confirmUseButton);
 
-        confirmUseButton = Instantiate(CardsButtons.confirmUseButton, transform);
-        interruptUseButton = Instantiate(CardsButtons.interruptUseButton, transform);
-        interruptUseTimer = Instantiate(CardsButtons.interruptUseTimer, transform);
-        declineUseButton = Instantiate(CardsButtons.declineUseButton, transform);
+        confirmUseButton = Instantiate(CardsAddons.confirmUseButton, transform);
+        interruptUseButton = Instantiate(CardsAddons.interruptUseButton, transform);
+        interruptUseTimer = Instantiate(CardsAddons.interruptUseTimer, transform);
+        declineUseButton = Instantiate(CardsAddons.declineUseButton, transform);
+        Instantiate(CardsAddons.cardLight, transform);
 
         ClientSetActiveCardButtons(false);
     }
