@@ -66,6 +66,11 @@ MonoBehaviour:
   - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
   - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
   - {fileID: 8114310120151877799, guid: 247d2a702ab21ee4f98a31dba4f57d38, type: 3}
+  - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
+  - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
+  - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
+  - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
+  - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
   treasures:
   - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
   - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
@@ -85,9 +90,12 @@ MonoBehaviour:
   - {fileID: 8114310120151877799, guid: abdecf609a17622468b95e808ca82e83, type: 3}
   - {fileID: 8114310120151877799, guid: abdecf609a17622468b95e808ca82e83, type: 3}
   - {fileID: 8114310120151877799, guid: abdecf609a17622468b95e808ca82e83, type: 3}
+  - {fileID: 8114310120151877799, guid: c1e797480d979304fa82fbb84304503b, type: 3}
+  - {fileID: 8114310120151877799, guid: c1e797480d979304fa82fbb84304503b, type: 3}
+  - {fileID: 8114310120151877799, guid: c1e797480d979304fa82fbb84304503b, type: 3}
   helpHands: []
   spells: []
-  serverCanvas: {fileID: 0}
+  background: {fileID: 0}
   table: {fileID: 0}
   doorsDeck: {fileID: 0}
   treasuresDeck: {fileID: 0}
@@ -119,6 +127,13 @@ MonoBehaviour:
     type: 3}
   CardLight: {fileID: 2363554261067336766, guid: 0910ce48264693845ad18fd70bac6363,
     type: 3}
+  CardBGColor: {fileID: 2100000, guid: 6c79bbc319ed83a47a3d7777c322982e, type: 2}
+  CardDescBGColor: {fileID: 2100000, guid: 86a2fc55e0b129b4fb4e90fe00ed05bd, type: 2}
+  CardBGImages:
+  - {fileID: 21300000, guid: 63f7e549031ee024aaebe5ab1cecdcab, type: 3}
+  - {fileID: 21300000, guid: 33d880ca0c436d24e87f563deb686d03, type: 3}
+  - {fileID: 21300000, guid: 6dc35cd2d6f41be48a56e5f815fd37b2, type: 3}
+  - {fileID: 21300000, guid: 6b4db741aa5c0bf4e845a498f52d46b0, type: 3}
 --- !u!114 &5394087250291003360
 MonoBehaviour:
   m_ObjectHideFlags: 0

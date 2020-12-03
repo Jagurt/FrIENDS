@@ -128,7 +128,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parentToReturnTo: {fileID: 0}
   placeholderParent: {fileID: 0}
-  deckToReturnTo: {fileID: 0}
   placeholder: {fileID: 0}
   serverDecksManager: {fileID: 0}
   serverGameManager: {fileID: 0}
@@ -145,9 +144,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardValues: {fileID: 11400000, guid: 01d79e20b6f48814681a860f1b915819, type: 2}
-  deck: 0
-  treasureType: 1
-  entityToApplyOn: 1
+  playersConfirmers: []
+  playersDecliners: []
+  interruptTimer: 0
+  target: 1
 --- !u!114 &3976416035527580615
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -16,7 +16,6 @@ MonoBehaviour:
   SpriteRewers: {fileID: 0}
   deck: 1
   name: Training Sword
-  description: Basically stick but better. Used by newbies and that one silver hair
-    due.
+  description: A sturdy stick. Used by newbies and that one silver hair due.
   level: 2
   eqPart: 6

@@ -1,0 +1,52 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary> 
+/// Class for holding static references to card buttons prefabs
+/// I created these buttons after making several cards and in order to skip adding them
+/// to each card manually I do it programatically in main card class using following prefabs.
+/// </summary>
+public class CardsAddons: MonoBehaviour
+{
+    [SerializeField] private GameObject ConfirmUseButton;
+    [SerializeField] private GameObject InterruptUseButton;
+    [SerializeField] private GameObject InterruptUseTimer;
+    [SerializeField] private GameObject DeclineUseButton;
+    [SerializeField] private GameObject CardLight;
+    [SerializeField] private Material CardBGColor;
+    [SerializeField] private Material CardDescBGColor;
+
+    [SerializeField] private List<Sprite> CardBGImages = new List<Sprite>();
+
+    static internal GameObject confirmUseButton;
+    static internal GameObject interruptUseButton;
+    static internal GameObject interruptUseTimer;
+    static internal GameObject declineUseButton;
+    static internal GameObject cardLight;
+    static internal Material cardBGColor;
+    static internal Material cardDescBGColor;
+
+    static internal List<Sprite> cardBGImages;
+
+    void Start()
+    {
+        if (!confirmUseButton)
+        {
+            confirmUseButton = ConfirmUseButton;
+            interruptUseButton = InterruptUseButton;
+            interruptUseTimer = InterruptUseTimer;
+            declineUseButton = DeclineUseButton;
+            cardLight = CardLight;
+            cardBGColor = CardBGColor;
+            cardDescBGColor = CardDescBGColor;
+            cardBGImages = CardBGImages;
+        }
+    }
+
+    static internal Sprite GetRandomCardBG()
+    {
+        int index = Random.Range(0, cardBGImages.Count);
+        return cardBGImages[index];
+    }
+}
