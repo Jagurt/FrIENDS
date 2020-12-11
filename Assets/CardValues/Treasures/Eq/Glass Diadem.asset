@@ -16,6 +16,7 @@ MonoBehaviour:
   SpriteRewers: {fileID: 0}
   deck: 1
   name: Glass Diadem
-  description: While pretty, not very practical.
+  description: While pretty, not very practical. Will break upon losing fight.
   level: 0
+  cost: 300
   eqPart: 0

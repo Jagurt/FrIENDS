@@ -37,8 +37,6 @@ public class Card : NetworkBehaviour
 
     virtual protected void Initialize()
     {
-        //(transform as RectTransform).Translate(new Vector3(0, 0, 0));
-
         deck = cardValues.deck;
         level = cardValues.level;
         gameManager = GameManager.singleton;
@@ -52,7 +50,7 @@ public class Card : NetworkBehaviour
     }
 
     /// <summary> Creating card buttons programatically to skip doing it manually for each card. </summary>
-    IEnumerator ClientWaitInstantiateAddons()
+    virtual protected IEnumerator ClientWaitInstantiateAddons()
     {
         yield return new WaitUntil(() => CardsAddons.confirmUseButton);
 

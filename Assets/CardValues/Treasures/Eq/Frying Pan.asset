@@ -18,4 +18,5 @@ MonoBehaviour:
   name: Frying Pan
   description: Pan formerly owned by the champion of battleground.
   level: 1
+  cost: 50
   eqPart: 7

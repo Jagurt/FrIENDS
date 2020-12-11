@@ -13,6 +13,7 @@ public class CurseLevelDown : Effect
         choosable = true;
         Initialize();
     }
+
     /// <summary> Applying curse effect ( -1 level ) to tergeted or default player. </summary>
     [Server]
     internal override IEnumerator EffectOnUse( )

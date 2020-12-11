@@ -16,5 +16,6 @@ MonoBehaviour:
   SpriteRewers: {fileID: 0}
   deck: 0
   name: Pay2Win
-  description: Gimme moar moneys!
+  description: Prevent players from getting levels this turn. Unless they pay for
+    it. Gimme moneys!
   level: 0

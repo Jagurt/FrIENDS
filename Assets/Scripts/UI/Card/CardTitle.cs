@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+
 public class CardTitle : MonoBehaviour
 {
     void Start()
     {
-        this.GetComponent<Text>().text = GetComponentInParent<Card>().cardValues.name;
+        this.GetComponentInChildren<TextMeshProUGUI>().text = GetComponentInParent<Card>().cardValues.name;
     }
 }

@@ -93,8 +93,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
     /// <summary> Create cards placeholder to be able to change its position in hand. </summary>
     void CreatePlaceholderInHand()
     {
-        if (placeholder)
-            Destroy(placeholder);
+        DestroyPlacehloder();
 
         // Create Placeholder as empty gamobject
         placeholder = new GameObject();
@@ -115,8 +114,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     IEnumerator CreatePlaceholderWithParent( Transform placeholderParent )
     {
-        if (placeholder)
-            Destroy(placeholder);
+        DestroyPlacehloder();
 
         // Create Placeholder as empty gamobject
         placeholder = new GameObject();
@@ -178,7 +176,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void OnEndDrag( PointerEventData eventData )
     {
-        if (!eventData.pointerCurrentRaycast.gameObject.GetComponent<DiscardDropZone>())
+        if (eventData.pointerCurrentRaycast.gameObject == null || !eventData.pointerCurrentRaycast.gameObject.GetComponent<DiscardDropZone>())
             ReturnToParent();
     }
 
@@ -231,7 +229,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         Vector3 placeholderPosition = placeholder.GetComponent<Transform>().position;
         int placeholderSibIndex = placeholder.transform.GetSiblingIndex();
 
-        Destroy(placeholder);
+        DestroyPlacehloder();
 
         LTMovementId = LeanTween.move(this.gameObject, placeholderPosition - offset, 0.1f)
             .setOnUpdate(( Vector3 val ) => transform.position = val)
@@ -244,13 +242,18 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     internal void ClientStopLeanMovement( bool destroyPlaceholder = false)
     {
-        if (placeholder)
-            Destroy(placeholder);
+        DestroyPlacehloder();
 
         if (LeanTween.descr(LTMovementId) != null)
         {
             LeanTween.descr(LTMovementId).callOnCompletes();
             LeanTween.descr(LTMovementId).reset();
         }
+    }
+
+    internal void DestroyPlacehloder()
+    {
+        if (placeholder)
+            Destroy(placeholder);
     }
 }

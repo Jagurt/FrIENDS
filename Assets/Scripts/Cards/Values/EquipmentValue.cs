@@ -7,7 +7,7 @@ using UnityEngine;
 /// it has all parent class attributes and 1 more, needed for equipment behaviour.
 ///  </summary>
 [CreateAssetMenu(fileName = "New Equipment Value", menuName = "Equipment Value")]
-public class EquipmentValue : CardValues
+public class EquipmentValue : TreasureValue
 {
     public EqPart eqPart;
 }

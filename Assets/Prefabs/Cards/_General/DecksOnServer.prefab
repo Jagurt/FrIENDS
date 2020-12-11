@@ -71,6 +71,16 @@ MonoBehaviour:
   - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
   - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
   - {fileID: 8114310120151877799, guid: 550315a887dd3b14e8afd6612d679091, type: 3}
+  - {fileID: 8114310120151877799, guid: 42ced67ff8734de47a63e39c132b53ef, type: 3}
+  - {fileID: 8114310120151877799, guid: 42ced67ff8734de47a63e39c132b53ef, type: 3}
+  - {fileID: 8114310120151877799, guid: 42ced67ff8734de47a63e39c132b53ef, type: 3}
+  - {fileID: 8114310120151877799, guid: 42ced67ff8734de47a63e39c132b53ef, type: 3}
+  - {fileID: 8114310120151877799, guid: 42ced67ff8734de47a63e39c132b53ef, type: 3}
+  - {fileID: 8114310120151877799, guid: 4e805a226df65c64c8cf13707b75683f, type: 3}
+  - {fileID: 8114310120151877799, guid: 4e805a226df65c64c8cf13707b75683f, type: 3}
+  - {fileID: 8114310120151877799, guid: 4e805a226df65c64c8cf13707b75683f, type: 3}
+  - {fileID: 8114310120151877799, guid: 4e805a226df65c64c8cf13707b75683f, type: 3}
+  - {fileID: 8114310120151877799, guid: 4e805a226df65c64c8cf13707b75683f, type: 3}
   treasures:
   - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
   - {fileID: 8114310120151877799, guid: 9533c4db1d7ade045b654e11a18e72aa, type: 3}
@@ -117,19 +127,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1ca3defcd7d3174c9c44e1e84de18c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ConfirmUseButton: {fileID: 2404555114812605433, guid: 5e6a48f5d802aab44857b204dc780fc7,
+  _confirmUseButton: {fileID: 2404555114812605433, guid: 5e6a48f5d802aab44857b204dc780fc7,
     type: 3}
-  InterruptUseButton: {fileID: 1574636453847298435, guid: 33df11a273ed6a94aaf8454c24147df2,
+  _interruptUseButton: {fileID: 1574636453847298435, guid: 33df11a273ed6a94aaf8454c24147df2,
     type: 3}
-  InterruptUseTimer: {fileID: 6232940169738062018, guid: 1312ada1676b4f34485a3d921d47ef0f,
+  _interruptUseTimer: {fileID: 6232940169738062018, guid: 1312ada1676b4f34485a3d921d47ef0f,
     type: 3}
-  DeclineUseButton: {fileID: 6492028141064598257, guid: 63a3541f8b807004a8daddfdd0685cfd,
+  _declineUseButton: {fileID: 6492028141064598257, guid: 63a3541f8b807004a8daddfdd0685cfd,
     type: 3}
-  CardLight: {fileID: 2363554261067336766, guid: 0910ce48264693845ad18fd70bac6363,
+  _cardLight: {fileID: 2363554261067336766, guid: 0910ce48264693845ad18fd70bac6363,
     type: 3}
-  CardBGColor: {fileID: 2100000, guid: 6c79bbc319ed83a47a3d7777c322982e, type: 2}
-  CardDescBGColor: {fileID: 2100000, guid: 86a2fc55e0b129b4fb4e90fe00ed05bd, type: 2}
-  CardBGImages:
+  _cardBGColor: {fileID: 2100000, guid: 6c79bbc319ed83a47a3d7777c322982e, type: 2}
+  _cardDescBGColor: {fileID: 2100000, guid: 86a2fc55e0b129b4fb4e90fe00ed05bd, type: 2}
+  _treasureCostInfo: {fileID: 159611649666572928, guid: 1169e63609f2c614e8b32fc46585b873,
+    type: 3}
+  _equipmentSlotInfo: {fileID: 5325364986111841599, guid: 3bf5d89ee1007564991c68d2fde299e3,
+    type: 3}
+  _monsterLevelInfo: {fileID: 374417905752827049, guid: 63d13b0d50006ab41b9fa2f737989031,
+    type: 3}
+  _cardBGImages:
   - {fileID: 21300000, guid: 63f7e549031ee024aaebe5ab1cecdcab, type: 3}
   - {fileID: 21300000, guid: 33d880ca0c436d24e87f563deb686d03, type: 3}
   - {fileID: 21300000, guid: 6dc35cd2d6f41be48a56e5f815fd37b2, type: 3}

@@ -18,4 +18,5 @@ MonoBehaviour:
   name: Bucket
   description: Rather emergency equipment
   level: 1
+  cost: 50
   eqPart: 0

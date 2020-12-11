@@ -14,11 +14,11 @@ GameObject:
   - component: {fileID: 3680646823936500906}
   - component: {fileID: 3365971590691370893}
   - component: {fileID: 8114310120151877803}
-  - component: {fileID: 3017134340403746311}
+  - component: {fileID: 3971861517308864183}
   - component: {fileID: 1761870337058919623}
   m_Layer: 5
-  m_Name: Pay2Win
-  m_TagString: PreventLevelUpEffect
+  m_Name: ShamanCoffee
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -131,7 +131,7 @@ MonoBehaviour:
   placeholder: {fileID: 0}
   serverDecksManager: {fileID: 0}
   serverGameManager: {fileID: 0}
---- !u!114 &3017134340403746311
+--- !u!114 &3971861517308864183
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,14 +140,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8114310120151877799}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b90d1159952a84c4cab079e1b785321f, type: 3}
+  m_Script: {fileID: 11500000, guid: 76434678ac556e048883f6410c73c98b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardValues: {fileID: 11400000, guid: d3233ed2e053d2a4c826cebe5d4c0899, type: 2}
+  cardValues: {fileID: 11400000, guid: c98840a89d53c25468dc3def73d67cfd, type: 2}
   playersConfirmers: []
   playersDecliners: []
   interruptTimer: 0
-  target: 0
+  target: 2
   choosable: 0
 --- !u!114 &1761870337058919623
 MonoBehaviour:
@@ -424,6 +424,21 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 78694484423273450, guid: d78b6d8c0e3a24640b35f258f079a0e0,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 78694484423273450, guid: d78b6d8c0e3a24640b35f258f079a0e0,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 78694484423273450, guid: d78b6d8c0e3a24640b35f258f079a0e0,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d78b6d8c0e3a24640b35f258f079a0e0, type: 3}
 --- !u!224 &3431320581652978213 stripped
@@ -549,31 +564,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 6238193470166659440, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 98.93
-      objectReference: {fileID: 0}
-    - target: {fileID: 6238193470166659440, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6238193470166659440, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6238193470166659440, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_Pivot.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6238193470166659440, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_Pivot.y
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_havePropertiesChanged
@@ -586,19 +576,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
-      propertyPath: m_fontSize
-      value: 12
-      objectReference: {fileID: 0}
-    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
       propertyPath: m_text
-      value: Prevent players from getting levels this turn. Unless they pay for it.
-        Gimme moneys!
-      objectReference: {fileID: 0}
-    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
-        type: 3}
-      propertyPath: m_textInfo.lineCount
-      value: 7
+      value: What a lively consistance. Ehmm... yummy?
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
@@ -608,17 +587,22 @@ PrefabInstance:
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 84
+      value: 41
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 13
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 14
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
+        type: 3}
+      propertyPath: m_textInfo.lineCount
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
@@ -629,6 +613,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_fontMaterial
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}

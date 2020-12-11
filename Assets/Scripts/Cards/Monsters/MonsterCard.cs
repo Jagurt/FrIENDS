@@ -5,14 +5,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using TMPro;
 
 public class MonsterCard : Card
 {
     [SerializeField] internal List<GameObject> appliedBuffs = new List<GameObject>();
+    GameObject monsterLevelInfo;
 
-    private void Start()
+    void Start()
     {
         gameManager = GameManager.singleton;
+        Initialize();
+    }
+
+    protected override IEnumerator ClientWaitInstantiateAddons()
+    {
+        yield return base.ClientWaitInstantiateAddons();
+
+        // Creating monster level displaying component and updating its text.
+        monsterLevelInfo = Instantiate(CardsAddons.monsterLevelInfoPrefab, transform);
+        monsterLevelInfo.transform.Find("TextMeshPro Text").GetComponent<TextMeshProUGUI>().text = cardValues.level.ToString();
     }
 
     /// <summary> Checking if player can start a fight. </summary>
@@ -70,7 +82,7 @@ public class MonsterCard : Card
         InfoPanel.Alert("Fight with " + cardValues.name + " starts!");
     }
 
-    virtual internal void DefeatEffect(NetworkInstanceId defeatedPlayer)
+    virtual internal void DefeatEffect( NetworkInstanceId defeatedPlayer )
     {
         FightEndEffect();
     }
@@ -82,6 +94,12 @@ public class MonsterCard : Card
 
     virtual protected void FightEndEffect()
     {
-        
+
+    }
+
+    [Server]
+    virtual internal void ServerEquipmentCheck()
+    {
+        gameManager.ServerUpdateMonstersLevels();
     }
 }

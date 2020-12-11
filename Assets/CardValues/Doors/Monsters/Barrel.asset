@@ -9,12 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06c418229460b8b4f883ce0b23c68120, type: 3}
-  m_Name: Strong Potion
+  m_Script: {fileID: 11500000, guid: f2655d78c70f74a45ab9e5e68e6f4fc9, type: 3}
+  m_Name: Barrel
   m_EditorClassIdentifier: 
-  sprite: {fileID: 21300000, guid: 285f39de967cb9845a0d343261066a31, type: 3}
+  sprite: {fileID: 0}
   SpriteRewers: {fileID: 0}
-  deck: 1
-  name: Strong Potion
-  description: Not to mistake with potion of strenght.
-  level: 2
+  deck: 0
+  name: Barrel
+  description: '!!! THE ULTIMATE NEMESIS !!! ... maybe something is inside it?'
+  level: 0
+  treasuresCount: 1
+  levelsToGrant: 0

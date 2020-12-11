@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06c418229460b8b4f883ce0b23c68120, type: 3}
+  m_Script: {fileID: 11500000, guid: 30d7ac4dbf2da9a418c084c4d95158d4, type: 3}
   m_Name: FlashbangNinjaBomb
   m_EditorClassIdentifier: 
   sprite: {fileID: 0}
   SpriteRewers: {fileID: 0}
   deck: 1
-  name: Flashbang Ninja Bomb
+  name: FlashbangNinjaBomb
   description: Every evil characters' "You can't beat me! I quit!" tool. Where did
     they go?
   level: 0
+  cost: 400

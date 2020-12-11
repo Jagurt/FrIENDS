@@ -18,4 +18,5 @@ MonoBehaviour:
   name: Training Sword
   description: A sturdy stick. Used by newbies and that one silver hair due.
   level: 2
+  cost: 100
   eqPart: 6

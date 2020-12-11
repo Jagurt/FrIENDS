@@ -11,8 +11,8 @@ public class DiscardDropZone : MonoBehaviour, IDropHandler, IPointerEnterHandler
 
         if (draggable != null)
         {
-            PlayerInGame.localPlayerInGame.DiscardCard(new List<GameObject> { eventData.pointerDrag.gameObject });
-            //PlayerInGame.localPlayerInGame.CmdDiscardCard(eventData.pointerDrag.GetComponent<Card>().netId);
+            draggable.DestroyPlacehloder();
+            PlayerInGame.SellCard(eventData.pointerDrag.gameObject);
         }
     }
 

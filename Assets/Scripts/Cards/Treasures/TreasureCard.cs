@@ -8,4 +8,12 @@ using UnityEngine.Networking;
 public class TreasureCard : Card
 {
     public TreasureType treasureType;
+    GameObject treasureCostGO;
+
+    protected override IEnumerator ClientWaitInstantiateAddons()
+    {
+        yield return base.ClientWaitInstantiateAddons();
+        treasureCostGO = Instantiate(CardsAddons.treasureCostInfoPrefab, transform);
+        treasureCostGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = (cardValues as TreasureValue).cost.ToString();
+    }
 }

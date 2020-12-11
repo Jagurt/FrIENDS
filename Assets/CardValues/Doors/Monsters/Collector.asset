@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2655d78c70f74a45ab9e5e68e6f4fc9, type: 3}
-  m_Name: CollectorMonVal
+  m_Name: Collector
   m_EditorClassIdentifier: 
   sprite: {fileID: 0}
   SpriteRewers: {fileID: 0}

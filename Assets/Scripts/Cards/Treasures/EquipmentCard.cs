@@ -7,9 +7,15 @@ using UnityEngine.Networking;
 
 public class EquipmentCard : TreasureCard
 {
-    void Start()
+    GameObject equipmentSlotInfoGO;
+
+
+    protected override IEnumerator ClientWaitInstantiateAddons()
     {
-        Initialize();
+        yield return base.ClientWaitInstantiateAddons();
+
+        equipmentSlotInfoGO = Instantiate(CardsAddons.equipmentSlotInfoPrefab, transform);
+        equipmentSlotInfoGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = (cardValues as EquipmentValue).eqPart.ToString();
     }
 
     internal override void UseCard()
@@ -39,6 +45,11 @@ public class EquipmentCard : TreasureCard
         else
             RpcEquip(targetNetId);
 
+        yield return new WaitUntil(() => player.equippedItems.Contains(this.gameObject));
+
+        yield return new WaitForEndOfFrame();
+        ServerOnEquip();
+
         yield return new WaitForEndOfFrame();
         gameManager.ServerUpdateFightingPlayersLevel();
 
@@ -61,5 +72,13 @@ public class EquipmentCard : TreasureCard
     {
         PlayerInGame player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();    // Finding player locally via its "NetworkInstanceId"
         player.ClientSwitchEq(this.netId);
+    }
+
+    [Server]
+    virtual internal void ServerOnEquip()
+    {
+        foreach (var monster in gameManager.fightingMonsters)
+            monster.GetComponent<MonsterCard>().ServerEquipmentCheck();
+        gameManager.RpcUpdateLevelsUI();
     }
 }

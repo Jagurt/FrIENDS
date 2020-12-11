@@ -16,6 +16,7 @@ MonoBehaviour:
   SpriteRewers: {fileID: 0}
   deck: 1
   name: Glass Blade
-  description: Beatiful and very sharp but looks like could brake under any pressure.
+  description: Beatiful and very sharp. Will break upon losing fight.
   level: 4
+  cost: 300
   eqPart: 6

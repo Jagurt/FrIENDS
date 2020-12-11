@@ -16,7 +16,8 @@ MonoBehaviour:
   SpriteRewers: {fileID: 0}
   deck: 1
   name: Hero's Stick
-  description: '"In hands of a hero anything can be a weapon" - engraved on simple
-    tombstone in middle of nowhere.'
+  description: '"In hands of a hero anything can be a weapon" - engraved on  tombstone
+    in a middle of nowhere.'
   level: 1
+  cost: 0
   eqPart: 6
