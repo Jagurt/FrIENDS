@@ -47,6 +47,7 @@ public class PlayerManager : NetworkBehaviour
                 StartCoroutine(ServerWaitToAssignPlayerInGame());
         }
     }
+
     /// <summary>
     /// Called when Start Game Button in Lobby is pressed.
     /// Finds all players that are connected to lobby and assignes their main object paired with their address.
@@ -68,9 +69,8 @@ public class PlayerManager : NetworkBehaviour
             SceneManager.sceneLoaded += playerManager.ServerInitializeInGameScene;
         }
     }
-    /// <summary>
-    /// Delegate added to SceneManager.sceneLoaded event to spawn PlayerInGame object properly.
-    /// </summary>
+
+    /// <summary> Delegate added to SceneManager.sceneLoaded event to spawn PlayerInGame object properly. </summary>
     [Server]
     void ServerInitializeInGameScene( Scene scene, LoadSceneMode mode )
     {
@@ -81,6 +81,7 @@ public class PlayerManager : NetworkBehaviour
         // any time we enter GameScene, e.g. upon reconnection.
         SceneManager.sceneLoaded -= this.ServerInitializeInGameScene;
     }
+
     /// <summary>
     /// Coroutine that waits for player to be ready to spawn his PlayerInGame object.
     /// Creates PlayerInGame object and Spawns ( tells all clients to create it ) with authority assigned to correct player.
@@ -97,6 +98,7 @@ public class PlayerManager : NetworkBehaviour
         CustomNetworkManager.isServerBusy = true;
 
         playerInGame = Instantiate(playerInGame);                                   // Creating PlayerInGame object from PlayerInGame Prefab stored in playerInGame variable and storing created object in that variable
+        playerInGame.GetComponent<PlayerInGame>().nickName = this.nickName;
         NetworkServer.SpawnWithClientAuthority(playerInGame, connectionToClient);   // "Spawning" object - Creating object on server and all clients, assigning authority over this object to correct player.
         CustomNetManager.playingConnections
             .Find(x => x.address.Equals(connectionToClient.address))
@@ -105,9 +107,8 @@ public class PlayerManager : NetworkBehaviour
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
     }
-    /// <summary>
-    /// Waits to player to be ready, reassigns its objects to them and synchronizes objects in hierarchy.
-    /// </summary>
+
+    /// <summary> Waits to player to be ready, reassigns its objects to them and synchronizes objects in hierarchy. </summary>
     [Server]
     private IEnumerator ServerWaitToAssignPlayerInGame()
     {
@@ -147,9 +148,8 @@ public class PlayerManager : NetworkBehaviour
             player.ServerReconnect();
         }
     }
-    /// <summary>
-    /// Called in Start() by the client to command server to spawn their PlayerInLobby object.
-    /// </summary>
+
+    /// <summary> Called in Start() by the client to command server to spawn their PlayerInLobby object. </summary>
     /// <param name="nickName"> NickName of connected player </param>
     [Command]
     void CmdSpawnPlayerInLobby( string nickName )
@@ -161,6 +161,7 @@ public class PlayerManager : NetworkBehaviour
         LobbyManager.UpdateConnectedPlayers();
         StartCoroutine(SpawnPlayerInLobby(nickName));
     }
+
     /// <summary>
     /// Coroutine that creates clients PlayerInLobby object on server
     /// and then Spawns it ( tells all clients to create and synchronize it ) with correct authority assigned.
@@ -181,9 +182,8 @@ public class PlayerManager : NetworkBehaviour
 
         StartCoroutine(SyncPlayersInLobby());
     }
-    /// <summary>
-    /// Synchronizes names of players on PlayerInLobby objects.
-    /// </summary>
+
+    /// <summary> Synchronizes names of players on PlayerInLobby objects. </summary>
     [Server]
     internal static IEnumerator SyncPlayersInLobby()
     {
@@ -205,9 +205,8 @@ public class PlayerManager : NetworkBehaviour
         playerInLobby = ClientScene.FindLocalObject(playerInLobbyNetId);
         playerInLobby.GetComponent<PlayerInLobby>().Initialize(nickName, this);
     }
-    /// <summary>
-    /// Called when this object is destroyed by the network.
-    /// </summary>
+
+    /// <summary> Called when this object is destroyed by the network. </summary>
     [Server]
     public override void OnNetworkDestroy()
     {

@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Pay2Win : Effect
+public class Pay2Win : BuyoutGoalCard
 {
     private void Start()
     {
@@ -23,19 +23,24 @@ public class Pay2Win : Effect
     internal override IEnumerator EffectOnUse()
     {
         yield return base.EffectOnUse();
+        gameManager.turnActiveffects.Add(this.gameObject);
+    }
 
+    [Server]
+    internal override IEnumerator ServerOnBuyout()
+    {
+        yield return base.ServerOnBuyout();
+        gameManager.turnActiveffects.Remove(this.gameObject);
+    }
+
+    [Server]
+    internal override IEnumerator ServerOnTurnEnd()
+    {
         if (CustomNetManager.singleton.isServerBusy)
             yield return new WaitUntil(() => !CustomNetManager.singleton.isServerBusy);
         CustomNetManager.singleton.isServerBusy = true;
 
-        PlayerInGame player;
-        player = ClientScene.FindLocalObject(targetNetId).GetComponent<PlayerInGame>();
-
-        gameManager.turnActiveffects.Add(this.gameObject);
-
-        yield return new WaitForEndOfFrame();
-
-        player.RpcDiscardCard(this.netId);
+        RpcRemoveBuyoutGoal();
 
         yield return new WaitForEndOfFrame();
         CustomNetManager.singleton.isServerBusy = false;

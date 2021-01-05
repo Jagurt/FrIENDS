@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 public class EquipmentCard : TreasureCard
 {
     GameObject equipmentSlotInfoGO;
-
+    GameObject eqLevelInfoGO;
 
     protected override IEnumerator ClientWaitInstantiateAddons()
     {
@@ -16,6 +16,8 @@ public class EquipmentCard : TreasureCard
 
         equipmentSlotInfoGO = Instantiate(CardsAddons.equipmentSlotInfoPrefab, transform);
         equipmentSlotInfoGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = (cardValues as EquipmentValue).eqPart.ToString();
+        eqLevelInfoGO = Instantiate(CardsAddons.levelInfoPrefab, transform);
+        eqLevelInfoGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = cardValues.level.ToString();
     }
 
     internal override void UseCard()
@@ -53,9 +55,6 @@ public class EquipmentCard : TreasureCard
         yield return new WaitForEndOfFrame();
         gameManager.ServerUpdateFightingPlayersLevel();
 
-        yield return new WaitForEndOfFrame();
-        player.RpcUpdateLevelUI();
-
         CustomNetManager.singleton.isServerBusy = false;
     }
 
@@ -79,6 +78,5 @@ public class EquipmentCard : TreasureCard
     {
         foreach (var monster in gameManager.fightingMonsters)
             monster.GetComponent<MonsterCard>().ServerEquipmentCheck();
-        gameManager.RpcUpdateLevelsUI();
     }
 }

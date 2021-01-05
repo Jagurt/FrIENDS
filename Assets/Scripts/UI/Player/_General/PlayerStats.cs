@@ -11,9 +11,10 @@ public class PlayerStats : MonoBehaviour, IPointerExitHandler, IPointerClickHand
     int widthEnlarged = 180;
 
     [SerializeField] internal PlayerInGame storedPlayer;
-    [SerializeField] TextMeshProUGUI NickName;
-    [SerializeField] TextMeshProUGUI Level;
-    [SerializeField] TextMeshProUGUI OwnedCards;
+    [SerializeField] TextMeshProUGUI nickName;
+    [SerializeField] TextMeshProUGUI level;
+    [SerializeField] TextMeshProUGUI ownedCards;
+    [SerializeField] TextMeshProUGUI money;
     [SerializeField] internal bool animating = true;
 
     bool unfolding = true;
@@ -24,10 +25,13 @@ public class PlayerStats : MonoBehaviour, IPointerExitHandler, IPointerClickHand
         eqPanel = transform.Find("Eq").gameObject;
 
         Transform stats = transform.Find("Stats");
-        NickName = stats.Find("NickName").GetComponentInChildren<TextMeshProUGUI>(true);
-        Level = stats.Find("Level").GetComponentInChildren<TextMeshProUGUI>(true);
-        OwnedCards = stats.Find("OwnedCards").GetComponentInChildren<TextMeshProUGUI>(true);
+        nickName = stats.Find("NickName").GetComponentInChildren<TextMeshProUGUI>(true);
+        level = stats.Find("Level").GetComponentInChildren<TextMeshProUGUI>(true);
+        ownedCards = stats.Find("OwnedCards").GetComponentInChildren<TextMeshProUGUI>(true);
+        money = stats.Find("Money").GetComponentInChildren<TextMeshProUGUI>(true);
         StartCoroutine(OnStart());
+
+        InvokeRepeating("UpdateUI", 0.05f, 0.05f);
     }
 
     IEnumerator OnStart()
@@ -62,22 +66,24 @@ public class PlayerStats : MonoBehaviour, IPointerExitHandler, IPointerClickHand
             transform.Find("Avatar").GetComponent<Image>().sprite = storedPlayer.Avatar;
 
         Transform stats = transform.Find("Stats");
-        NickName = stats.Find("NickName").GetComponentInChildren<TextMeshProUGUI>(true);
-        Level = stats.Find("Level").GetComponentInChildren<TextMeshProUGUI>(true);
-        OwnedCards = stats.Find("OwnedCards").GetComponentInChildren<TextMeshProUGUI>(true);
+        nickName = stats.Find("NickName").GetComponentInChildren<TextMeshProUGUI>(true);
+        level = stats.Find("Level").GetComponentInChildren<TextMeshProUGUI>(true);
+        ownedCards = stats.Find("OwnedCards").GetComponentInChildren<TextMeshProUGUI>(true);
+        money = stats.Find("Money").GetComponentInChildren<TextMeshProUGUI>(true);
 
-        NickName.text = storedPlayer.NickName;
+        nickName.text = storedPlayer.nickName;
     }
 
-    internal void UpdateOwnedCards( int numberOfCards, int cardsInHandLimit )
+    internal void UpdateUI()
     {
-        OwnedCards.text = "Cards: " + numberOfCards + "\\" + cardsInHandLimit;
+        if (!storedPlayer)
+            return;
+
+        ownedCards.text = "Cards: " + storedPlayer.handContent.childCount + "\\" + storedPlayer.OwnedCardsLimit;
+        this.level.text = "Level: " + storedPlayer.Level;
+        this.money.text = "Money: " + storedPlayer.Money;
     }
 
-    internal void UpdateLevel( int level )
-    {
-        Level.text = "Level: " + level;
-    }
     /// <summary> Showing more stuff about player. </summary>
     private void Unfold()
     {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class FlashbangNinjaBomb : Effect
+public class FlashbangNinjaBomb : Consumable
 {
     internal override void UseCard()
     {

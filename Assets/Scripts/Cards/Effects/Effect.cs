@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#pragma warning disable CS0618 // Typ lub składowa jest przestarzała
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -62,13 +64,11 @@ public class Effect : Card
     /// <summary> Called when buff is removed from a monster. </summary>
     virtual internal void DispellEffect()
     {
-
+        throw new System.NotImplementedException();
     }
 
     internal void RpcApplyOnPlayer()
     {
-        LevelCounter.UpdateLevels();
-
         if (targetNetId == gameManager.fightingPlayerNetId)
             gameManager.fightingPlayerEffects.Add(this);
         else if (targetNetId == gameManager.helpingPlayerNetId)
@@ -77,14 +77,12 @@ public class Effect : Card
 
     internal void RpcApplyOnMonster()
     {
-        var monster = ClientScene.FindLocalObject(targetNetId);             // Finding Monsters and Buffs Objects
-        monster.GetComponent<MonsterCard>().appliedBuffs.Add(gameObject);   // Adding buff to Monsters Applied Buffs List
-        // transform.SetParent(TableDropZone.singleton.transform);             // Putting Card on Table
-        LevelCounter.UpdateLevels();
+        GameObject monster = ClientScene.FindLocalObject(targetNetId);             // Finding Monsters and Buffs Objects
+        monster.GetComponent<MonsterCard>().ClientApplyEffect(gameObject);   // Adding buff to Monsters Applied Buffs List
     }
 
     [Server]
-    virtual internal void ServerOnTurnEnd()
+    virtual internal IEnumerator ServerOnTurnEnd()
     {
         throw new System.NotImplementedException();
     }

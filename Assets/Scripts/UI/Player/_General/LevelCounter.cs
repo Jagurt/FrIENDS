@@ -22,13 +22,21 @@ public class LevelCounter : MonoBehaviour
         MonstersLevels = levelCounter.transform.Find("MonstersLevels").GetComponent<TextMeshProUGUI>();
     }
 
+    private void OnEnable()
+    {
+        InvokeRepeating("UpdateLevels", 0.5f, 0.5f);
+    }
+    private void OnDisable()
+    {
+        CancelInvoke();
+    }
+
     internal static void OnStartFight()
     {
         levelCounter.gameObject.SetActive(true);
-        UpdateLevels();
     }
 
-    internal static void UpdateLevels()
+    internal void UpdateLevels()
     {
         PlayersLevels.text = GameManager.singleton.fightingPlayersLevel.ToString();
         MonstersLevels.text = GameManager.singleton.fightingMonstersLevel.ToString();

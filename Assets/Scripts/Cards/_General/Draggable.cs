@@ -11,16 +11,31 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 {
     [SerializeField] internal Transform parentToReturnTo = null;
     [SerializeField] internal Transform placeholderParent = null;
-    [SerializeField] private GameObject placeholder = null;
+    private static GameObject placeholder = null;
     [SerializeField] private DecksManager serverDecksManager;
     [SerializeField] private GameManager serverGameManager;
-    internal int LTMovementId = 0;
-    public GameObject Placeholder { get => placeholder; }
+    int _LTMovementId;
 
     private void Start()
     {
         serverGameManager = GameManager.singleton;
         StartCoroutine(GetAdopted());
+
+        CreatePlaceholder();
+    }
+
+    void CreatePlaceholder()
+    {
+        if (placeholder)
+            return;
+
+        placeholder = new GameObject();
+        placeholder.transform.SetParent(PlayerCanvas.singleton.transform);
+
+        // Set placeholders size to be same as cards.
+        LayoutElement layoutElement = placeholder.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = this.GetComponent<LayoutElement>().preferredWidth;
+        layoutElement.preferredHeight = this.GetComponent<LayoutElement>().preferredHeight;
     }
 
     /// <summary> Assign card which owns this script to correct deck. </summary>
@@ -40,12 +55,6 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         }
 
         // Wait for Decks
-        while (!serverDecksManager.DoorsDeck)
-            yield return new WaitForEndOfFrame();
-        while (!serverDecksManager.TreasuresDeck)
-            yield return new WaitForEndOfFrame();
-        while (!serverDecksManager.HelpHandsDeck)
-            yield return new WaitForEndOfFrame();
         while (!serverDecksManager.SpellsDeck)
             yield return new WaitForEndOfFrame();
 
@@ -74,6 +83,8 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public void OnBeginDrag( PointerEventData eventData )
     {
         //Debug.Log("OnBeginDrag(): Dragged Object - " + eventData.pointerDrag.gameObject);
+        if (transform.parent.tag == "BlockDragging")
+            return;
 
         // If card is dragged from Trade Panel.
         TradeDropZone tradeDropZone;
@@ -81,7 +92,7 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
             tradeDropZone.OnBeginDrag(eventData.pointerDrag.gameObject);
 
         // Create cards placeholder to be able to change its position in hand.
-        CreatePlaceholderInHand();
+        MovePlaceholderToHand();
 
         // Set this cards placeholder to be PlayerCanvas so that this dragged card is in front of all other UI objects.
         this.transform.SetParent(PlayerInGame.playerCanvas.transform);
@@ -91,13 +102,8 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
     }
 
     /// <summary> Create cards placeholder to be able to change its position in hand. </summary>
-    void CreatePlaceholderInHand()
+    void MovePlaceholderToHand()
     {
-        DestroyPlacehloder();
-
-        // Create Placeholder as empty gamobject
-        placeholder = new GameObject();
-        // Set parentToReturnTo to handPanel so if it is dropped wrongly it goes back to players hand.
         parentToReturnTo = PlayerInGame.localPlayerInGame.handContent;
         // Set placeholderParent to handPanel too so player can set its position in hand.
         placeholderParent = parentToReturnTo;
@@ -105,30 +111,15 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         placeholder.transform.SetParent(parentToReturnTo);
         // Set Placeholder position in hand to this cards position in hand.
         placeholder.transform.SetSiblingIndex(this.transform.GetSiblingIndex());
-
-        // Set placeholders size to be same as this cards.
-        LayoutElement layoutElement = placeholder.AddComponent<LayoutElement>();
-        layoutElement.preferredWidth = this.GetComponent<LayoutElement>().preferredWidth;
-        layoutElement.preferredHeight = this.GetComponent<LayoutElement>().preferredHeight;
     }
 
-    IEnumerator CreatePlaceholderWithParent( Transform placeholderParent )
+    IEnumerator MovePlaceholderToParent( Transform placeholderParent )
     {
-        DestroyPlacehloder();
-
-        // Create Placeholder as empty gamobject
-        placeholder = new GameObject();
-        // Set placeholderParent to handPanel too so player can set its position in hand.
+        // Set placeholderParent
         this.placeholderParent = placeholderParent;
 
-        // Set placeholders size to be same as this cards.
-        LayoutElement layoutElement = placeholder.AddComponent<LayoutElement>();
-        layoutElement.preferredWidth = this.GetComponent<LayoutElement>().preferredWidth;
-        layoutElement.preferredHeight = this.GetComponent<LayoutElement>().preferredHeight;
-
-        // Set Placeholder parent to players hand.
+        // Set Placeholders transform parent.
         placeholder.transform.SetParent(placeholderParent);
-        // Set Placeholder position in hand to this cards position in hand.
         placeholder.transform.SetAsLastSibling();
 
         yield return new WaitForEndOfFrame();
@@ -191,15 +182,16 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
         {
             Vector3 placeholderPosition = placeholder.GetComponent<Transform>().position;
             int placeholderSibIndex = placeholder.transform.GetSiblingIndex();
-            Destroy(placeholder);
+            FreePlaceholder();
 
-            LTMovementId = LeanTween.move(this.gameObject, placeholderPosition - offset, 0.1f)
+            _LTMovementId = LeanTween.move(this.gameObject, placeholderPosition - offset, 0.1f)
                 .setOnUpdate(( Vector3 val ) => transform.position = val)
                 .setOnComplete(() =>
                {
                    this.transform.SetParent(placeholderParent);
                    this.transform.SetSiblingIndex(placeholderSibIndex);
-               }).id;
+               })
+               .id;
         }
 
         // Returning ablity to be clicked.
@@ -213,47 +205,48 @@ public class Draggable : NetworkBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
         Vector3 offset = new Vector3(50, -85, 0);
 
-        LTMovementId = LeanTween.move(this.gameObject, newParent.position - offset, 0.1f)
+        _LTMovementId = LeanTween.move(this.gameObject, newParent.position - offset, 0.1f)
                 .setOnUpdate(( Vector3 val ) => transform.position = val)
-                .setOnComplete(() => this.transform.SetParent(newParent)).id;
+                .setOnComplete(() => this.transform.SetParent(newParent))
+                .id;
     }
 
-    internal IEnumerator ClientSlideWithPlaceholder( Transform placeholderParent )
+    internal IEnumerator ClientSlideWithNewPlaceholder( Transform placeholderParent )
     {
-        yield return CreatePlaceholderWithParent(placeholderParent);
-
         ClientStopLeanMovement();
+
+        yield return MovePlaceholderToParent(placeholderParent);
+
         transform.SetParent(PlayerCanvas.singleton.transform, true);
 
         Vector3 offset = new Vector3(50, -85, 0);
         Vector3 placeholderPosition = placeholder.GetComponent<Transform>().position;
         int placeholderSibIndex = placeholder.transform.GetSiblingIndex();
 
-        DestroyPlacehloder();
+        yield return new WaitForEndOfFrame();
 
-        LTMovementId = LeanTween.move(this.gameObject, placeholderPosition - offset, 0.1f)
+        FreePlaceholder();
+
+        _LTMovementId = LeanTween.move(this.gameObject, placeholderPosition - offset, 0.1f)
             .setOnUpdate(( Vector3 val ) => transform.position = val)
             .setOnComplete(() =>
             {
                 this.transform.SetParent(placeholderParent);
                 this.transform.SetSiblingIndex(placeholderSibIndex);
-            }).id;
+            })
+            .id;
     }
 
-    internal void ClientStopLeanMovement( bool destroyPlaceholder = false)
+    internal void ClientStopLeanMovement( bool destroyPlaceholder = false )
     {
-        DestroyPlacehloder();
+        FreePlaceholder();
 
-        if (LeanTween.descr(LTMovementId) != null)
-        {
-            LeanTween.descr(LTMovementId).callOnCompletes();
-            LeanTween.descr(LTMovementId).reset();
-        }
+        if (LeanTween.descr(_LTMovementId) != null)
+            LeanTween.cancel(_LTMovementId);
     }
 
-    internal void DestroyPlacehloder()
+    static internal void FreePlaceholder()
     {
-        if (placeholder)
-            Destroy(placeholder);
+        placeholder.transform.SetParent(PlayerCanvas.singleton.transform);
     }
 }

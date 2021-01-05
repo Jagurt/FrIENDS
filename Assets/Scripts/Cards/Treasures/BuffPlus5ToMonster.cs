@@ -38,11 +38,8 @@ public class BuffPlus5ToMonster : Effect
     [ClientRpc]
     internal void RpcApplyBuff( NetworkInstanceId monsterNetId)
     {
-        Debug.Log("monsterNetId - " + monsterNetId);
         GameObject monster = ClientScene.FindLocalObject(monsterNetId);     // Finding Monster Object
-        Debug.Log("monster - " + monster);
-        monster.GetComponent<MonsterCard>().appliedBuffs.Add(gameObject);   // Adding buff do Monsters Applied Buffs List
-        LevelCounter.UpdateLevels();
+        monster.GetComponent<MonsterCard>().ClientApplyEffect(gameObject);   // Adding buff do Monsters Applied Buffs List
     }
 
     /// <summary> Called when removing buff due to some cards effect. </summary>

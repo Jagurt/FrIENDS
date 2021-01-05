@@ -9,8 +9,9 @@ using TMPro;
 
 public class MonsterCard : Card
 {
-    [SerializeField] internal List<GameObject> appliedBuffs = new List<GameObject>();
+    [SerializeField] internal List<GameObject> appliedEffects = new List<GameObject>();
     GameObject monsterLevelInfo;
+    Transform appliedEffectsContent;
 
     void Start()
     {
@@ -24,7 +25,12 @@ public class MonsterCard : Card
 
         // Creating monster level displaying component and updating its text.
         monsterLevelInfo = Instantiate(CardsAddons.monsterLevelInfoPrefab, transform);
-        monsterLevelInfo.transform.Find("TextMeshPro Text").GetComponent<TextMeshProUGUI>().text = cardValues.level.ToString();
+        monsterLevelInfo.transform.Find("LevelInfo").Find("TextMeshPro Text").GetComponent<TextMeshProUGUI>().text = cardValues.level.ToString();
+        appliedEffectsContent = monsterLevelInfo.transform
+            .Find("MonsterAppliedEffects")
+            .Find("BaseContentSizeFitter")
+            .Find("ContentParentRect")
+            .Find("Content");
     }
 
     /// <summary> Checking if player can start a fight. </summary>
@@ -35,7 +41,11 @@ public class MonsterCard : Card
         if (gameManager.turnPhase != TurnPhase.Search || gameManager.fightInProggres || !localPlayer.hasTurn || gameManager.foughtInThisRound)
         {
             InfoPanel.AlertCannotUseCard();
-            GetComponent<Draggable>().ReturnToParent(); // Returning card to its former parent
+            // Return card to hand
+            StartCoroutine(
+                GetComponent<Draggable>()
+                .ClientSlideWithNewPlaceholder(PlayerInGame.localPlayerInGame.handContent)
+                );
             return;
         }
 
@@ -101,5 +111,30 @@ public class MonsterCard : Card
     virtual internal void ServerEquipmentCheck()
     {
         gameManager.ServerUpdateMonstersLevels();
+    }
+
+    [Client]
+    internal void ClientApplyEffect(GameObject effect)
+    {
+        appliedEffects.Add(effect);
+
+        GameObject appliedEffect = Instantiate(CardsAddons.monsterAppliedEffectPrefab, appliedEffectsContent);
+        appliedEffect.GetComponent<MonsterAppliedEffect>()
+            .Initialize(effect.GetComponent<Card>().cardValues.name);
+    }
+
+    [Client]
+    internal void ClientRemoveAllEffects()
+    {
+        appliedEffects.Clear();
+
+        while (appliedEffectsContent.childCount > 0)
+            Destroy(appliedEffectsContent.GetChild(0).gameObject);
+    }
+
+    [Client]
+    override internal void ClientOnDiscard()
+    {
+        ClientRemoveAllEffects();
     }
 }

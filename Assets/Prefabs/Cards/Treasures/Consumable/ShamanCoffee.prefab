@@ -143,7 +143,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76434678ac556e048883f6410c73c98b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardValues: {fileID: 11400000, guid: c98840a89d53c25468dc3def73d67cfd, type: 2}
+  cardValues: {fileID: 11400000, guid: c41cf055a43a7c44986934f2ccde635c, type: 2}
   playersConfirmers: []
   playersDecliners: []
   interruptTimer: 0
@@ -608,7 +608,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 8327792738829522476, guid: 375da6ebea1613344bd2935986f21534,
         type: 3}
       propertyPath: m_fontMaterial

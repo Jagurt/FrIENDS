@@ -9,7 +9,6 @@ using UnityEngine.SceneManagement;
 public enum Deck { Doors, Treasures, HelpingHand, Spells, DiscardedDoors, DiscardedSpells, DiscardedTreasures, DiscardedHelpingHand };
 public enum TurnPhase { Beginning, Search };
 enum GamePhase { PreStart, InProgress };
-public enum TreasureType { Equipment, Buff };
 public enum EqPart { Head, Chest, Hands, Legs, Feet, Ring, Weapon1, Weapon2 };
 
 /// <summary> Game Manager class containing general game variables and methods </summary>
@@ -50,6 +49,7 @@ public class GameManager : NetworkBehaviour
     /// </summary>
     [SerializeField] internal List<GameObject> cardsUsageQueue = new List<GameObject>();
     [SerializeField] internal List<GameObject> turnActiveffects = new List<GameObject>();
+    [SerializeField] internal List<GameObject> buyoutGoals = new List<GameObject>();
 
     //      Fighting        //
     /// <summary>
@@ -235,6 +235,14 @@ public class GameManager : NetworkBehaviour
 
         turnPhase = TurnPhase.Beginning;
         foughtInThisRound = false;
+
+        foreach (var effect in turnActiveffects)
+        {
+            StartCoroutine(effect.GetComponent<Effect>().ServerOnTurnEnd());
+        }
+
+        turnActiveffects.Clear();
+
         activePlayerIndex = (activePlayerIndex + 1) % playersObjects.Count;
         PlayerInGame playerWithTurn = playersObjects[activePlayerIndex].GetComponent<PlayerInGame>();
         playerWithTurn.hasTurn = true;
@@ -355,12 +363,6 @@ public class GameManager : NetworkBehaviour
             fightingMonstersLevel += monster.GetComponent<MonsterCard>().cardValues.level;
     }
 
-    [ClientRpc]
-    internal void RpcUpdateLevelsUI()
-    {
-        LevelCounter.UpdateLevels();
-    }
-
     /// <summary> Method called when fight is ended. </summary>
     /// <param name="isFightSettled"> True if fight ended normal way. False if something was used to end fight without winner.</param>
     [Server]
@@ -379,7 +381,6 @@ public class GameManager : NetworkBehaviour
         }
 
         // Reseting variables used in fight.
-        turnActiveffects.Clear();
         readyPlayers = 0;
         fightInProggres = false;
         fightingPlayerNetId = NetworkInstanceId.Invalid;
@@ -405,7 +406,7 @@ public class GameManager : NetworkBehaviour
         // Finding fighting players PlayerInGame script.
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
         fightingPlayer.FightWon(treasuresToDrawCount, levelsGained);
-        StartCoroutine(ServerAlert(fightingPlayer.NickName + " won the battle!"));
+        StartCoroutine(ServerAlert(fightingPlayer.nickName + " won the battle!"));
 
         ServerApplyMonstersTriumphEffects();
     }
@@ -416,7 +417,7 @@ public class GameManager : NetworkBehaviour
     {
         // Finding fighting player PlayerInGame script.
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(fightingPlayerNetId).GetComponent<PlayerInGame>();
-        StartCoroutine(ServerAlert(fightingPlayer.NickName + " lost the battle!"));
+        StartCoroutine(ServerAlert(fightingPlayer.nickName + " lost the battle!"));
 
         ServerApplyMonstersDefeatEffects();
     }

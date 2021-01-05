@@ -10,7 +10,7 @@ public class InfoTradeRequest : Info
 
     internal void Initialize( PlayerInGame requestingTradePIG )
     {
-        base.Initialize(requestingTradePIG.NickName + " wants to trade with you.");
+        base.Initialize(requestingTradePIG.nickName + " wants to trade with you.");
         this.requestingTradePIG = requestingTradePIG;
     }
 

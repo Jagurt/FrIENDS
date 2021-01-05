@@ -16,7 +16,7 @@ public class PlayerInGame : NetworkBehaviour
     // For checking if initial variables were set for this object on server.
     [SyncVar] bool started = false;
 
-    [SyncVar] internal string NickName;                         // Nick name of player got from options in title screen.
+    [SyncVar] internal string nickName;                         // Nick name of player got from options in title screen.
     internal Sprite Avatar;                                     // Not Implemented Yet
 
     //      Stats      //
@@ -32,15 +32,19 @@ public class PlayerInGame : NetworkBehaviour
                 return;
             }
             level = value;
-            StartCoroutine(ServerUpdateLevelUI());  // Updating Level in UI on change
         }
     }
+
+
     [SyncVar] private short bigItemsLimit;                      // Describes how many "Big" items can player use at once, Not Implemented Yet.
     [SyncVar] private short ownedCardsLimit;                    // Limits maximum number of cards player can own at end of their turn.
+    public short OwnedCardsLimit { get => ownedCardsLimit; }
     [SyncVar] private short luck;                               // Modifies random outcomes of cards effects, Not Implemented Yet
     [SyncVar] internal bool isAlive;                            // Player cannot perform any actions until ressurected, Not Implemented Yet
     [SyncVar] [SerializeField] internal bool hasTurn = false;   // Certain actions are only available when player has turn.
-    [SyncVar] [SerializeField] int moneyGained = 0;
+    [SyncVar] [SerializeField] int money = 0;
+    public int Money { get => money;}
+
 
     //      UI      //
     /// <summary>
@@ -103,7 +107,7 @@ public class PlayerInGame : NetworkBehaviour
             if (!localPlayerInGame)
                 localPlayerInGame = this;
 
-            CmdStart(NickName);
+            CmdStart();
 
             // Initializing UI objects
             if (PlayerCanvas.singleton)
@@ -147,7 +151,7 @@ public class PlayerInGame : NetworkBehaviour
         opponentStatsUI = Instantiate(opponentStatsUIPrefab);
         opponentStatsUI.transform.SetParent(opponentsStatsUIPanel);
         yield return opponentStatsUI.GetComponent<PlayerStats>().Initialize(this);
-        equipment = opponentStatsUI.transform.Find("EnemyEq");
+        equipment = opponentStatsUI.transform.Find("Eq");
     }
 
     /// <summary>
@@ -155,13 +159,13 @@ public class PlayerInGame : NetworkBehaviour
     /// Initializes variables (for this object) on the server that are then set on clients
     /// </summary>
     [Command]
-    void CmdStart( string NickName )
+    void CmdStart()
     {
         if (started)
             return;
 
         started = true;
-        StartCoroutine(ServerStart(NickName));
+        StartCoroutine(ServerStart());
     }
 
     /// <summary>
@@ -169,7 +173,7 @@ public class PlayerInGame : NetworkBehaviour
     /// Initializes variables (for this object) on the server that are then set on clients
     /// </summary>
     [Server]
-    IEnumerator ServerStart( string NickName )
+    IEnumerator ServerStart()
     {
         bigItemsLimit = 1;
         ownedCardsLimit = 5;
@@ -179,8 +183,8 @@ public class PlayerInGame : NetworkBehaviour
         yield return new WaitUntil(() => gameManager != null);
 
         StartCoroutine(gameManager.ReportPresence());
-        this.NickName = NickName;
     }
+
     /// <summary>
     /// [Command] - Called BY the CIENTS, run ON SERVER. Can be run only by objects with local authority.
     /// Method called when ProgressButton is pressed, calls ReadyPlayersUp on Server.
@@ -230,8 +234,8 @@ public class PlayerInGame : NetworkBehaviour
     [Client]
     internal void ClientEquip( GameObject card )
     {
-        if (hasAuthority && card.GetComponent<Draggable>().Placeholder)
-            Destroy(card.GetComponent<Draggable>().Placeholder);
+        if (hasAuthority)
+            Draggable.FreePlaceholder();
 
         card.GetComponent<Draggable>().enabled = true;
         card.GetComponent<Card>().ClientSetActiveCardButtons(false);
@@ -245,8 +249,6 @@ public class PlayerInGame : NetworkBehaviour
         EqItemSlot eqSlot = equipment.GetChild((int)(eqCardScript.cardValues as EquipmentValue).eqPart).GetComponentInChildren<EqItemSlot>();
 
         eqSlot.ReceiveEq(card);
-        StartCoroutine(ClientUpdateOwnedCardsUI());
-        StartCoroutine(ClientUpdateLevelUI());
     }
 
     /// <summary> [ClientRpc] - Called only by server, executed only on clients. </summary>
@@ -305,10 +307,6 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardNetId);
         //Debug.Log("Unequipping - " + card);
 
-        Level -= card.GetComponent<EquipmentCard>().cardValues.level;
-
-        yield return new WaitForEndOfFrame();
-
         RpcUnequip(cardNetId);
 
         yield return new WaitForEndOfFrame();
@@ -334,9 +332,6 @@ public class PlayerInGame : NetworkBehaviour
 
         if (!hasAuthority)
             eqSlot.ReturnEnemyEq();
-
-        StartCoroutine(ClientUpdateOwnedCardsUI());
-        StartCoroutine(ClientUpdateLevelUI());
     }
 
     /// <summary> Locally unequipping item, equipping new one and updating changes in UI. </summary>
@@ -532,8 +527,6 @@ public class PlayerInGame : NetworkBehaviour
         }
         else // if is NOT local player - takes drawn card and puts directly as this objects child
             card.transform.SetParent(this.transform);
-
-        CmdUpdateOwnedCards();
     }
 
     /// <summary> Activates Proggress button for turn owner only. </summary>
@@ -603,6 +596,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         CmdConfirmCardUsage(confirm);
     }
+
     [Command]
     void CmdConfirmCardUsage( bool confirm )
     {
@@ -613,6 +607,7 @@ public class PlayerInGame : NetworkBehaviour
     {
         CmdInterruptCardUsage();
     }
+
     [Command]
     void CmdInterruptCardUsage()
     {
@@ -681,9 +676,8 @@ public class PlayerInGame : NetworkBehaviour
         Card cardScript = card.GetComponent<Card>();
         Debug.Log("Rpc discarding card : " + card);
 
-        cardScript.ClientSetActiveCardButtons(false);
+        cardScript.ClientOnDiscard();
         gameManager.cardsUsageQueue.Remove(card);
-        card.GetComponent<Draggable>().enabled = true;
 
         switch (cardScript.cardValues.deck)
         {
@@ -710,8 +704,6 @@ public class PlayerInGame : NetworkBehaviour
             default:
                 break;
         }
-
-        StartCoroutine(ClientUpdateOwnedCardsUI());
     }
 
     internal static void SellCard( GameObject card )
@@ -735,19 +727,71 @@ public class PlayerInGame : NetworkBehaviour
         GameObject card = ClientScene.FindLocalObject(cardNetId);
         TreasureValue value = card.GetComponent<Card>().cardValues as TreasureValue;
         if (value != null)
-            moneyGained += value.cost;
-        if (moneyGained >= 1000)
-        {
-            moneyGained -= 1000;
-            Level += 1;
-
-            StartCoroutine(gameManager.ServerAlert(NickName + " bought themselves a Level Up!"));
-        }
-
+            money += value.cost;
+        
         yield return new WaitForEndOfFrame();
         CustomNetworkManager.isServerBusy = false;
 
         yield return ServerDiscardCard(cardNetId);
+    }
+
+    internal void BuyLevelUp()
+    {
+        CmdBuyLevelUp();
+    }
+
+    [Command]
+    void CmdBuyLevelUp()
+    {
+        StartCoroutine(ServerBuyLevelUp());
+    }
+
+    [Server]
+    IEnumerator ServerBuyLevelUp()
+    {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
+        money -= 1000;
+
+        yield return new WaitForEndOfFrame();
+        level += 1;
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
+    }
+
+    internal void BuyoutGoal()
+    {
+        CmdBuyoutGoal( BuyoutGoals.CurrentTitle, BuyoutGoals.CurrentPrice);
+    }
+
+    [Command]
+    void CmdBuyoutGoal( string goalTitle, int goalPrice )
+    {
+        StartCoroutine(ServerBuyoutGoal(goalTitle, goalPrice));
+    }
+
+    [Server]
+    IEnumerator ServerBuyoutGoal( string goalTitle, int goalPrice )
+    {
+        if (CustomNetworkManager.isServerBusy)
+            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
+        CustomNetworkManager.isServerBusy = true;
+
+        GameObject foundGoal = gameManager.buyoutGoals.Find(( goal ) => goal.GetComponent<BuyoutGoalCard>().cardValues.name == goalTitle);
+
+        if (foundGoal)
+        {
+            money -= goalPrice;
+
+            yield return new WaitForEndOfFrame();
+            StartCoroutine(foundGoal.GetComponent<BuyoutGoalCard>().ServerOnBuyout());
+        }
+
+        yield return new WaitForEndOfFrame();
+        CustomNetworkManager.isServerBusy = false;
     }
 
     [Server]
@@ -801,87 +845,7 @@ public class PlayerInGame : NetworkBehaviour
         GameManager.singleton.offeringHelpPlayers.Clear();
         LevelCounter.Deactivate();
     }
-    [Server]
-    IEnumerator ServerUpdateLevelUI()
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-
-        CustomNetworkManager.isServerBusy = true;
-
-        gameManager.ServerUpdateFightingPlayersLevel();
-
-        yield return new WaitForEndOfFrame();
-
-        RpcUpdateLevelUI();
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
-    }
-
-    [ClientRpc]
-    internal void RpcUpdateLevelUI()
-    {
-        StartCoroutine(ClientUpdateLevelUI());
-    }
-
-    [Client]
-    IEnumerator ClientUpdateLevelUI()
-    {
-        yield return new WaitUntil(() => opponentStatsUI != null || playerStatsUI != null);
-        if (opponentStatsUI != null)
-            opponentStatsUI.GetComponent<PlayerStats>().UpdateLevel(level);
-        else
-            playerStatsUI.GetComponent<PlayerStats>().UpdateLevel(level);
-        // Debug.Log(" fightInProggress - " + serverGameManager.fightInProggres);
-
-        if (gameManager.fightInProggres)
-            LevelCounter.UpdateLevels();
-    }
-
-    [Command]
-    void CmdUpdateOwnedCards()
-    {
-        StartCoroutine(ServerUpdateOwnedCards());
-    }
-
-    [Server]
-    internal IEnumerator ServerUpdateOwnedCards()
-    {
-        if (CustomNetworkManager.isServerBusy)
-            yield return new WaitUntil(() => !CustomNetworkManager.isServerBusy);
-        CustomNetworkManager.isServerBusy = true;
-
-        RpcUpdateOwnedCards();
-
-        yield return new WaitForEndOfFrame();
-        CustomNetworkManager.isServerBusy = false;
-    }
-
-    [ClientRpc]
-    void RpcUpdateOwnedCards()
-    {
-        StartCoroutine(ClientUpdateOwnedCardsUI());
-    }
-
-    /// <summary> Checking if this object has authority and then counting and updating number of owned cards accordingly </summary>
-    [Client]
-    internal IEnumerator ClientUpdateOwnedCardsUI()
-    {
-        if (hasAuthority)
-            playerStatsUI.GetComponent<PlayerStats>().UpdateOwnedCards(handContent.childCount, ownedCardsLimit);
-        else
-        {
-            short ownedCards = 0;
-
-            for (int i = 0; i < transform.childCount; i++)
-                if (transform.GetChild(i).gameObject.active) ownedCards++;
-
-            yield return new WaitUntil(() => opponentStatsUI != null);
-            opponentStatsUI.GetComponent<PlayerStats>().UpdateOwnedCards(ownedCards, ownedCardsLimit);
-        }
-    }
-
+    
     /// <summary> Initiating Choice Panel for choosing player to help in a fight. </summary>
     internal void RequestHelp()
     {
@@ -997,7 +961,7 @@ public class PlayerInGame : NetworkBehaviour
 
         PlayerInGame fightingPlayer = ClientScene.FindLocalObject(gameManager.fightingPlayerNetId).GetComponent<PlayerInGame>();
         PlayerInGame helpingPlayer = ClientScene.FindLocalObject(helpingPlayerNetId).GetComponent<PlayerInGame>();
-        InfoPanel.Alert(helpingPlayer.NickName + " helps " + fightingPlayer.NickName + " in battle!");
+        InfoPanel.Alert(helpingPlayer.nickName + " helps " + fightingPlayer.nickName + " in battle!");
     }
 
     internal void ChoosePlayerToTradeWith( PlayerInGame[] playersFreeToTrade )
@@ -1395,8 +1359,8 @@ public class PlayerInGame : NetworkBehaviour
     [Server]
     internal static void ServerNewTurn()
     {
-        foreach (var player in FindObjectsOfType<PlayerInGame>())
-            player.moneyGained = 0;
+        //foreach (var player in FindObjectsOfType<PlayerInGame>())
+        //    player.money = 0;
     }
 
     [Server]
@@ -1429,7 +1393,7 @@ public class PlayerInGame : NetworkBehaviour
         playerData.hasTurn = hasTurn;
         playerData.isAlive = isAlive;
         playerData.level = level;
-        playerData.nickName = NickName;
+        playerData.nickName = nickName;
 
         List<string> cardsInHand = new List<string>();
         List<string> equippedItems = new List<string>();
@@ -1462,7 +1426,5 @@ public class PlayerInGame : NetworkBehaviour
 
         foreach (var item in equippedItems)
             StartCoroutine(ServerOnReconnectEquip(item));
-
-        StartCoroutine(ServerUpdateLevelUI());
     }
 }

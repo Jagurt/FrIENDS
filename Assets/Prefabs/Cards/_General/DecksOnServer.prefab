@@ -145,6 +145,8 @@ MonoBehaviour:
     type: 3}
   _monsterLevelInfo: {fileID: 374417905752827049, guid: 63d13b0d50006ab41b9fa2f737989031,
     type: 3}
+  _levelInfo: {fileID: 7493156520155245641, guid: fb48a56edb79f76449d81a10096bffdd,
+    type: 3}
   _cardBGImages:
   - {fileID: 21300000, guid: 63f7e549031ee024aaebe5ab1cecdcab, type: 3}
   - {fileID: 21300000, guid: 33d880ca0c436d24e87f563deb686d03, type: 3}

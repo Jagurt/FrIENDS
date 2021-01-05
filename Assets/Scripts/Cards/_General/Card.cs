@@ -23,6 +23,8 @@ public class Card : NetworkBehaviour
     GameObject interruptUseTimer;
     GameObject declineUseButton;
 
+    GameObject cardLight;
+
     [SerializeField] List<GameObject> playersConfirmers;
     [SerializeField] List<GameObject> playersDecliners;
     [SerializeField] [SyncVar] int interruptTimer = 0;
@@ -61,7 +63,7 @@ public class Card : NetworkBehaviour
         GetComponent<Image>().sprite = CardsAddons.GetRandomCardBG();
         GetComponent<Image>().color = CardsAddons.cardBGColor.color;
         transform.Find("CardDescription").GetComponent<Image>().color = CardsAddons.cardDescBGColor.color;
-        Instantiate(CardsAddons.cardLight, transform);
+        cardLight = Instantiate(CardsAddons.cardLight, transform);
 
         yield return new WaitUntil(() => confirmUseButton);
         ClientSetActiveCardButtons(false);
@@ -86,7 +88,7 @@ public class Card : NetworkBehaviour
         if (PlayerInGame.localPlayerInGame.netId == ownerNetId)
             return;
 
-        StartCoroutine(GetComponent<Draggable>().ClientSlideWithPlaceholder(TableDropZone.cardQueueZone));
+        StartCoroutine(GetComponent<Draggable>().ClientSlideWithNewPlaceholder(TableDropZone.cardQueueZone));
     }
 
     internal IEnumerator ClientPutCardInService()
@@ -239,7 +241,7 @@ public class Card : NetworkBehaviour
             yield return new WaitUntil(() => !CustomNetManager.singleton.isServerBusy);
         CustomNetManager.singleton.isServerBusy = true;
 
-        RpcPutCardInActive();
+        //RpcPutCardInActive();
 
         yield return new WaitForEndOfFrame();
         CustomNetManager.singleton.isServerBusy = false;
@@ -248,7 +250,29 @@ public class Card : NetworkBehaviour
     [ClientRpc]
     internal void RpcPutCardInActive()
     {
-        StartCoroutine(GetComponent<Draggable>().ClientSlideWithPlaceholder(TableDropZone.cardActiveZone));
+        StartCoroutine(GetComponent<Draggable>().ClientSlideWithNewPlaceholder(TableDropZone.cardActiveZone));
+
+        // Inform about card usage.
+        string usingName = "";
+        if (ownerNetId != NetworkInstanceId.Invalid)
+            usingName = ClientScene.FindLocalObject(ownerNetId).GetComponent<PlayerInGame>().nickName;
+        string cardName = cardValues.name;
+        string targetName = "";
+
+        GameObject targetGO = ClientScene.FindLocalObject(targetNetId);
+
+        // Check for target type.
+        if (ownerNetId != targetNetId)
+        {
+            if (targetGO.GetComponent<PlayerInGame>())
+                targetName = targetGO.GetComponent<PlayerInGame>().nickName;
+            else if (targetGO.GetComponent<Card>())
+                targetName = targetGO.GetComponent<Card>().cardValues.name;
+            else
+                Debug.LogError("Incorrect TargetName!");
+        }
+
+        InfoPanel.ReceiveCardUsageInfo(usingName, cardName, targetName);
     }
 
     [Server]
@@ -275,6 +299,7 @@ public class Card : NetworkBehaviour
         CustomNetManager.singleton.isServerBusy = false;
     }
 
+    [ClientRpc]
     void RpcOnConfirm()
     {
         ClientSetActiveCardButtons(false);
@@ -295,7 +320,6 @@ public class Card : NetworkBehaviour
     }
 
     /// <summary> Activation of card buttons UI. </summary>
-    /// <param name="active"></param>
     [Client]
     internal void ClientSetActiveCardButtons( bool active )
     {
@@ -315,10 +339,11 @@ public class Card : NetworkBehaviour
         }
     }
 
-    [ClientRpc]
-    virtual protected void RpcPlayAnimation()
+    [Client]
+    virtual internal void ClientOnDiscard()
     {
-        throw new NotImplementedException();
+        ClientSetActiveCardButtons(false);
+        GetComponent<Draggable>().enabled = true;
     }
 
     internal NetworkInstanceId GetNetId()

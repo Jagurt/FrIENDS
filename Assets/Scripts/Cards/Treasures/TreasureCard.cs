@@ -7,7 +7,6 @@ using UnityEngine.Networking;
 
 public class TreasureCard : Card
 {
-    public TreasureType treasureType;
     GameObject treasureCostGO;
 
     protected override IEnumerator ClientWaitInstantiateAddons()

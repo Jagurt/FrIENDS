@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class ShamanCoffee : Effect
+public class ShamanCoffee : Consumable
 {
     private void Start()
     {

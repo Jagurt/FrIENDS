@@ -19,7 +19,9 @@ public class CardsAddons: MonoBehaviour
 
     [SerializeField] private GameObject _treasureCostInfo;
     [SerializeField] private GameObject _equipmentSlotInfo;
+    [SerializeField] private GameObject _levelInfo;
     [SerializeField] private GameObject _monsterLevelInfo;
+    [SerializeField] private GameObject _monsterAppliedEffect;
 
     [SerializeField] private List<Sprite> _cardBGImages = new List<Sprite>();
 
@@ -33,7 +35,9 @@ public class CardsAddons: MonoBehaviour
 
     static internal GameObject treasureCostInfoPrefab;
     static internal GameObject equipmentSlotInfoPrefab;
+    static internal GameObject levelInfoPrefab;
     static internal GameObject monsterLevelInfoPrefab;
+    static internal GameObject monsterAppliedEffectPrefab;
 
     static internal List<Sprite> cardBGImages;
 
@@ -54,6 +58,7 @@ public class CardsAddons: MonoBehaviour
             treasureCostInfoPrefab = _treasureCostInfo;
             equipmentSlotInfoPrefab = _equipmentSlotInfo;
             monsterLevelInfoPrefab = _monsterLevelInfo;
+            levelInfoPrefab = _levelInfo;
         }
     }
 
